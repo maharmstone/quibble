@@ -8,6 +8,10 @@ to boot from other filesystems than just NTFS.
 
 This is only a proof of concept at this stage - don't use this for anything serious.
 
+Screenshot of Windows 10 1909 running on Btrfs:
+
+<img src="https://raw.githubusercontent.com/maharmstone/quibble/fw/1909.png" width="400" />
+
 Donations
 ---------
 
@@ -20,7 +24,8 @@ Installation
 
 This has been tested with Qemu using the OVMF firmware, with Seabios included as a Compatibility
 Support Module (CSM). It may work on other VMs or hardware, it may not. You will need the CSM
-version of OVMF, which isn't the usual one bundled with Qemu.
+version of OVMF, which isn't the usual one bundled with Qemu. Precompiled version are available:
+[x86](https://github.com/maharmstone/quibble/blob/fw/OVMF_CODE.fd?raw=true) and [amd64](https://github.com/maharmstone/quibble/blob/fw/OVMF_CODE64.fd?raw=true).
 
 * Set up your VM, and install Windows on an NTFS volume.
 
