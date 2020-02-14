@@ -46,7 +46,7 @@ tinymt32.o: src/tinymt32.c src/tinymt32.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 btrfs.efi: $(BTRFS_LIBS)
-	$(CC) -nostdlib -Wl,-dll -shared -Wl,--subsystem,11 -e efi_main -o $@ $(BTRFS_LIBS) -lgcc
+	$(CC) -nostdlib -Wl,-dll -shared -Wl,--subsystem,11 -e $(ENTRY) -o $@ $(BTRFS_LIBS) -lgcc
 
 btrfs.o: src/btrfs/btrfs.c src/misc.h src/btrfs/btrfs.h src/quibbleproto.h
 	$(CC) $(CFLAGS) -c -o $@ $<
