@@ -3,7 +3,7 @@ ARCH	= amd64
 
 include arch/$(ARCH)/Makefile.inc
 
-CFLAGS	+= -ffreestanding -I/usr/include/efi -g -D__MAKEWITH_GNUEFI \
+CFLAGS	+= -ffreestanding -I/usr/include/efi -D__MAKEWITH_GNUEFI -pipe \
 	   -fno-stack-protector -fno-stack-check -mno-stack-arg-probe \
 	   -Werror-implicit-function-declaration -Wall -Wextra \
 	   -Wno-address-of-packed-member -Wno-packed-not-aligned \
@@ -12,8 +12,11 @@ LIBS	+= boot.o reg.o misc.o peload.o hw.o mem.o apiset.o menu.o tinymt32.o
 
 BTRFS_LIBS	+= btrfs.o misc.o crc32c.o
 
-
+all: CFLAGS += -O2
 all: quibble.efi btrfs.efi
+
+debug: CFLAGS += -g -Og
+debug: all
 
 quibble.efi: $(LIBS)
 	$(CC) -nostdlib -Wl,-dll -shared -Wl,--subsystem,10 -e efi_main -o $@ $(LIBS)
