@@ -55,4 +55,4 @@ crc32c.o: src/btrfs/crc32c.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm *.o quibble.efi btrfs.efi
+	$(RM) *.o quibble.efi btrfs.efi
