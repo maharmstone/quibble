@@ -46,3 +46,5 @@ apiset.o: src/quibble.h src/win.h src/misc.h src/peload.h src/x86.h
 menu.o: src/quibble.h src/win.h src/misc.h src/x86.h
 tinymt32.o: src/tinymt32.h
 btrfs.o: src/misc.h src/btrfs/btrfs.h src/quibbleproto.h
+
+.PHONY: all debug clean
