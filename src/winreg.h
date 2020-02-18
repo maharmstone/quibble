@@ -19,8 +19,6 @@
 
 #include <stdint.h>
 
-// taken from ReactOS
-
 #define HV_HBLOCK_SIGNATURE 0x66676572  // "regf"
 
 #define HSYS_MAJOR 1

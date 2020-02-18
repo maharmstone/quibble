@@ -21,8 +21,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-// from ReactOS
-
 #ifdef _X86_
 
 #define KGDT_NULL           0x00

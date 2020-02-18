@@ -19,8 +19,6 @@
 
 #include <stdint.h>
 
-// Taken from ReactOS
-
 #define IMAGE_DOS_SIGNATURE             0x5a4d // "MZ"
 #define IMAGE_NT_SIGNATURE              0x00004550 // "PE\0\0"
 
