@@ -1278,7 +1278,7 @@ static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, WCHAR** pname,
     memcpy(tmp, name, bs * sizeof(WCHAR));
     tmp[bs] = 0;
 
-    Status = dir->Open(dir, h, (WCHAR*)name, EFI_FILE_MODE_READ, 0);
+    Status = dir->Open(dir, h, tmp, EFI_FILE_MODE_READ, 0);
     if (Status != EFI_NOT_FOUND) {
         if (name[bs] == 0)
             *pname = &name[bs];
