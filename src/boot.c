@@ -3148,9 +3148,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     uint32_t reg_size;
     LIST_ENTRY drivers;
     LIST_ENTRY core_drivers;
-    uint32_t ntver;
+    uint32_t version_ms, version_ls;
     uint16_t version;
-    uint16_t build;
+    uint16_t build, revision;
     LOADER_BLOCK1A* block1a;
     LOADER_BLOCK1B* block1b;
     void** registry_base;
@@ -3250,14 +3250,15 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         goto end;
     }
 
-    Status = _CR(images.Flink, image, list_entry)->img->GetVersion(_CR(images.Flink, image, list_entry)->img, &ntver);
+    Status = _CR(images.Flink, image, list_entry)->img->GetVersion(_CR(images.Flink, image, list_entry)->img, &version_ms, &version_ls);
     if (EFI_ERROR(Status)) {
         print_error(L"GetVersion", Status);
         goto end;
     }
 
-    version = ntver >> 16;
-    build = ntver & 0xffff;
+    version = ((version_ms >> 16) << 8) | (version_ms & 0xff);
+    build = version_ls >> 16;
+    revision = version_ls & 0xffff;
 
     // Some checked builds have the wrong version number
     if (build == 9200)
@@ -3271,9 +3272,11 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     print_dec(version >> 8);
     print(L".");
     print_dec(version & 0xff);
-    print(L" (build ");
+    print(L".");
     print_dec(build);
-    print(L").\r\n");
+    print(L".");
+    print_dec(revision);
+    print(L".\r\n");
 
     Status = load_registry(bs, system32, reg, &registry, &reg_size, &images, &drivers, &mappings, &va, version, build,
                            windir, &core_drivers, fs_driver);

@@ -696,7 +696,7 @@ static EFI_STATUS EFIAPI move_address(EFI_PE_IMAGE* This, EFI_PHYSICAL_ADDRESS N
     return EFI_SUCCESS;
 }
 
-static EFI_STATUS get_version4(VS_VERSION_INFO* ver, uint32_t size, uint32_t* ret) {
+static EFI_STATUS get_version4(VS_VERSION_INFO* ver, uint32_t size, uint32_t* version_ms, uint32_t* version_ls) {
     static const WCHAR key[] = L"VS_VERSION_INFO";
 
     if (ver->wLength > size) {
@@ -723,12 +723,13 @@ static EFI_STATUS get_version4(VS_VERSION_INFO* ver, uint32_t size, uint32_t* re
         return EFI_INVALID_PARAMETER;
     }
 
-    *ret = (ver->Value.dwFileVersionMS & 0xff0000) << 8 | ((ver->Value.dwFileVersionMS & 0xff) << 24) | (ver->Value.dwFileVersionLS >> 16);
+    *version_ms = ver->Value.dwFileVersionMS;
+    *version_ls = ver->Value.dwFileVersionLS;
 
     return EFI_SUCCESS;
 }
 
-static EFI_STATUS get_version3(pe_image* img, void* res, uint32_t ressize, uint32_t offset, uint32_t* ret) {
+static EFI_STATUS get_version3(pe_image* img, void* res, uint32_t ressize, uint32_t offset, uint32_t* version_ms, uint32_t* version_ls) {
     IMAGE_RESOURCE_DIRECTORY* resdir;
     IMAGE_RESOURCE_DIRECTORY_ENTRY* ents;
     uint32_t size = ressize - offset;
@@ -762,13 +763,13 @@ static EFI_STATUS get_version3(pe_image* img, void* res, uint32_t ressize, uint3
             return EFI_INVALID_PARAMETER;
         }
 
-        return get_version4((VS_VERSION_INFO*)((uint8_t*)img->public.Data + irde->OffsetToData), irde->Size, ret);
+        return get_version4((VS_VERSION_INFO*)((uint8_t*)img->public.Data + irde->OffsetToData), irde->Size, version_ms, version_ls);
     }
 
     return EFI_NOT_FOUND;
 }
 
-static EFI_STATUS get_version2(pe_image* img, void* res, uint32_t ressize, uint32_t offset, uint32_t* ret) {
+static EFI_STATUS get_version2(pe_image* img, void* res, uint32_t ressize, uint32_t offset, uint32_t* version_ms, uint32_t* version_ls) {
     EFI_STATUS Status;
     IMAGE_RESOURCE_DIRECTORY* resdir;
     IMAGE_RESOURCE_DIRECTORY_ENTRY* ents;
@@ -794,7 +795,7 @@ static EFI_STATUS get_version2(pe_image* img, void* res, uint32_t ressize, uint3
             return EFI_INVALID_PARAMETER;
         }
 
-        Status = get_version3(img, res, ressize, ents[resdir->NumberOfNamedEntries + i].OffsetToDirectory, ret);
+        Status = get_version3(img, res, ressize, ents[resdir->NumberOfNamedEntries + i].OffsetToDirectory, version_ms, version_ls);
 
         if (Status != EFI_NOT_FOUND) {
             if (EFI_ERROR(Status))
@@ -807,7 +808,7 @@ static EFI_STATUS get_version2(pe_image* img, void* res, uint32_t ressize, uint3
     return EFI_NOT_FOUND;
 }
 
-static EFI_STATUS EFIAPI get_version(EFI_PE_IMAGE* This, UINT32* Version) {
+static EFI_STATUS EFIAPI get_version(EFI_PE_IMAGE* This, UINT32* VersionMS, UINT32* VersionLS) {
     EFI_STATUS Status;
     pe_image* img = _CR(This, pe_image, public);
     IMAGE_DOS_HEADER* dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
@@ -870,7 +871,7 @@ static EFI_STATUS EFIAPI get_version(EFI_PE_IMAGE* This, UINT32* Version) {
                 return EFI_INVALID_PARAMETER;
             }
 
-            Status = get_version2(img, resdir, dirsize, ents[resdir->NumberOfNamedEntries + i].OffsetToDirectory, Version);
+            Status = get_version2(img, resdir, dirsize, ents[resdir->NumberOfNamedEntries + i].OffsetToDirectory, VersionMS, VersionLS);
 
             if (Status != EFI_NOT_FOUND) {
                 if (EFI_ERROR(Status))
