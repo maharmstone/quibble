@@ -213,11 +213,11 @@ static uint64_t get_cpu_frequency(EFI_BOOT_SERVICES* bs) {
 
 static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* options, char* path, char* arc_name, unsigned int* store_pages,
                                              void** va, LIST_ENTRY* mappings, LIST_ENTRY* drivers, EFI_HANDLE image_handle,
-                                             uint16_t version, uint16_t build, LOADER_BLOCK1A** pblock1a, LOADER_BLOCK1B** pblock1b,
-                                             void*** registry_base, uint32_t** registry_length, LOADER_BLOCK2** pblock2,
-                                             LOADER_EXTENSION_BLOCK1A** pextblock1a, LOADER_EXTENSION_BLOCK1B** pextblock1b,
-                                             LOADER_EXTENSION_BLOCK3** pextblock3, uintptr_t** ploader_pages_spanned,
-                                             LIST_ENTRY* core_drivers) {
+                                             uint16_t version, uint16_t build, uint16_t revision, LOADER_BLOCK1A** pblock1a,
+                                             LOADER_BLOCK1B** pblock1b, void*** registry_base, uint32_t** registry_length,
+                                             LOADER_BLOCK2** pblock2, LOADER_EXTENSION_BLOCK1A** pextblock1a,
+                                             LOADER_EXTENSION_BLOCK1B** pextblock1b, LOADER_EXTENSION_BLOCK3** pextblock3,
+                                             uintptr_t** ploader_pages_spanned, LIST_ENTRY* core_drivers) {
     EFI_STATUS Status;
     EFI_PHYSICAL_ADDRESS addr;
     loader_store* store;
@@ -398,7 +398,11 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         extblock4 = &store->extension_win81.Block4;
         extblock5a = &store->extension_win81.Block5a;
 
-        store->extension_win81.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN81);
+        if (revision >= 18438)
+            store->extension_win81.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN81);
+        else
+            store->extension_win81.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN81, padding4);
+
         store->extension_win81.Profile.Status = 2;
 
         store->loader_block_win81.OsMajorVersion = version >> 8;
@@ -3573,8 +3577,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     store = initialize_loader_block(bs, options, path, arc_name, &store_pages, &va, &mappings, &drivers, image_handle, version, build,
-                                    &block1a, &block1b, &registry_base, &registry_length, &block2, &extblock1a, &extblock1b, &extblock3,
-                                    &loader_pages_spanned, &core_drivers);
+                                    revision, &block1a, &block1b, &registry_base, &registry_length, &block2, &extblock1a, &extblock1b,
+                                    &extblock3, &loader_pages_spanned, &core_drivers);
     if (!store) {
         print(L"out of memory\r\n");
         Status = EFI_OUT_OF_RESOURCES;

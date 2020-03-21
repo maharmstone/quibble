@@ -872,10 +872,11 @@ typedef struct __attribute__((packed)) {
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN81 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
+    uint32_t padding4[4];
 } LOADER_PARAMETER_EXTENSION_WIN81;
 
 #ifdef _X86_
-static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN81) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN81 has incorrect size.");
+static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN81) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN81 has incorrect size."); // FIXME - definitely 16 bytes on the end for x86 6.3.9600.18438?
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN81 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN81 Profile");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileImage");
@@ -922,7 +923,7 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5b.EfiVersion) == 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, KdDebugDevice) == 0x8cc, "LOADER_PARAMETER_EXTENSION_WIN81 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, OfflineCrashdumpConfigurationTable) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN81 OfflineCrashdumpConfigurationTable");
 #elif defined(__x86_64__)
-static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN81) == 0x988, "LOADER_PARAMETER_EXTENSION_WIN81 has incorrect size.");
+static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN81) == 0x998, "LOADER_PARAMETER_EXTENSION_WIN81 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN81 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN81 Profile");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileImage");
