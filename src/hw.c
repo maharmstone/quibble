@@ -849,3 +849,101 @@ EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs) {
 
     return EFI_SUCCESS;
 }
+
+static inline WCHAR hex_digit(uint8_t v) {
+    if (v >= 0xa)
+        return v + 'a' - 0xa;
+    else
+        return v + '0';
+}
+
+EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* file) {
+    EFI_STATUS Status;
+    EFI_GUID guid = EFI_PCI_IO_PROTOCOL_GUID;
+    EFI_HANDLE* handles = NULL;
+    UINTN count;
+
+    static const WCHAR dll_prefix[] = L"kd_02_";
+    static const WCHAR dll_suffix[] = L".dll";
+
+    WCHAR dll[(sizeof(dll_prefix) / sizeof(WCHAR)) - 1 + (sizeof(dll_suffix) / sizeof(WCHAR)) - 1 + 4];
+
+    memcpy(dll, dll_prefix, sizeof(dll_prefix) - sizeof(WCHAR));
+    memcpy(dll + (sizeof(dll_prefix) / sizeof(WCHAR)) - 1 + 4, dll_suffix, sizeof(dll_suffix));
+
+    Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
+
+    if (EFI_ERROR(Status)) {
+        print_error(L"LocateHandleBuffer", Status);
+        return Status;
+    }
+
+    for (unsigned int i = 0; i < count; i++) {
+        EFI_PCI_IO_PROTOCOL* io;
+        PCI_TYPE00 pci;
+        WCHAR* ptr;
+
+        Status = bs->OpenProtocol(handles[i], &guid, (void**)&io, image_handle, NULL,
+                                  EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+        if (EFI_ERROR(Status))
+            continue;
+
+        Status = io->Pci.Read(io, EfiPciIoWidthUint32, 0, sizeof(pci) / sizeof(UINT32), &pci);
+
+        if (EFI_ERROR(Status)) {
+            print_error(L"Pci.Read", Status);
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            continue;
+        }
+
+        if (pci.Hdr.ClassCode[2] != PCI_CLASS_NETWORK) {
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            continue;
+        }
+
+        print(L"Found Ethernet card ");
+        print_hex(pci.Hdr.VendorId);
+        print(L":");
+        print_hex(pci.Hdr.DeviceId);
+        print(L".\r\n");
+
+        ptr = &dll[(sizeof(dll_prefix) / sizeof(WCHAR)) - 1];
+
+        *ptr = hex_digit(pci.Hdr.VendorId >> 12); ptr++;
+        *ptr = hex_digit((pci.Hdr.VendorId >> 8) & 0xf); ptr++;
+        *ptr = hex_digit((pci.Hdr.VendorId >> 4) & 0xf); ptr++;
+        *ptr = hex_digit(pci.Hdr.VendorId & 0xf); ptr++;
+
+        print(L"Opening ");
+        print(dll);
+        print(L" instead of kdstub.dll.\r\n");
+
+        Status = open_file(dir, file, dll);
+
+        if (EFI_ERROR(Status)) {
+            if (Status != EFI_NOT_FOUND) {
+                print_error(L"open_file", Status);
+                bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+                goto end;
+            }
+
+            print(L"Not found, continuing.\r\n");
+
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            continue;
+        }
+
+        // FIXME - debug descriptor
+
+        bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+
+        goto end;
+    }
+
+    Status = EFI_NOT_FOUND;
+
+end:
+    bs->FreePool(handles);
+
+    return Status;
+}

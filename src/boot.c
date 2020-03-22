@@ -2497,11 +2497,15 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
         Status = EFI_NOT_FOUND;
 
         if (!strcmp(cmdline->debug_type, "net")) {
-            print(L"Opening kd_02_8086.dll instead.\r\n");  // FIXME - also support 10ec (Realtek) and 14e4 (Broadcom)
-            Status = open_file(dir, &file, L"kd_02_8086.dll");
+            Status = kdnet_init(systable->BootServices, dir, &file);
+
+            if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
+                print_error(L"kdnet_init", Status);
+                return Status;
+            }
 
             if (Status == EFI_NOT_FOUND)
-                print(L"Could not find kd_02_8086.dll, opening original file.\r\n");
+                print(L"Could not find override, opening original file.\r\n");
         }
 
         if (Status == EFI_NOT_FOUND)
