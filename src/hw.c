@@ -23,6 +23,19 @@
 #include "misc.h"
 #include "quibble.h"
 
+typedef struct __attribute__((packed)) {
+    uint8_t space_descriptor;
+    uint16_t length;
+    uint8_t resource_type;
+    uint8_t general_flags;
+    uint8_t type_specific_flags;
+    uint64_t granularity;
+    uint64_t address_minimum;
+    uint64_t address_maximum;
+    uint64_t translation_offset;
+    uint64_t address_length;
+} pci_bar_info;
+
 LIST_ENTRY block_devices;
 
 static EFI_STATUS add_ccd(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* parent, CONFIGURATION_CLASS class,
@@ -976,15 +989,41 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         ddd->BaseClass = pci.Hdr.ClassCode[2];
         ddd->SubClass = pci.Hdr.ClassCode[1];
         ddd->ProgIf = pci.Hdr.ClassCode[0];
-        // FIXME - Flags, DbgBarsMapped, DbgScratchAllocated
+        ddd->Flags = DBG_DEVICE_FLAG_BARS_MAPPED;
         ddd->Initialized = 0;
         ddd->Configured = 1;
-        // FIXME - BaseAddress
         // FIXME - Memory
         ddd->PortType = 0x8003; // Ethernet
         ddd->PortSubtype = 0xffff;
         ddd->NameSpace = KdNameSpacePCI;
         // FIXME - TransportType, TransportData
+
+        for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
+            void* res;
+
+            if (!EFI_ERROR(io->GetBarAttributes(io, i, NULL, &res))) {
+                pci_bar_info* info = (pci_bar_info*)res;
+
+                if (info->space_descriptor != 0x8a)
+                    print(L"First byte of pci_bar_info was not 8a.\r\n");
+                else if (info->resource_type != 0 && info->resource_type != 1) {
+                    print(L"Unsupported resource type ");
+                    print_hex(info->resource_type);
+                    print(L".\r\n");
+                } else {
+                    if (info->resource_type == 0)
+                        ddd->BaseAddress[i].Type = CmResourceTypeMemory;
+                    else
+                        ddd->BaseAddress[i].Type = CmResourceTypePort;
+
+                    ddd->BaseAddress[i].Valid = 1;
+                    ddd->BaseAddress[i].TranslatedAddress = (uint8_t*)(uintptr_t)info->address_minimum;
+                    ddd->BaseAddress[i].Length = info->address_length;
+                }
+
+                bs->FreePool(res);
+            }
+        }
 
         bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);

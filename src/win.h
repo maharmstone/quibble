@@ -878,14 +878,7 @@ typedef struct {
     uint8_t BaseClass;
     uint8_t SubClass;
     uint8_t ProgIf;
-    union {
-        uint8_t Flags;
-        struct {
-            uint8_t DbgHalScratchAllocated : 1;
-            uint8_t DbgBarsMapped : 1;
-            uint8_t DbgScratchAllocated : 1;
-        };
-    };
+    uint8_t Flags;
     bool Initialized;
     bool Configured;
     DEBUG_DEVICE_ADDRESS BaseAddress[MAXIMUM_DEBUG_BARS];

@@ -1004,6 +1004,13 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
 
     if (extblock5a)
         fix_list_mapping(&extblock5a->ApiSetSchemaExtensions, mappings);
+
+    for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
+        if (store->debug_device_descriptor.BaseAddress[i].Valid && store->debug_device_descriptor.BaseAddress[i].Type == CmResourceTypeMemory) {
+            store->debug_device_descriptor.BaseAddress[i].TranslatedAddress =
+                find_virtual_address(store->debug_device_descriptor.BaseAddress[i].TranslatedAddress, mappings);
+        }
+    }
 }
 
 static void set_gdt_entry(gdt_entry* gdt, uint16_t selector, uint32_t base, uint32_t limit, uint8_t type,
@@ -3164,6 +3171,29 @@ end:
 }
 #endif
 
+static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** va, DEBUG_DEVICE_DESCRIPTOR* ddd) {
+    EFI_STATUS Status;
+    void* va2 = *va;
+
+    for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
+        if (ddd->BaseAddress[i].Valid && ddd->BaseAddress[i].Type == CmResourceTypeMemory) {
+            // FIXME - disable write-caching etc.
+            Status = add_mapping(bs, mappings, va2, ddd->BaseAddress[i].TranslatedAddress,
+                                 ddd->BaseAddress[i].Length / EFI_PAGE_SIZE, LoaderFirmwarePermanent);
+            if (EFI_ERROR(Status)) {
+                print_error(L"add_mapping", Status);
+                return Status;
+            }
+
+            va2 = (uint8_t*)va2 + ddd->BaseAddress[i].Length;
+        }
+    }
+
+    *va = va2;
+
+    return EFI_SUCCESS;
+}
+
 static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE root, char* options,
                        char* path, char* arc_name, EFI_PE_LOADER_PROTOCOL* pe, EFI_REGISTRY_PROTOCOL* reg,
                        command_line* cmdline, WCHAR* fs_driver) {
@@ -3928,6 +3958,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         store->loader_block_win10.FirmwareInformation.EfiInformation.EfiMemoryMap = efi_runtime_map;
         store->loader_block_win10.FirmwareInformation.EfiInformation.EfiMemoryMapSize = efi_runtime_map_size;
         store->loader_block_win10.FirmwareInformation.EfiInformation.EfiMemoryMapDescriptorSize = map_desc_size;
+    }
+
+    Status = map_debug_descriptor(bs, &mappings, &va, &store->debug_device_descriptor);
+    if (EFI_ERROR(Status)) {
+        print_error(L"map_debug_descriptor", Status);
+        return Status;
     }
 
 #ifdef __x86_64__
