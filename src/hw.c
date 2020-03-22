@@ -857,7 +857,7 @@ static inline WCHAR hex_digit(uint8_t v) {
         return v + '0';
 }
 
-EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* file) {
+EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* file, DEBUG_DEVICE_DESCRIPTOR* ddd) {
     EFI_STATUS Status;
     EFI_GUID guid = EFI_PCI_IO_PROTOCOL_GUID;
     EFI_HANDLE* handles = NULL;
@@ -933,7 +933,23 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
             continue;
         }
 
-        // FIXME - debug descriptor
+        // setup debug descriptor
+
+        memset(ddd, 0, sizeof(DEBUG_DEVICE_DESCRIPTOR));
+
+        // FIXME - Bus, Slot, Segment (get from device path)
+        ddd->VendorID = pci.Hdr.VendorId;
+        ddd->DeviceID = pci.Hdr.DeviceId;
+        ddd->BaseClass = pci.Hdr.ClassCode[2];
+        ddd->SubClass = pci.Hdr.ClassCode[1];
+        ddd->ProgIf = pci.Hdr.ClassCode[0];
+        // FIXME - Flags, DbgBarsMapped, DbgScratchAllocated, Initialized?, Configured?
+        // FIXME - BaseAddress
+        // FIXME - Memory
+        ddd->PortType = 0x8003; // Ethernet
+        ddd->PortSubtype = 0xffff;
+        ddd->NameSpace = KdNameSpacePCI;
+        // FIXME - TransportType, TransportData
 
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
 

@@ -64,6 +64,7 @@ typedef struct {
     NLS_DATA_BLOCK nls;
     ARC_DISK_INFORMATION arc_disk_information;
     LOADER_PERFORMANCE_DATA loader_performance_data;
+    DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
 #if 0
     BOOT_GRAPHICS_CONTEXT bgc;
 #endif
@@ -88,6 +89,8 @@ size_t errata_inf_size = 0;
 LIST_ENTRY images;
 void* stack;
 EFI_HANDLE image_handle;
+bool kdnet_loaded = false;
+DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -430,7 +433,14 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
 
         store->extension_win81.LoaderPerformanceData = &store->loader_performance_data;
         store->extension_win81.ProcessorCounterFrequency = get_cpu_frequency(bs);
+
+        if (kdnet_loaded) {
+            memcpy(&store->debug_device_descriptor, &debug_device_descriptor, sizeof(debug_device_descriptor));
+            store->extension_win81.KdDebugDevice = &store->debug_device_descriptor;
+        }
     } else if (version == _WIN32_WINNT_WIN10) {
+        LOADER_EXTENSION_BLOCK6* extblock6;
+
         block1a = &store->loader_block_win10.Block1a;
         block1b = &store->loader_block_win10.Block1b;
         block1c = &store->loader_block_win10.Block1c;
@@ -474,6 +484,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             extblock3 = &store->extension_win10_1903.Block3;
             extblock4 = &store->extension_win10_1903.Block4;
             extblock5a = &store->extension_win10_1903.Block5a;
+            extblock6 = &store->extension_win10_1903.Block6;
             store->extension_win10_1903.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1903);
 
             store->extension_win10_1903.Profile.Status = 2;
@@ -489,6 +500,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             extblock3 = &store->extension_win10_1809.Block3;
             extblock4 = &store->extension_win10_1809.Block4;
             extblock5a = &store->extension_win10_1809.Block5a;
+            extblock6 = &store->extension_win10_1809.Block6;
             store->extension_win10_1809.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1809);
 
             store->extension_win10_1809.Profile.Status = 2;
@@ -502,6 +514,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             extblock3 = &store->extension_win10_1703.Block3;
             extblock4 = &store->extension_win10_1703.Block4;
             extblock5a = &store->extension_win10_1703.Block5a;
+            extblock6 = &store->extension_win10_1703.Block6;
 
             if (build >= WIN10_BUILD_1803)
                 store->extension_win10_1703.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1703);
@@ -528,6 +541,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             extblock3 = &store->extension_win10_1607.Block3;
             extblock4 = &store->extension_win10_1607.Block4;
             extblock5a = &store->extension_win10_1607.Block5a;
+            extblock6 = &store->extension_win10_1607.Block6;
             store->extension_win10_1607.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1607);
 
             store->extension_win10_1607.Profile.Status = 2;
@@ -545,6 +559,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             extblock3 = &store->extension_win10.Block3;
             extblock4 = &store->extension_win10.Block4;
             extblock5a = &store->extension_win10.Block5a;
+            extblock6 = &store->extension_win10.Block6;
 
             if (build < WIN10_BUILD_1511) {
                 store->extension_win10.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SystemHiveRecoveryInfo);
@@ -560,6 +575,11 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
 
             store->extension_win10.LoaderPerformanceData = &store->loader_performance_data;
             store->extension_win10.ProcessorCounterFrequency = get_cpu_frequency(bs);
+        }
+
+        if (kdnet_loaded) {
+            memcpy(&store->debug_device_descriptor, &debug_device_descriptor, sizeof(debug_device_descriptor));
+            extblock6->KdDebugDevice = &store->debug_device_descriptor;
         }
     } else {
         print(L"Unsupported Windows version.\r\n");
@@ -863,7 +883,12 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
 
         store->extension_win81.LoaderPerformanceData =
             find_virtual_address(store->extension_win81.LoaderPerformanceData, mappings);
+
+        if (store->extension_win81.KdDebugDevice)
+            store->extension_win81.KdDebugDevice = find_virtual_address(store->extension_win81.KdDebugDevice, mappings);
     } else if (version == _WIN32_WINNT_WIN10) {
+        LOADER_EXTENSION_BLOCK6* extblock6;
+
         block1a = &store->loader_block_win10.Block1a;
         block1c = &store->loader_block_win10.Block1c;
         block2 = &store->loader_block_win10.Block2;
@@ -887,18 +912,21 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             extblock3 = &store->extension_win10_1903.Block3;
             extblock4 = &store->extension_win10_1903.Block4;
             extblock5a = &store->extension_win10_1903.Block5a;
+            extblock6 = &store->extension_win10_1903.Block6;
         } else if (build == WIN10_BUILD_1809) {
             extblock1b = &store->extension_win10_1809.Block1b;
             extblock2b = &store->extension_win10_1809.Block2b;
             extblock3 = &store->extension_win10_1809.Block3;
             extblock4 = &store->extension_win10_1809.Block4;
             extblock5a = &store->extension_win10_1809.Block5a;
+            extblock6 = &store->extension_win10_1809.Block6;
         } else if (build >= WIN10_BUILD_1703) {
             extblock1b = &store->extension_win10_1703.Block1b;
             extblock2b = &store->extension_win10_1703.Block2b;
             extblock3 = &store->extension_win10_1703.Block3;
             extblock4 = &store->extension_win10_1703.Block4;
             extblock5a = &store->extension_win10_1703.Block5a;
+            extblock6 = &store->extension_win10_1703.Block6;
 
             store->extension_win10_1703.LoaderPerformanceData =
                 find_virtual_address(store->extension_win10_1703.LoaderPerformanceData, mappings);
@@ -908,6 +936,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             extblock3 = &store->extension_win10_1607.Block3;
             extblock4 = &store->extension_win10_1607.Block4;
             extblock5a = &store->extension_win10_1607.Block5a;
+            extblock6 = &store->extension_win10_1607.Block6;
 
             store->extension_win10_1607.LoaderPerformanceData =
                 find_virtual_address(store->extension_win10_1607.LoaderPerformanceData, mappings);
@@ -917,10 +946,14 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             extblock3 = &store->extension_win10.Block3;
             extblock4 = &store->extension_win10.Block4;
             extblock5a = &store->extension_win10.Block5a;
+            extblock6 = &store->extension_win10.Block6;
 
             store->extension_win10.LoaderPerformanceData =
                 find_virtual_address(store->extension_win10.LoaderPerformanceData, mappings);
         }
+
+        if (extblock6->KdDebugDevice)
+            extblock6->KdDebugDevice = find_virtual_address(extblock6->KdDebugDevice, mappings);
     } else {
         print(L"Unsupported Windows version.\r\n");
         return;
@@ -2497,15 +2530,15 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
         Status = EFI_NOT_FOUND;
 
         if (!strcmp(cmdline->debug_type, "net")) {
-            Status = kdnet_init(systable->BootServices, dir, &file);
-
-            if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
-                print_error(L"kdnet_init", Status);
-                return Status;
-            }
+            Status = kdnet_init(systable->BootServices, dir, &file, &debug_device_descriptor);
 
             if (Status == EFI_NOT_FOUND)
                 print(L"Could not find override, opening original file.\r\n");
+            else if (EFI_ERROR(Status)) {
+                print_error(L"kdnet_init", Status);
+                return Status;
+            } else
+                kdnet_loaded = true;
         }
 
         if (Status == EFI_NOT_FOUND)

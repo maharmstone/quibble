@@ -112,7 +112,7 @@ EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_BLOCK1C* block1, void** v
 EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** va, LIST_ENTRY* mappings,
                       CONFIGURATION_COMPONENT_DATA* system_key, bool new_disk_format);
 EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs);
-EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* file);
+EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* file, DEBUG_DEVICE_DESCRIPTOR* ddd);
 
 // apiset.c
 extern void* apisetva;
