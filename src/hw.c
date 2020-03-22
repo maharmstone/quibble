@@ -882,6 +882,10 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         EFI_PCI_IO_PROTOCOL* io;
         PCI_TYPE00 pci;
         WCHAR* ptr;
+        EFI_GUID guid2 = EFI_DEVICE_PATH_PROTOCOL_GUID;
+        EFI_DEVICE_PATH_PROTOCOL* device_path;
+        ACPI_HID_DEVICE_PATH* acpi_dp;
+        PCI_DEVICE_PATH* pci_dp;
 
         Status = bs->OpenProtocol(handles[i], &guid, (void**)&io, image_handle, NULL,
                                   EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
@@ -907,6 +911,31 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         print_hex(pci.Hdr.DeviceId);
         print(L".\r\n");
 
+        Status = bs->HandleProtocol(handles[i], &guid2, (void**)&device_path);
+        if (EFI_ERROR(Status)) {
+            print_error(L"HandleProtocol", Status);
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            continue;
+        }
+
+        acpi_dp = (ACPI_HID_DEVICE_PATH*)device_path;
+
+        if (acpi_dp->Header.Type != ACPI_DEVICE_PATH || acpi_dp->Header.SubType != ACPI_DP || (acpi_dp->HID & PNP_EISA_ID_MASK) != PNP_EISA_ID_CONST) {
+            print(L"Top of device path was not PciRoot().\r\n");
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
+            continue;
+        }
+
+        pci_dp = (PCI_DEVICE_PATH*)((uint8_t*)device_path + *(uint16_t*)acpi_dp->Header.Length);
+
+        if (pci_dp->Header.Type != HARDWARE_DEVICE_PATH || pci_dp->Header.SubType != HW_PCI_DP) {
+            print(L"Device path does not refer to PCI device.\r\n");
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
+            continue;
+        }
+
         ptr = &dll[(sizeof(dll_prefix) / sizeof(WCHAR)) - 1];
 
         *ptr = hex_digit(pci.Hdr.VendorId >> 12); ptr++;
@@ -923,12 +952,14 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         if (EFI_ERROR(Status)) {
             if (Status != EFI_NOT_FOUND) {
                 print_error(L"open_file", Status);
+                bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
                 bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
                 goto end;
             }
 
             print(L"Not found, continuing.\r\n");
 
+            bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             continue;
         }
@@ -937,13 +968,17 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
 
         memset(ddd, 0, sizeof(DEBUG_DEVICE_DESCRIPTOR));
 
-        // FIXME - Bus, Slot, Segment (get from device path)
+        ddd->Bus = acpi_dp->UID;
+        ddd->Slot = pci_dp->Device;
+        ddd->Segment = pci_dp->Function;
         ddd->VendorID = pci.Hdr.VendorId;
         ddd->DeviceID = pci.Hdr.DeviceId;
         ddd->BaseClass = pci.Hdr.ClassCode[2];
         ddd->SubClass = pci.Hdr.ClassCode[1];
         ddd->ProgIf = pci.Hdr.ClassCode[0];
-        // FIXME - Flags, DbgBarsMapped, DbgScratchAllocated, Initialized?, Configured?
+        // FIXME - Flags, DbgBarsMapped, DbgScratchAllocated
+        ddd->Initialized = 0;
+        ddd->Configured = 1;
         // FIXME - BaseAddress
         // FIXME - Memory
         ddd->PortType = 0x8003; // Ethernet
@@ -951,6 +986,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         ddd->NameSpace = KdNameSpacePCI;
         // FIXME - TransportType, TransportData
 
+        bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
 
         goto end;
