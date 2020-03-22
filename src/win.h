@@ -823,7 +823,91 @@ typedef struct {
     uint8_t RngBytesForNtoskrnl[1024];
 } BOOT_ENTROPY_LDR_RESULT_WIN81;
 
-typedef struct _DEBUG_DEVICE_DESCRIPTOR DEBUG_DEVICE_DESCRIPTOR;
+typedef struct {
+    uint8_t Type;
+    uint8_t Valid;
+    union {
+        uint8_t Reserved[2];
+        struct {
+            uint8_t BitWidth;
+            uint8_t AccessSize;
+        };
+    };
+    uint8_t* TranslatedAddress;
+    uint32_t Length;
+} DEBUG_DEVICE_ADDRESS;
+
+typedef struct {
+    uint64_t Start;
+    uint64_t MaxEnd;
+    void* VirtualAddress;
+    uint32_t Length;
+    uint8_t Cached;
+    uint8_t Aligned;
+} DEBUG_MEMORY_REQUIREMENTS;
+
+typedef enum {
+    KdNameSpacePCI,
+    KdNameSpaceACPI,
+    KdNameSpaceAny,
+    KdNameSpaceNone,
+    KdNameSpaceMax
+} KD_NAMESPACE_ENUM;
+
+typedef struct {
+    uint32_t HwContextSize;
+    uint8_t UseSerialFraming;
+    uint8_t ValidUSBCoreId;
+    uint8_t USBCoreId;
+} DEBUG_TRANSPORT_DATA;
+
+#define MAXIMUM_DEBUG_BARS 6
+
+#define DBG_DEVICE_FLAG_HAL_SCRATCH_ALLOCATED   1
+#define DBG_DEVICE_FLAG_BARS_MAPPED             2
+#define DBG_DEVICE_FLAG_SCRATCH_ALLOCATED       4
+#define DBG_DEVICE_FLAG_UNCACHED_MEMORY         8
+#define DBG_DEVICE_FLAG_SYNTHETIC               16
+
+typedef struct {
+    uint32_t Bus;
+    uint32_t Slot;
+    uint16_t Segment;
+    uint16_t VendorID;
+    uint16_t DeviceID;
+    uint8_t BaseClass;
+    uint8_t SubClass;
+    uint8_t ProgIf;
+    union {
+        uint8_t Flags;
+        struct {
+            uint8_t DbgHalScratchAllocated : 1;
+            uint8_t DbgBarsMapped : 1;
+            uint8_t DbgScratchAllocated : 1;
+        };
+    };
+    bool Initialized;
+    bool Configured;
+    DEBUG_DEVICE_ADDRESS BaseAddress[MAXIMUM_DEBUG_BARS];
+    DEBUG_MEMORY_REQUIREMENTS Memory;
+    uint16_t PortType;
+    uint16_t PortSubtype;
+    void* OemData;
+    uint32_t OemDataLength;
+    KD_NAMESPACE_ENUM NameSpace;
+    WCHAR* NameSpacePath;
+    uint32_t NameSpacePathLength;
+    uint32_t TransportType;
+    DEBUG_TRANSPORT_DATA TransportData;
+} DEBUG_DEVICE_DESCRIPTOR;
+
+// FIXME - also check sizes on x86
+#ifdef __x86_64__
+static_assert(sizeof(DEBUG_DEVICE_ADDRESS) == 0x18, "DEBUG_DEVICE_ADDRESS has incorrect size.");
+static_assert(sizeof(DEBUG_MEMORY_REQUIREMENTS) == 0x20, "DEBUG_MEMORY_REQUIREMENTS has incorrect size.");
+static_assert(sizeof(DEBUG_TRANSPORT_DATA) == 0x8, "DEBUG_TRANSPORT_DATA has incorrect size.");
+static_assert(sizeof(DEBUG_DEVICE_DESCRIPTOR) == 0xf8, "DEBUG_DEVICE_DESCRIPTOR has incorrect size.");
+#endif
 
 typedef struct {
     uintptr_t BugcheckCode;
