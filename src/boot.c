@@ -91,6 +91,7 @@ void* stack;
 EFI_HANDLE image_handle;
 bool kdnet_loaded = false;
 DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
+image* kdstub = NULL;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -1011,6 +1012,9 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
                 find_virtual_address(store->debug_device_descriptor.BaseAddress[i].TranslatedAddress, mappings);
         }
     }
+
+    if (store->debug_device_descriptor.Memory.Length != 0)
+        store->debug_device_descriptor.Memory.VirtualAddress = find_virtual_address(store->debug_device_descriptor.Memory.VirtualAddress, mappings);
 }
 
 static void set_gdt_entry(gdt_entry* gdt, uint16_t selector, uint32_t base, uint32_t limit, uint8_t type,
@@ -2485,6 +2489,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
                       command_line* cmdline) {
     EFI_STATUS Status;
     EFI_FILE_HANDLE file;
+    bool is_kdstub = false;
 
     if (!wcsicmp(name, L"kdcom.dll") && cmdline->debug_type && strcmp(cmdline->debug_type, "com")) {
         unsigned int len = strlen(cmdline->debug_type);
@@ -2544,8 +2549,10 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
             else if (EFI_ERROR(Status)) {
                 print_error(L"kdnet_init", Status);
                 return Status;
-            } else
+            } else {
                 kdnet_loaded = true;
+                is_kdstub = true;
+            }
         }
 
         if (Status == EFI_NOT_FOUND)
@@ -2615,6 +2622,9 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
     Status = file->Close(file);
     if (EFI_ERROR(Status))
         print_error(L"file close", Status);
+
+    if (is_kdstub)
+        kdstub = img;
 
     return Status;
 }
@@ -3189,6 +3199,17 @@ static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappin
         }
     }
 
+    if (ddd->Memory.Length != 0) {
+        Status = add_mapping(bs, mappings, va2, ddd->Memory.VirtualAddress,
+                             ddd->Memory.Length / EFI_PAGE_SIZE, LoaderFirmwarePermanent);
+        if (EFI_ERROR(Status)) {
+            print_error(L"add_mapping", Status);
+            return Status;
+        }
+
+        va2 = (uint8_t*)va2 + ddd->Memory.Length;
+    }
+
     *va = va2;
 
     return EFI_SUCCESS;
@@ -3234,6 +3255,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     unsigned int pathlen, pathwlen;
     WCHAR* pathw;
     KPCR* pcrva = NULL;
+    bool kdstub_export_loaded = false;
 
     static const WCHAR drivers_dir_path[] = L"system32\\drivers";
 
@@ -3643,6 +3665,14 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
             print_error(L"img->GetEntryPoint", Status);
     }
 
+    if (kdstub) {
+        Status = find_kd_export(kdstub);
+        if (EFI_ERROR(Status))
+            print_error(L"find_kd_export", Status);
+        else
+            kdstub_export_loaded = true;
+    }
+
     store = initialize_loader_block(bs, options, path, arc_name, &store_pages, &va, &mappings, &drivers, image_handle, version, build,
                                     revision, &block1a, &block1b, &registry_base, &registry_length, &block2, &extblock1a, &extblock1b,
                                     &extblock3, &loader_pages_spanned, &core_drivers);
@@ -4037,6 +4067,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 #endif
 
 //     halt();
+
+    if (kdstub_export_loaded)
+        kdstub_init(&store->debug_device_descriptor);
 
 #ifdef __x86_64__
     // set syscall flag in EFER MSR

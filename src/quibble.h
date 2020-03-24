@@ -124,6 +124,10 @@ bool search_api_set(WCHAR* dll, WCHAR* newname, uint16_t version);
 // menu.c
 EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** opt);
 
+// debug.c
+EFI_STATUS find_kd_export(image* kdstub);
+EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd);
+
 // CSM (not in gnu-efi)
 
 #define EFI_LEGACY_BIOS_PROTOCOL_GUID { 0xdb9a1e3d, 0x45cb, 0x4abb, {0x85, 0x3b, 0xe5, 0x38, 0x7f, 0xdb, 0x2e, 0x2d } }
