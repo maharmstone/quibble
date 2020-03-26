@@ -65,6 +65,7 @@ typedef struct {
     ARC_DISK_INFORMATION arc_disk_information;
     LOADER_PERFORMANCE_DATA loader_performance_data;
     DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
+    uint8_t kdnet_scratch[0x2000];
 #if 0
     BOOT_GRAPHICS_CONTEXT bgc;
 #endif
@@ -90,7 +91,7 @@ LIST_ENTRY images;
 void* stack;
 EFI_HANDLE image_handle;
 bool kdnet_loaded = false;
-DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
+static DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
 image* kdstub = NULL;
 
 typedef void (EFIAPI* change_stack_cb) (
@@ -4069,7 +4070,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 //     halt();
 
     if (kdstub_export_loaded)
-        kdstub_init(&store->debug_device_descriptor);
+        kdstub_init(&store->debug_device_descriptor, store->kdnet_scratch);
 
 #ifdef __x86_64__
     // set syscall flag in EFER MSR
