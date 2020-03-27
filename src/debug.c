@@ -29,6 +29,11 @@ typedef uint32_t (__stdcall *READ_REGISTER_ULONG) (
     void* addr
 );
 
+typedef NTSTATUS (__stdcall *WRITE_REGISTER_ULONG) (
+    void* addr,
+    uint32_t value
+);
+
 typedef struct {
     uint32_t count;
     KD_INITIALIZE_CONTROLLER KdInitializeController;
@@ -58,10 +63,10 @@ typedef struct {
     void* READ_REGISTER_USHORT;
     READ_REGISTER_ULONG READ_REGISTER_ULONG;
     void* READ_REGISTER_ULONG64;
+    void* WRITE_REGISTER_UCHAR;
+    void* WRITE_REGISTER_USHORT;
+    WRITE_REGISTER_ULONG WRITE_REGISTER_ULONG;
     void* WRITE_REGISTER_ULONG64;
-    void* unknown7;
-    void* unknown8;
-    void* unknown9;
     void* unknown10;
     void* unknown11;
     void* unknown12;
@@ -158,6 +163,12 @@ static __stdcall uint32_t read_register_ulong(void* addr) {
     return *(uint32_t*)addr;
 }
 
+static __stdcall NTSTATUS write_register_ulong(void* addr, uint32_t value) {
+    *(uint32_t*)addr = value;
+
+    return STATUS_SUCCESS;
+}
+
 EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     NTSTATUS Status;
     kdnet_exports exports;
@@ -170,6 +181,7 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     exports.funcs = &funcs;
     exports.GetDevicePciDataByOffset = get_device_pci_data_by_offset;
     exports.READ_REGISTER_ULONG = read_register_ulong;
+    exports.WRITE_REGISTER_ULONG = write_register_ulong;
 
     funcs.count = 13; // number of functions
 
