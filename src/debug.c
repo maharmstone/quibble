@@ -142,18 +142,39 @@ __inline static uint32_t inl(uint16_t port) {
 static __stdcall NTSTATUS get_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
     uint32_t address = 0x80000000 | ((bus & 0xff) << 16) | ((slot & 0x1f) << 11);
 
-    // FIXME - is this guaranteed to only operate on 32-bit units?
+    if (offset % sizeof(uint32_t) == 0 && length % sizeof(uint32_t) == 0) {
+        while (length > 0) {
+            address &= 0xffffff00;
+            address |= offset;
 
-    while (length > 0) {
-        address &= 0xffffff00;
-        address |= offset;
+            outl(0xcf8, address);
+            *(uint32_t*)data = inl(0xcfc);
 
-        outl(0xcf8, address);
-        *(uint32_t*)data = inl(0xcfc);
+            data = (uint8_t*)data + sizeof(uint32_t);
+            offset += sizeof(uint32_t);
+            length -= sizeof(uint32_t);
+        }
+    } else if (offset % sizeof(uint16_t) == 0 && length % sizeof(uint16_t) == 0) {
+        while (length > 0) {
+            uint32_t val;
 
-        data = (uint8_t*)data + sizeof(uint32_t);
-        offset += sizeof(uint32_t);
-        length -= sizeof(uint32_t);
+            address &= 0xffffff00;
+            address |= offset & 0xfc;
+
+            outl(0xcf8, address);
+            val = inl(0xcfc);
+
+            if (offset % sizeof(uint32_t) != 0)
+                *(uint16_t*)data = val >> 16;
+            else
+                *(uint16_t*)data = val & 0xff;
+
+            data = (uint8_t*)data + sizeof(uint16_t);
+            offset += sizeof(uint16_t);
+            length -= sizeof(uint16_t);
+        }
+    } else {
+        // FIXME
     }
 
     return STATUS_SUCCESS;
@@ -177,6 +198,8 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
 
     debug_device_descriptor = ddd;
 
+    memset(&exports, 0, sizeof(exports));
+
     exports.unknown1 = 0x1d; // FIXME - ???
     exports.funcs = &funcs;
     exports.GetDevicePciDataByOffset = get_device_pci_data_by_offset;
@@ -197,6 +220,9 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     halt();
 
     Status = funcs.KdInitializeController(&kd_net_data);
+
+    halt();
+
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
 
