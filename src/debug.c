@@ -25,6 +25,10 @@ typedef NTSTATUS (__stdcall *GET_DEVICE_PCI_DATA_BY_OFFSET) (
     uint32_t length
 );
 
+typedef void (__stdcall *STALL_EXECUTION_PROCESSOR) (
+    int microseconds
+);
+
 typedef uint32_t (__stdcall *READ_REGISTER_ULONG) (
     void* addr
 );
@@ -58,7 +62,7 @@ typedef struct {
     GET_DEVICE_PCI_DATA_BY_OFFSET GetDevicePciDataByOffset;
     void* unknown3;
     void* KdNetImports;
-    void* KdStallExecutionProcessor;
+    STALL_EXECUTION_PROCESSOR KdStallExecutionProcessor;
     void* READ_REGISTER_UCHAR;
     void* READ_REGISTER_USHORT;
     READ_REGISTER_ULONG READ_REGISTER_ULONG;
@@ -190,6 +194,11 @@ static __stdcall NTSTATUS write_register_ulong(void* addr, uint32_t value) {
     return STATUS_SUCCESS;
 }
 
+static __stdcall void stall_cpu(int microseconds) {
+    // FIXME - use RDTSC?
+    //halt();
+}
+
 EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     NTSTATUS Status;
     kdnet_exports exports;
@@ -203,6 +212,7 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     exports.unknown1 = 0x1d; // FIXME - ???
     exports.funcs = &funcs;
     exports.GetDevicePciDataByOffset = get_device_pci_data_by_offset;
+    exports.KdStallExecutionProcessor = stall_cpu;
     exports.READ_REGISTER_ULONG = read_register_ulong;
     exports.WRITE_REGISTER_ULONG = write_register_ulong;
 
