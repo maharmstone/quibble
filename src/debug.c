@@ -75,9 +75,9 @@ typedef struct {
     void* unknown11;
     void* unknown12;
     void* unknown13;
-    void* unknown14;
-    void* unknown15;
-    void* unknown16;
+    void* WRITE_PORT_UCHAR;
+    void* WRITE_PORT_USHORT;
+    void* WRITE_PORT_ULONG;
     void* unknown17;
     void* unknown18;
     void* unknown19;
@@ -199,6 +199,12 @@ static __stdcall void stall_cpu(int microseconds) {
     //halt();
 }
 
+static __stdcall NTSTATUS write_port_ulong(uint16_t port, uint32_t value) {
+    outl(port, value);
+
+    return STATUS_SUCCESS;
+}
+
 EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     NTSTATUS Status;
     kdnet_exports exports;
@@ -215,6 +221,7 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     exports.KdStallExecutionProcessor = stall_cpu;
     exports.READ_REGISTER_ULONG = read_register_ulong;
     exports.WRITE_REGISTER_ULONG = write_register_ulong;
+    exports.WRITE_PORT_ULONG = write_port_ulong;
 
     funcs.count = 13; // number of functions
 
