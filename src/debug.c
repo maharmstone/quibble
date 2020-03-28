@@ -291,35 +291,34 @@ static __stdcall void* get_physical_address(void* va) {
 #endif
 }
 
-static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kd_funcs* funcs) {
-    kdnet_exports exports;
-
+static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports, kd_funcs* funcs) {
     debug_device_descriptor = ddd;
 
-    memset(&exports, 0, sizeof(exports));
+    memset(exports, 0, sizeof(*exports));
 
-    exports.unknown1 = 0x1d; // FIXME - ???
-    exports.funcs = funcs;
-    exports.GetDevicePciDataByOffset = get_device_pci_data_by_offset;
-    exports.KdStallExecutionProcessor = stall_cpu;
-    exports.READ_REGISTER_ULONG = read_register_ulong;
-    exports.WRITE_REGISTER_ULONG = write_register_ulong;
-    exports.WRITE_PORT_ULONG = write_port_ulong;
-    exports.GetPhysicalAddress = get_physical_address;
+    exports->unknown1 = 0x1d; // FIXME - ???
+    exports->funcs = funcs;
+    exports->GetDevicePciDataByOffset = get_device_pci_data_by_offset;
+    exports->KdStallExecutionProcessor = stall_cpu;
+    exports->READ_REGISTER_ULONG = read_register_ulong;
+    exports->WRITE_REGISTER_ULONG = write_register_ulong;
+    exports->WRITE_PORT_ULONG = write_port_ulong;
+    exports->GetPhysicalAddress = get_physical_address;
 
     funcs->count = 13; // number of functions
 
-    return KdInitializeLibrary(&exports, NULL, ddd);
+    return KdInitializeLibrary(exports, NULL, ddd);
 }
 
 EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     NTSTATUS Status;
+    kdnet_exports exports;
     kd_funcs funcs;
     KD_NET_DATA kd_net_data;
 
     debug_device_descriptor = ddd;
 
-    Status = call_KdInitializeLibrary(ddd, &funcs);
+    Status = call_KdInitializeLibrary(ddd, &exports, &funcs);
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
 
