@@ -64,6 +64,9 @@
 #define PCR_PAGES               7 // good enough up to 1909, at least
 #elif defined(__x86_64__)
 #define SELFMAP                 0xfffff68000000000
+#define SELFMAP_PD              0xfffff6fb40000000
+#define SELFMAP_PDP             0xfffff6fb7da00000
+#define SELFMAP_PML4            0xfffff6fb7dbed000
 #define APIC_BASE               0xfffffffffffe0000
 #define KI_USER_SHARED_DATA     0xfffff78000000000
 #define PCR_PAGES               0xa // good enough up to 1909, at least

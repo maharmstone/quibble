@@ -32,7 +32,7 @@ apiset.o: ../src/apiset.c ../src/quibble.h ../src/win.h ../src/misc.h ../src/pel
 menu.o: ../src/menu.c ../src/quibble.h ../src/win.h ../src/misc.h ../src/x86.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-debug.o: ../src/debug.c ../src/quibble.h ../src/win.h ../src/misc.h ../src/peload.h
+debug.o: ../src/debug.c ../src/quibble.h ../src/win.h ../src/misc.h ../src/peload.h ../src/x86.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 tinymt32.o: ../src/tinymt32.c ../src/tinymt32.h

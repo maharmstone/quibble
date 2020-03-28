@@ -1,6 +1,7 @@
 #include "quibble.h"
 #include "misc.h"
 #include "peload.h"
+#include "x86.h"
 
 typedef int32_t NTSTATUS;
 #define NT_SUCCESS(Status) ((Status)>=0)
@@ -38,6 +39,10 @@ typedef NTSTATUS (__stdcall *WRITE_REGISTER_ULONG) (
     uint32_t value
 );
 
+typedef void* (__stdcall *GET_PHYSICAL_ADDRESS) (
+    void* va
+);
+
 typedef struct {
     uint32_t count;
     KD_INITIALIZE_CONTROLLER KdInitializeController;
@@ -61,7 +66,7 @@ typedef struct {
     kd_funcs* funcs;
     GET_DEVICE_PCI_DATA_BY_OFFSET GetDevicePciDataByOffset;
     void* unknown3;
-    void* KdNetImports;
+    GET_PHYSICAL_ADDRESS GetPhysicalAddress;
     STALL_EXECUTION_PROCESSOR KdStallExecutionProcessor;
     void* READ_REGISTER_UCHAR;
     void* READ_REGISTER_USHORT;
@@ -205,6 +210,51 @@ static __stdcall NTSTATUS write_port_ulong(uint16_t port, uint32_t value) {
     return STATUS_SUCCESS;
 }
 
+static __stdcall void* get_physical_address(void* va) {
+#ifdef __x86_64__
+    uintptr_t addr = (uintptr_t)va, ret;
+    uint64_t off1, off2, off3, off4;
+    HARDWARE_PTE_PAE* map = (HARDWARE_PTE_PAE*)SELFMAP_PML4;
+
+    off1 = (addr & 0xff8000000000) >> 39;
+
+    if (!map[off1].Valid)
+        return NULL;
+
+    map = (HARDWARE_PTE_PAE*)(SELFMAP_PDP | (off1 << 12));
+
+    off2 = (addr & 0x7fc0000000) >> 30;
+
+    if (!map[off2].Valid)
+        return NULL;
+
+    map = (HARDWARE_PTE_PAE*)(SELFMAP_PD | (off1 << 21) | (off2 << 12));
+
+    off3 = (addr & 0x3fe00000) >> 21;
+
+    if (!map[off3].Valid)
+        return NULL;
+
+    map = (HARDWARE_PTE_PAE*)(SELFMAP | (off1 << 30) | (off2 << 21) | (off3 << 12));
+
+    off4 = (addr & 0x1ff000) >> 12;
+
+    if (!map[off4].Valid)
+        return NULL;
+
+    ret = (map[off4].PageFrameNumber << 12) | (addr & 0xfff);
+
+    return (void*)ret;
+#else
+    UNUSED(va);
+
+    // FIXME
+    halt();
+
+    return NULL;
+#endif
+}
+
 EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     NTSTATUS Status;
     kdnet_exports exports;
@@ -222,6 +272,7 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     exports.READ_REGISTER_ULONG = read_register_ulong;
     exports.WRITE_REGISTER_ULONG = write_register_ulong;
     exports.WRITE_PORT_ULONG = write_port_ulong;
+    exports.GetPhysicalAddress = get_physical_address;
 
     funcs.count = 13; // number of functions
 
@@ -237,8 +288,6 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     halt();
 
     Status = funcs.KdInitializeController(&kd_net_data);
-
-    halt();
 
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
