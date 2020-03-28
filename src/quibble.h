@@ -128,6 +128,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** opt);
 // debug.c
 EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub);
 EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch);
+EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPTOR* ddd);
 
 // CSM (not in gnu-efi)
 

@@ -18,6 +18,10 @@ typedef NTSTATUS (__stdcall *KD_INITIALIZE_CONTROLLER) (
     KD_NET_DATA* kd_net_data
 );
 
+typedef uint64_t (__stdcall *KD_GET_HARDWARE_CONTEXT_SIZE) (
+    DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor
+);
+
 typedef NTSTATUS (__stdcall *GET_DEVICE_PCI_DATA_BY_OFFSET) (
     uint32_t bus,
     uint32_t slot,
@@ -59,7 +63,7 @@ typedef struct {
     void* KdSendTxPacket;
     void* KdGetPacketAddress;
     void* KdGetPacketLength;
-    void* KdGetHardwareContextSize;
+    KD_GET_HARDWARE_CONTEXT_SIZE KdGetHardwareContextSize;
     void* unknown1;
     void* unknown2;
     void* unknown3;
@@ -105,6 +109,8 @@ typedef NTSTATUS (__stdcall KD_INITIALIZE_LIBRARY) (
     DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor
 );
 
+static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports, kd_funcs* funcs);
+
 KD_INITIALIZE_LIBRARY* KdInitializeLibrary = NULL;
 static DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
 
@@ -120,6 +126,33 @@ EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub) {
     }
 
     KdInitializeLibrary = (KD_INITIALIZE_LIBRARY*)(uintptr_t)addr;
+
+    return EFI_SUCCESS;
+}
+
+EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPTOR* ddd) {
+    EFI_STATUS Status;
+    NTSTATUS nt_Status;
+    kdnet_exports exports;
+    kd_funcs funcs;
+
+    Status = find_kd_export(kdstub);
+    if (EFI_ERROR(Status)) {
+        print_error(L"find_kd_export", Status);
+        return Status;
+    }
+
+    nt_Status = call_KdInitializeLibrary(ddd, &exports, &funcs);
+    if (!NT_SUCCESS(nt_Status)) {
+        print(L"KdInitializeLibrary returned ");
+        print_hex((uint32_t)nt_Status);
+        print(L".\r\n");
+        return EFI_INVALID_PARAMETER;
+    }
+
+    ddd->TransportData.HwContextSize = funcs.KdGetHardwareContextSize(ddd);
+
+    // FIXME - allocate
 
     return EFI_SUCCESS;
 }

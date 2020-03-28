@@ -2630,7 +2630,11 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
     if (is_kdstub) {
         kdstub = img;
 
-        // FIXME - allocate HW context
+        Status = allocate_kdnet_hw_context(img->img, &debug_device_descriptor);
+        if (EFI_ERROR(Status)) {
+            print_error(L"allocate_kdnet_hw_context", Status);
+            return Status;
+        }
 
         Status = img->img->Relocate(img->img, (uintptr_t)va);
         if (EFI_ERROR(Status))
@@ -3210,16 +3214,16 @@ static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappin
         }
     }
 
-    if (ddd->Memory.Length != 0) {
-        Status = add_mapping(bs, mappings, va2, ddd->Memory.VirtualAddress,
-                             ddd->Memory.Length / EFI_PAGE_SIZE, LoaderFirmwarePermanent);
-        if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
-            return Status;
-        }
-
-        va2 = (uint8_t*)va2 + ddd->Memory.Length;
-    }
+//     if (ddd->Memory.Length != 0) {
+//         Status = add_mapping(bs, mappings, va2, ddd->Memory.VirtualAddress,
+//                              ddd->Memory.Length / EFI_PAGE_SIZE, LoaderFirmwarePermanent);
+//         if (EFI_ERROR(Status)) {
+//             print_error(L"add_mapping", Status);
+//             return Status;
+//         }
+//
+//         va2 = (uint8_t*)va2 + ddd->Memory.Length;
+//     }
 
     *va = va2;
 
