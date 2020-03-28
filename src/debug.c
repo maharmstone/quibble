@@ -43,6 +43,11 @@ typedef void* (__stdcall *GET_PHYSICAL_ADDRESS) (
     void* va
 );
 
+typedef NTSTATUS (__stdcall *WRITE_PORT_ULONG) (
+    uint16_t port,
+    uint32_t value
+);
+
 typedef struct {
     uint32_t count;
     KD_INITIALIZE_CONTROLLER KdInitializeController;
@@ -82,7 +87,7 @@ typedef struct {
     void* unknown13;
     void* WRITE_PORT_UCHAR;
     void* WRITE_PORT_USHORT;
-    void* WRITE_PORT_ULONG;
+    WRITE_PORT_ULONG WRITE_PORT_ULONG;
     void* unknown17;
     void* unknown18;
     void* unknown19;
