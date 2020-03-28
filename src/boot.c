@@ -2610,7 +2610,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
 
     img->va = va;
 
-    Status = pe->Load(file, va, &img->img);
+    Status = pe->Load(file, !is_kdstub ? va : NULL, &img->img);
     if (EFI_ERROR(Status)) {
         print_error(L"PE load", Status);
         file->Close(file);
@@ -2627,8 +2627,15 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
     if (EFI_ERROR(Status))
         print_error(L"file close", Status);
 
-    if (is_kdstub)
+    if (is_kdstub) {
         kdstub = img;
+
+        // FIXME - allocate HW context
+
+        Status = img->img->Relocate(img->img, (uintptr_t)va);
+        if (EFI_ERROR(Status))
+            print_error(L"Relocate", Status);
+    }
 
     return Status;
 }

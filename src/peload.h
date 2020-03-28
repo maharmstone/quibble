@@ -115,6 +115,11 @@ typedef EFI_STATUS (EFIAPI* EFI_PE_IMAGE_SET_NO_RELOC) (
     IN EFI_PE_IMAGE* This
 );
 
+typedef EFI_STATUS (EFIAPI* EFI_PE_IMAGE_RELOCATE) (
+    IN EFI_PE_IMAGE* This,
+    IN EFI_VIRTUAL_ADDRESS Address
+);
+
 typedef struct __attribute__((packed)) {
     char Name[8];
     uint32_t VirtualSize;
@@ -157,4 +162,5 @@ typedef struct _EFI_PE_IMAGE {
     EFI_PE_IMAGE_FIND_EXPORT FindExport;
     EFI_PE_IMAGE_GET_CHARACTERISTICS GetCharacteristics;
     EFI_PE_IMAGE_GET_SECTIONS GetSections;
+    EFI_PE_IMAGE_RELOCATE Relocate;
 } EFI_PE_IMAGE;

@@ -989,6 +989,30 @@ static EFI_STATUS EFIAPI get_sections(EFI_PE_IMAGE* This, IMAGE_SECTION_HEADER**
     return EFI_SUCCESS;
 }
 
+static EFI_STATUS relocate(EFI_PE_IMAGE* This, EFI_VIRTUAL_ADDRESS Address) {
+    pe_image* img = _CR(This, pe_image, public);
+    IMAGE_DOS_HEADER* dos_header;
+    IMAGE_NT_HEADERS* nt_header;
+    uint64_t old_va, base;
+
+    dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
+    nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+
+    old_va = (uintptr_t)img->va;
+
+    if (nt_header->OptionalHeader32.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+        base = nt_header->OptionalHeader64.ImageBase;
+    else
+        base = nt_header->OptionalHeader32.ImageBase;
+
+    img->va = (void*)(uintptr_t)(Address - old_va + base); // because do_relocations works on offsets
+    do_relocations(img, nt_header);
+
+    img->va = (void*)(uintptr_t)Address;
+
+    return EFI_SUCCESS;
+}
+
 static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE_IMAGE** Image) {
     EFI_STATUS Status;
     EFI_FILE_INFO file_info;
@@ -1079,8 +1103,6 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
         return EFI_INVALID_PARAMETER;
     }
 
-    img->va = VirtualAddress;
-
     if (nt_header->OptionalHeader32.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
         img->size = nt_header->OptionalHeader64.SizeOfImage;
     else
@@ -1106,6 +1128,11 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
     }
 
     img->public.Data = (uint8_t*)(uintptr_t)addr;
+
+    if (VirtualAddress)
+        img->va = VirtualAddress;
+    else // if VirtualAddress not set, use physical address
+        img->va = (void*)(uintptr_t)addr;
 
     if (nt_header->OptionalHeader32.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
         sections = (IMAGE_SECTION_HEADER*)((uint8_t*)&nt_header->OptionalHeader64 + nt_header->FileHeader.SizeOfOptionalHeader);
@@ -1166,6 +1193,7 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
     img->public.FindExport = find_export;
     img->public.GetCharacteristics = get_characteristics;
     img->public.GetSections = get_sections;
+    img->public.Relocate = relocate;
 
     *Image = &img->public;
 
