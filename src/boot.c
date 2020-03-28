@@ -3677,7 +3677,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     if (kdstub) {
-        Status = find_kd_export(kdstub);
+        Status = find_kd_export(kdstub->img);
         if (EFI_ERROR(Status))
             print_error(L"find_kd_export", Status);
         else

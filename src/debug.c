@@ -103,11 +103,11 @@ typedef NTSTATUS (__stdcall KD_INITIALIZE_LIBRARY) (
 KD_INITIALIZE_LIBRARY* KdInitializeLibrary = NULL;
 static DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
 
-EFI_STATUS find_kd_export(image* kdstub) {
+EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub) {
     UINT64 addr;
     EFI_STATUS Status;
 
-    Status = kdstub->img->FindExport(kdstub->img, "KdInitializeLibrary", &addr, NULL);
+    Status = kdstub->FindExport(kdstub, "KdInitializeLibrary", &addr, NULL);
 
     if (EFI_ERROR(Status)) {
         print_error(L"FindExport", Status);
