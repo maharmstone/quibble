@@ -80,6 +80,7 @@ typedef struct _command_line command_line;
 // boot.c
 extern void* stack;
 extern EFI_HANDLE image_handle;
+extern uint64_t cpu_frequency;
 EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const WCHAR* name, TYPE_OF_MEMORY memory_type,
                      const WCHAR* dir, bool dll, BOOT_DRIVER_LIST_ENTRY* bdle, unsigned int order,
                      bool no_reloc);

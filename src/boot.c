@@ -93,6 +93,7 @@ EFI_HANDLE image_handle;
 bool kdnet_loaded = false;
 static DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
 image* kdstub = NULL;
+uint64_t cpu_frequency;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -255,6 +256,8 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
 
     memset(store, 0, sizeof(loader_store));
 
+    cpu_frequency = get_cpu_frequency(bs);
+
     if (version <= _WIN32_WINNT_WS03) {
         block1a = &store->loader_block_ws03.Block1a;
         block1b = &store->loader_block_ws03.Block1b;
@@ -340,7 +343,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         store->extension_win7.TpmBootEntropyResult.ResultCode = TpmBootEntropyNoTpmFound;
         store->extension_win7.TpmBootEntropyResult.ResultStatus = STATUS_NOT_IMPLEMENTED;
 
-        store->extension_win7.ProcessorCounterFrequency = get_cpu_frequency(bs);
+        store->extension_win7.ProcessorCounterFrequency = cpu_frequency;
 
         *registry_base = &store->loader_block_win7.RegistryBase;
         *registry_length = &store->loader_block_win7.RegistryLength;
@@ -389,7 +392,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         InitializeListHead(&store->loader_block_win8.FirmwareInformation.EfiInformation.FirmwareResourceList);
 
         store->extension_win8.LoaderPerformanceData = &store->loader_performance_data;
-        store->extension_win8.ProcessorCounterFrequency = get_cpu_frequency(bs);
+        store->extension_win8.ProcessorCounterFrequency = cpu_frequency;
     } else if (version == _WIN32_WINNT_WINBLUE) {
         block1a = &store->loader_block_win81.Block1a;
         block1b = &store->loader_block_win81.Block1b;
@@ -434,7 +437,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         InitializeListHead(&store->loader_block_win81.FirmwareInformation.EfiInformation.FirmwareResourceList);
 
         store->extension_win81.LoaderPerformanceData = &store->loader_performance_data;
-        store->extension_win81.ProcessorCounterFrequency = get_cpu_frequency(bs);
+        store->extension_win81.ProcessorCounterFrequency = cpu_frequency;
 
         if (kdnet_loaded) {
             memcpy(&store->debug_device_descriptor, &debug_device_descriptor, sizeof(debug_device_descriptor));
@@ -494,7 +497,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
 
             // contrary to what you might expect, both 1903 and 1909 use the same value here
             store->extension_win10_1903.MajorRelease = NTDDI_WIN10_19H1;
-            store->extension_win10_1903.ProcessorCounterFrequency = get_cpu_frequency(bs);
+            store->extension_win10_1903.ProcessorCounterFrequency = cpu_frequency;
         } else if (build == WIN10_BUILD_1809) {
             extblock1a = &store->extension_win10_1809.Block1a;
             extblock1b = &store->extension_win10_1809.Block1b;
@@ -508,7 +511,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             store->extension_win10_1809.Profile.Status = 2;
             store->extension_win10_1809.BootEntropyResult.maxEntropySources = 10;
             store->extension_win10_1809.MajorRelease = NTDDI_WIN10_RS5;
-            store->extension_win10_1809.ProcessorCounterFrequency = get_cpu_frequency(bs);
+            store->extension_win10_1809.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_1703) {
             extblock1a = &store->extension_win10_1703.Block1a;
             extblock1b = &store->extension_win10_1703.Block1b;
@@ -535,7 +538,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
                 store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS4;
 
             store->extension_win10_1703.LoaderPerformanceData = &store->loader_performance_data;
-            store->extension_win10_1703.ProcessorCounterFrequency = get_cpu_frequency(bs);
+            store->extension_win10_1703.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_1607) {
             extblock1a = &store->extension_win10_1607.Block1a;
             extblock1b = &store->extension_win10_1607.Block1b;
@@ -553,7 +556,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             store->extension_win10_1607.MajorRelease = NTDDI_WIN10_RS1;
 
             store->extension_win10_1607.LoaderPerformanceData = &store->loader_performance_data;
-            store->extension_win10_1607.ProcessorCounterFrequency = get_cpu_frequency(bs);
+            store->extension_win10_1607.ProcessorCounterFrequency = cpu_frequency;
         } else {
             extblock1a = &store->extension_win10.Block1a;
             extblock1b = &store->extension_win10.Block1b;
@@ -576,7 +579,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             store->extension_win10.BootEntropyResult.maxEntropySources = 8;
 
             store->extension_win10.LoaderPerformanceData = &store->loader_performance_data;
-            store->extension_win10.ProcessorCounterFrequency = get_cpu_frequency(bs);
+            store->extension_win10.ProcessorCounterFrequency = cpu_frequency;
         }
 
         if (kdnet_loaded) {
