@@ -113,6 +113,7 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exp
 
 KD_INITIALIZE_LIBRARY* KdInitializeLibrary = NULL;
 static DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
+void* kdnet_scratch = NULL;
 
 EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub) {
     UINT64 addr;
@@ -135,6 +136,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
     NTSTATUS nt_Status;
     kdnet_exports exports;
     kd_funcs funcs;
+    EFI_PHYSICAL_ADDRESS addr;
 
     Status = find_kd_export(kdstub);
     if (EFI_ERROR(Status)) {
@@ -152,7 +154,15 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
 
     ddd->TransportData.HwContextSize = funcs.KdGetHardwareContextSize(ddd);
 
-    // FIXME - allocate
+    if (ddd->TransportData.HwContextSize != 0) {
+        Status = systable->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(ddd->TransportData.HwContextSize), &addr);
+        if (EFI_ERROR(Status)) {
+            print_error(L"AllocatePages", Status);
+            return Status;
+        }
+
+        kdnet_scratch = (void*)(uintptr_t)addr;
+    }
 
     return EFI_SUCCESS;
 }
@@ -343,7 +353,7 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exp
     return KdInitializeLibrary(exports, NULL, ddd);
 }
 
-EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
+EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd) {
     NTSTATUS Status;
     kdnet_exports exports;
     kd_funcs funcs;
@@ -355,12 +365,8 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint8_t* scratch) {
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
 
-    // FIXME - call KdGetHardwareContextSize and allocate data (needs to be before paging enabled?)
-
-    kd_net_data.scratch = scratch;
+    kd_net_data.scratch = kdnet_scratch;
     kd_net_data.debug_device_descriptor = ddd;
-
-    halt();
 
     Status = funcs.KdInitializeController(&kd_net_data);
 

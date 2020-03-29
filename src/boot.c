@@ -65,7 +65,6 @@ typedef struct {
     ARC_DISK_INFORMATION arc_disk_information;
     LOADER_PERFORMANCE_DATA loader_performance_data;
     DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
-    uint8_t kdnet_scratch[0x2000];
 #if 0
     BOOT_GRAPHICS_CONTEXT bgc;
 #endif
@@ -4040,6 +4039,18 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     root->Close(root);
 
+    if (kdstub_export_loaded && kdnet_scratch) {
+        Status = add_mapping(bs, &mappings, va, kdnet_scratch,
+                             PAGE_COUNT(store->debug_device_descriptor.TransportData.HwContextSize), LoaderFirmwarePermanent);
+        if (EFI_ERROR(Status)) {
+            print_error(L"add_mapping", Status);
+            goto end;
+        }
+
+        kdnet_scratch = va;
+        va = (uint8_t*)va + (PAGE_COUNT(store->debug_device_descriptor.TransportData.HwContextSize) * EFI_PAGE_SIZE);
+    }
+
 #if 0
     if (version >= _WIN32_WINNT_WIN8) {
         Status = set_graphics_mode(bs, image_handle, &mappings, &va, &store->bgc, extblock3);
@@ -4084,7 +4095,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 //     halt();
 
     if (kdstub_export_loaded)
-        kdstub_init(&store->debug_device_descriptor, store->kdnet_scratch);
+        kdstub_init(&store->debug_device_descriptor);
 
 #ifdef __x86_64__
     // set syscall flag in EFER MSR
