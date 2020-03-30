@@ -33,19 +33,8 @@ version of OVMF, which isn't the usual one bundled with Qemu. Precompiled versio
 
 * On modern versions of Windows, turn off Fast Startup in the Control Panel.
 
-* Shutdown your VM, and copy its hard disk to a Btrfs partition.
-    * Surprisingly, there isn't an easy way to copy an NTFS volume exactly - you can try using
-    robocopy on Windows, but you'll run into files you can't easily access, even as Admin. [RunAsTI](https://github.com/jschicht/RunAsTI)
-    helps, but it's still not easy. Robocopy doesn't like symlinks, either.
-    * Better, you can mount the volume on Linux and use rsync. This does have the down side that
-    you'll lose the DOS attributes and the security descriptors.
-
-* On Windows 8, you will need to use icacls to give C:\Users\[USERNAME]\AppData\LocalLow a
-mandatory integrity level of "Low", otherwise it will crash on login.
-
-* On some versions of Windows 10 (1607 to 1803?), you will need to give the pseudo-group
-"ALL APPLICATION PACKAGES" access to C:\Windows\Fonts, or you'll have the amusing sight of
-Windows not being able to display any text.
+* Shutdown your VM, and copy its hard disk to a Btrfs partition. The best way is to use [Ntfs2btrfs](https://github.com/maharmstone/ntfs2btrfs)
+to do in-place conversion, which will also preserve your metadata.
 
 * Extract the Quibble package into your EFI System Partition. It's supposed to work in a subdirectory,
 but if you have trouble you might need to put it in the root.
