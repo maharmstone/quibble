@@ -293,7 +293,7 @@ void strcpy(char* dest, const char* src) {
     *dest = 0;
 }
 
-WCHAR* error_string(EFI_STATUS Status) {
+static WCHAR* error_string(EFI_STATUS Status) {
     switch (Status) {
         case EFI_SUCCESS:
             return L"EFI_SUCCESS";
@@ -510,23 +510,6 @@ void print_string(const char* s) {
     *t = 0;
 
     print(w);
-}
-
-
-void* EFIAPI AllocatePool(UINTN AllocationSize) {
-    EFI_STATUS Status;
-    void* buf;
-
-    Status = systable->BootServices->AllocatePool(EfiLoaderData, AllocationSize, &buf);
-
-    if (EFI_ERROR(Status))
-        return NULL;
-
-    return buf;
-}
-
-void EFIAPI FreePool(void* p) {
-    systable->BootServices->FreePool(p);
 }
 
 EFI_STATUS utf8_to_utf16(WCHAR* dest, unsigned int dest_max, unsigned int* dest_len, const char* src, unsigned int src_len) {

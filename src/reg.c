@@ -16,6 +16,7 @@
  * along with Quibble.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stdbool.h>
+#include <string.h>
 #include "reg.h"
 #include "misc.h"
 #include "winreg.h"

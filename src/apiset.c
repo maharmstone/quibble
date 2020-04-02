@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public Licence
  * along with Quibble.  If not, see <http://www.gnu.org/licenses/>. */
 
+#include <string.h>
 #include "quibble.h"
 #include "misc.h"
 #include "peload.h"

@@ -16,6 +16,8 @@
  * along with Quibble.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stdint.h>
+#include <string.h>
+#include <wchar.h>
 #include "quibble.h"
 #include "reg.h"
 #include "peload.h"

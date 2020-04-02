@@ -16,6 +16,7 @@
  * along with Quibble.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stddef.h>
+#include <string.h>
 #include "peload.h"
 #include "peloaddef.h"
 #include "misc.h"

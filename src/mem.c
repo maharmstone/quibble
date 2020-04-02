@@ -16,6 +16,7 @@
  * along with Quibble.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stdint.h>
+#include <intrin.h>
 #include "quibble.h"
 #include "misc.h"
 #include "x86.h"

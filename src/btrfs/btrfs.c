@@ -18,6 +18,7 @@
 #include <efi.h>
 #include <efilib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "../misc.h"
 #include "../quibbleproto.h"
 #include "btrfs.h"

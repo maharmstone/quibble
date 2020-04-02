@@ -25,19 +25,6 @@ extern EFI_SYSTEM_TABLE* systable;
 
 #define print(s) systable->ConOut->OutputString(systable->ConOut, (s))
 
-void wcsncpy(WCHAR* dest, const WCHAR* src, size_t n);
-void wcsncat(WCHAR* dest, const WCHAR* src, size_t n);
-size_t wcslen(const WCHAR* s);
-int wcsicmp(const WCHAR* s1, const WCHAR* s2);
-void memcpy(void* dest, const void* src, size_t n);
-void* memset(void* s, int c, size_t n);
-int memcmp(const void* s1, const void* s2, size_t n);
-size_t strlen(const char* s);
-int stricmp(const char* s1, const char* s2);
-int strnicmp(const char* s1, const char* s2, int n);
-int strcmp(const char* s1, const char* s2);
-void strcpy(char* dest, const char* src);
-WCHAR* error_string(EFI_STATUS Status);
 void print_error(const WCHAR* func, EFI_STATUS Status);
 void print_hex(uint64_t v);
 void print_dec(uint32_t v);
