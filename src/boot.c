@@ -1241,53 +1241,17 @@ static void* allocate_page(EFI_BOOT_SERVICES* bs) {
 }
 
 static EFI_STATUS map_apic(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings) {
-    uintptr_t cpu_flags;
+    int cpu_info[4];
     void* apic;
 
-#ifdef _X86_
-    __asm__ __volatile__ (
-        "mov eax, 1\n\t"
-        "cpuid\n\t"
-        "mov %0, eax\n\t"
-        : "=m" (cpu_flags)
-        :
-        : "eax", "ebx", "ecx", "edx"
-    );
-#elif defined(__x86_64__)
-    __asm__ __volatile__ (
-        "mov rax, 1\n\t"
-        "cpuid\n\t"
-        "mov %0, rax\n\t"
-        : "=m" (cpu_flags)
-        :
-        : "rax", "ebx", "ecx", "edx"
-    );
-#endif
+    __cpuid(cpu_info, 1);
 
-    if (!(cpu_flags & 0x200)) {
+    if (!(cpu_info[3] & 0x200)) {
         print(L"CPU does not have an onboard APIC.\r\n");
         return EFI_SUCCESS;
     }
 
-#ifdef _X86_
-    __asm__ __volatile__ (
-        "mov ecx, 0x1b\n\t"
-        "rdmsr\n\t"
-        "mov %0, eax\n\t"
-        : "=m" (apic)
-        :
-        : "eax", "ecx", "edx"
-    );
-#elif defined(__x86_64__)
-    __asm__ __volatile__ (
-        "mov rcx, 0x1b\n\t"
-        "rdmsr\n\t"
-        "mov %0, rax\n\t"
-        : "=m" (apic)
-        :
-        : "rax", "rcx", "edx"
-    );
-#endif
+    apic = (void*)(uintptr_t)__readmsr(0x1b);
 
     apic = (void*)((uintptr_t)apic & 0xfffff000);
 
