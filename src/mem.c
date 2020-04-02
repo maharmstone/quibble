@@ -1137,123 +1137,42 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
 #ifdef _X86_
     // disable paging
-    __asm__ __volatile__ (
-        "mov eax, cr0\n\t"
-        "and eax, 0x7fffffff\n\t"
-        "mov cr0, eax\n\t"
-        :
-        :
-        : "eax"
-    );
+    __writecr0(__readcr0() & ~CR0_PG);
 
     // disable write-protection (Windows will set this itself)
-    __asm__ __volatile__ (
-        "mov eax, cr0\n\t"
-        "and eax, 0xfffeffff\n\t"
-        "mov cr0, eax\n\t"
-        :
-        :
-        : "eax"
-    );
+    __writecr0(__readcr0() & ~CR0_WP);
 
     if (pae) {
         // enable PAE
-        __asm__ __volatile__ (
-            "mov eax, cr4\n\t"
-            "or eax, 0x20\n\t"
-            "mov cr4, eax\n\t"
-            :
-            :
-            : "eax"
-        );
+        __writecr4(__readcr4() | CR4_PAE);
 
         // set cr3
-        __asm__ __volatile__ (
-            "mov eax, %0\n\t"
-            "mov cr3, eax\n\t"
-            : "=m" (pdpt)
-            :
-            : "eax"
-        );
+        __writecr3((uintptr_t)pdpt);
     } else {
         // disable PAE
-        __asm__ __volatile__ (
-            "mov eax, cr4\n\t"
-            "and eax, 0xffffffdf\n\t"
-            "mov cr4, eax\n\t"
-            :
-            :
-            : "eax"
-        );
+        __writecr4(__readcr4() & ~CR4_PAE);
 
         // set cr3
-        __asm__ __volatile__ (
-            "mov eax, %0\n\t"
-            "mov cr3, eax\n\t"
-            : "=m" (page_directory)
-            :
-            : "eax"
-        );
+        __writecr3((uintptr_t)page_directory);
     }
 
     // enable paging again
-    __asm__ __volatile__ (
-        "mov eax, cr0\n\t"
-        "or eax, 0x80000000\n\t"
-        "mov cr0, eax\n\t"
-        :
-        :
-        : "eax"
-    );
+    __writecr0(__readcr0() | CR0_PG);
 #elif defined(__x86_64__)
     // set PGE (HalpFlushTLB won't work if this isn't set)
-    __asm__ __volatile__ (
-        "mov rax, cr4\n\t"
-        "or rax, 0x80\n\t"
-        "mov cr4, rax\n\t"
-        :
-        :
-        : "rax"
-    );
+    __writecr4(__readcr4() | CR4_PGE);
 
     // enable write-protection
-    __asm__ __volatile__ (
-        "mov rax, cr0\n\t"
-        "or rax, 0x10000\n\t"
-        "mov cr0, rax\n\t"
-        :
-        :
-        : "rax"
-    );
+    __writecr0(__readcr0() | CR0_WP);
 
     // set alignment mask
-    __asm__ __volatile__ (
-        "mov rax, cr0\n\t"
-        "or rax, 0x40000\n\t"
-        "mov cr0, rax\n\t"
-        :
-        :
-        : "rax"
-    );
+    __writecr0(__readcr0() | CR0_AM);
 
     // clear MP flag
-    __asm__ __volatile__ (
-        "mov rax, cr0\n\t"
-        "and rax, 0xfffffffffffffffd\n\t"
-        "mov cr0, rax\n\t"
-        :
-        :
-        : "rax"
-    );
+    __writecr0(__readcr0() & ~CR0_MP);
 
     // set cr3
-    __asm__ __volatile__ (
-        "mov rax, %0\n\t"
-        "mov cr3, rax\n\t"
-        : "=m" (pml4)
-        :
-        : "rax"
-    );
+    __writecr3((uintptr_t)pml4);
 #endif
 
     systable = new_ST;

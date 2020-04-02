@@ -19,6 +19,14 @@
 
 #include <stdint.h>
 
+#define CR0_MP      0x00000002
+#define CR0_WP      0x00010000
+#define CR0_AM      0x00040000
+#define CR0_PG      0x80000000
+
+#define CR4_PAE     0x00000020
+#define CR4_PGE     0x00000080
+
 typedef struct {
     uint32_t Valid:1;
     uint32_t Write:1;
