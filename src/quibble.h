@@ -36,7 +36,7 @@
 }
 #else
 #define halt() { \
-    unsigned int __volatile wait = 1; \
+    volatile unsigned int wait = 1; \
     while (wait) { } \
 }
 #endif
