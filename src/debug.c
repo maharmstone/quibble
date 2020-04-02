@@ -169,7 +169,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
     return EFI_SUCCESS;
 }
 
-static __stdcall NTSTATUS get_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
+static NTSTATUS __stdcall get_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
     uint32_t address = 0x80000000 | ((bus & 0xff) << 16) | ((slot & 0x1f) << 11);
 
     if (offset % sizeof(uint32_t) == 0 && length % sizeof(uint32_t) == 0) {
@@ -210,17 +210,17 @@ static __stdcall NTSTATUS get_device_pci_data_by_offset(uint32_t bus, uint32_t s
     return STATUS_SUCCESS;
 }
 
-static __stdcall uint32_t read_register_ulong(void* addr) {
+static uint32_t __stdcall read_register_ulong(void* addr) {
     return *(uint32_t*)addr;
 }
 
-static __stdcall NTSTATUS write_register_ulong(void* addr, uint32_t value) {
+static NTSTATUS __stdcall write_register_ulong(void* addr, uint32_t value) {
     *(uint32_t*)addr = value;
 
     return STATUS_SUCCESS;
 }
 
-static __stdcall void stall_cpu(int microseconds) {
+static void __stdcall stall_cpu(int microseconds) {
     uint64_t tsc;
 
     tsc = __rdtsc();
@@ -232,13 +232,13 @@ static __stdcall void stall_cpu(int microseconds) {
     }
 }
 
-static __stdcall NTSTATUS write_port_ulong(uint16_t port, uint32_t value) {
+static NTSTATUS __stdcall write_port_ulong(uint16_t port, uint32_t value) {
     __outdword(port, value);
 
     return STATUS_SUCCESS;
 }
 
-static __stdcall void* get_physical_address(void* va) {
+static void* __stdcall get_physical_address(void* va) {
 #ifdef __x86_64__
     uintptr_t addr = (uintptr_t)va, ret;
     uint64_t off1, off2, off3, off4;
