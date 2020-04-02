@@ -18,7 +18,8 @@
 #pragma once
 
 #include <efi.h>
-#include <efilib.h>
+#include <efilink.h>
+#include <efipart.h>
 #include <stdbool.h>
 #include "win.h"
 

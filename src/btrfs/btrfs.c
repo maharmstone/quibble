@@ -16,7 +16,7 @@
  * along with Quibble.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <efi.h>
-#include <efilib.h>
+#include <efilink.h>
 #include <stdbool.h>
 #include <string.h>
 #include "../misc.h"

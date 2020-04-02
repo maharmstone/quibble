@@ -18,7 +18,6 @@
 #pragma once
 
 #include <efi.h>
-#include <efilib.h>
 #include <stddef.h>
 
 extern EFI_SYSTEM_TABLE* systable;

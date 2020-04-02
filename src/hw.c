@@ -18,8 +18,9 @@
 #include <stddef.h>
 #include <string.h>
 #include <efi.h>
-#include <efilib.h>
 #include <efigpt.h>
+#include <efilink.h>
+#include <pci22.h>
 #include "x86.h"
 #include "misc.h"
 #include "quibble.h"
