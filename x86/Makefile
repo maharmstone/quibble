@@ -6,7 +6,7 @@ BTRFS_OBJS = btrfs.o misc.o crc32c.o
 all: quibble.efi btrfs.efi
 
 quibble.efi: $(OBJS)
-	$(CC) -nostdlib -Wl,-dll -shared -Wl,--subsystem,10 -e _efi_main -o $@ $(OBJS)
+	$(CC) -nostdlib -Wl,-dll -shared -Wl,--subsystem,10 -e _efi_main -o $@ $(OBJS) -lgcc
 
 boot.o: ../src/boot.c ../src/reg.h ../src/misc.h ../src/peload.h ../src/win.h ../src/x86.h ../src/quibble.h ../src/quibbleproto.h
 	$(CC) $(CFLAGS) -c -o $@ $<
