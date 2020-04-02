@@ -19,17 +19,14 @@ set(SRC_FILES src/apiset.c
     src/tinymt32.c)
 
 add_executable(quibble ${SRC_FILES})
-target_link_libraries(quibble libgcc.a)
+target_link_libraries(quibble libucrt.a libgcc.a)
 set_target_properties(quibble PROPERTIES SUFFIX ".efi")
 
-if (NOT ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    include_directories(/usr/include/efi)
-
-    if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
-        include_directories(/usr/include/efi/x86_64)
-    elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "X86")
-        include_directories(/usr/include/efi/ia32)
-    endif()
+include_directories(gnu-efi)
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
+    include_directories(gnu-efi/x86_64)
+elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "X86")
+    include_directories(gnu-efi/ia32)
 endif()
 
 target_compile_options(quibble PRIVATE
@@ -63,7 +60,7 @@ set(SRC_FILES src/btrfs/btrfs.c
     src/misc.c)
 
 add_executable(btrfs ${SRC_FILES})
-target_link_libraries(btrfs libgcc.a)
+target_link_libraries(btrfs libucrt.a libgcc.a)
 set_target_properties(btrfs PROPERTIES SUFFIX ".efi")
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
