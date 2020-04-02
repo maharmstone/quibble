@@ -4035,15 +4035,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
 #ifdef __x86_64__
     // set syscall flag in EFER MSR
-    __asm__ __volatile__ (
-        "mov ecx, 0xc0000080\n\t"
-        "rdmsr\n\t"
-        "or eax, 1\n\t"
-        "wrmsr\n\t"
-        :
-        :
-        : "ecx", "rax", "rdx"
-    );
+    __writemsr(0xc0000080, __readmsr(0xc0000080) | 1);
 
     __asm__ __volatile__ (
         "mov rsp, %0\n\t"
