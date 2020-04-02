@@ -1127,15 +1127,17 @@ static void* initialize_idt(EFI_BOOT_SERVICES* bs) {
 
     memset(idt, 0, IDT_PAGES * EFI_PAGE_SIZE);
 
+#ifdef _MSC_VER
+    __sidt(&old);
+#else
     __asm__ __volatile__ (
         "sidt %0\n\t"
         :
         : "m" (old)
     );
+#endif
 
     memcpy(idt, (void*)(uintptr_t)old.Base, old.Limit + 1);
-
-    // FIXME - add new entries
 
     return idt;
 }
