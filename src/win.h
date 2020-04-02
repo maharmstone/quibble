@@ -220,7 +220,9 @@ typedef struct {
     char GptSignature[16];
 } ARC_DISK_SIGNATURE;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     LIST_ENTRY ListEntry;
     uint32_t Signature;
 #ifdef __x86_64__
@@ -236,11 +238,15 @@ typedef struct __attribute__((packed)) {
     void* unknown;
 } ARC_DISK_SIGNATURE_WIN7;
 
+#pragma pack(pop)
+
 typedef struct {
     LIST_ENTRY DiskSignatureListHead;
 } ARC_DISK_INFORMATION;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint16_t Status;
     uint16_t Reserved;
     uint16_t DockingState;
@@ -248,6 +254,8 @@ typedef struct __attribute__((packed)) {
     uint32_t DockID;
     uint32_t SerialNumber;
 } PROFILE_PARAMETER_BLOCK;
+
+#pragma pack(pop)
 
 typedef uint8_t GUID[16];
 
@@ -294,13 +302,15 @@ typedef struct {
     uint32_t BootServerReplyPacketLength;
 } NETWORK_LOADER_BLOCK;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     void* EmInfFileImage;
     uintptr_t EmInfFileSize;
     void* TriageDumpBlock;
 } LOADER_EXTENSION_BLOCK1A;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     HEADLESS_LOADER_BLOCK* HeadlessLoaderBlock;
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
@@ -315,7 +325,7 @@ typedef struct __attribute__((packed)) {
     uint32_t AcpiTableSize;
 } LOADER_EXTENSION_BLOCK1B;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
     uint32_t MajorVersion;
@@ -330,6 +340,8 @@ typedef struct __attribute__((packed)) {
     uint32_t padding2;
 #endif
 } LOADER_PARAMETER_EXTENSION_WS03;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WS03) == 0x58, "LOADER_PARAMETER_EXTENSION_WS03 has incorrect size.");
@@ -374,19 +386,21 @@ typedef struct {
     uint64_t EndTime;
 } LOADER_PERFORMANCE_DATA;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t BootViaWinload:1;
     uint32_t BootViaEFI:1;
     uint32_t Reserved:30;
 } LOADER_EXTENSION_BLOCK2A;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     LIST_ENTRY BootApplicationPersistentData;
     void* WmdTestResult;
     GUID BootIdentifier;
 } LOADER_EXTENSION_BLOCK2B;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
     uint32_t MajorVersion;
@@ -401,6 +415,8 @@ typedef struct __attribute__((packed)) {
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
 } LOADER_PARAMETER_EXTENSION_VISTA;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_VISTA) == 0x7c, "LOADER_PARAMETER_EXTENSION_VISTA has incorrect size.");
@@ -448,7 +464,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.WmdTestResult) 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.BootIdentifier) == 0xa8, "LOADER_PARAMETER_EXTENSION_VISTA BootIdentifier");
 #endif
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
     uint32_t MajorVersion;
@@ -465,6 +483,8 @@ typedef struct __attribute__((packed)) {
     uintptr_t ResumePages;
     void* DumpHeader;
 } LOADER_PARAMETER_EXTENSION_VISTA_SP2;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_VISTA_SP2) == 0x84, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 has incorrect size.");
@@ -524,7 +544,9 @@ typedef enum {
     TpmBootEntropySuccess
 } TPM_BOOT_ENTROPY_RESULT_CODE;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint64_t Policy;
     TPM_BOOT_ENTROPY_RESULT_CODE ResultCode;
     int32_t ResultStatus;
@@ -533,7 +555,7 @@ typedef struct __attribute__((packed)) {
     uint8_t EntropyData[40];
 } TPM_BOOT_ENTROPY_LDR_RESULT;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     void* BgContext;
     void* NumaLocalityInfo;
     void* NumaGroupAssignment;
@@ -541,6 +563,8 @@ typedef struct __attribute__((packed)) {
     uintptr_t MemoryCachingRequirementsCount;
     void* MemoryCachingRequirements;
 } LOADER_EXTENSION_BLOCK3;
+
+#pragma pack(pop)
 
 typedef struct {
     uint32_t Size;
@@ -706,7 +730,9 @@ typedef struct {
     UNICODE_STRING EfiVersion;
 } LOADER_EXTENSION_BLOCK5B;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
 #ifdef __x86_64__
@@ -734,6 +760,8 @@ typedef struct __attribute__((packed)) {
 #endif
     LOADER_EXTENSION_BLOCK5B Block5b;
 } LOADER_PARAMETER_EXTENSION_WIN8;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN8) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN8 has incorrect size.");
@@ -913,11 +941,15 @@ typedef struct {
     uintptr_t BugcheckParameter4;
 } LOADER_BUGCHECK_PARAMETERS;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t Version;
     uint32_t AbnormalResetOccurred;
     uint32_t OfflineMemoryDumpCapable;
 } OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN81;
+
+#pragma pack(pop)
 
 typedef struct {
     LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
@@ -926,7 +958,9 @@ typedef struct {
     LIST_ENTRY ApiSetSchemaExtensions;
 } LOADER_EXTENSION_BLOCK5A;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
 #ifdef __x86_64__
@@ -954,6 +988,8 @@ typedef struct __attribute__((packed)) {
     uint32_t padding3;
     uint32_t padding4[4];
 } LOADER_PARAMETER_EXTENSION_WIN81;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN81) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN81 has incorrect size."); // FIXME - definitely 16 bytes on the end for x86 6.3.9600.18438?
@@ -1053,7 +1089,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, OfflineCrashdumpConfigu
 
 typedef struct _LOADER_PARAMETER_CI_EXTENSION LOADER_PARAMETER_CI_EXTENSION;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t Version;
     uint32_t AbnormalResetOccurred;
     uint32_t OfflineMemoryDumpCapable;
@@ -1062,11 +1100,11 @@ typedef struct __attribute__((packed)) {
     uint32_t ResetDataSize;
 } OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t unknown[5];
 } LOADER_HIVE_RECOVERY_INFO;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
@@ -1083,7 +1121,7 @@ typedef struct __attribute__((packed)) {
     void* BootOptions;
 } LOADER_EXTENSION_BLOCK6;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
 #ifdef __x86_64__
@@ -1115,6 +1153,8 @@ typedef struct __attribute__((packed)) {
     uint32_t CodeIntegrityDataSize;
     LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
 } LOADER_PARAMETER_EXTENSION_WIN10;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN10 has incorrect size.");
@@ -1230,7 +1270,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, CodeIntegrityDataSize) 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SystemHiveRecoveryInfo) == 0x9dc, "LOADER_PARAMETER_EXTENSION_WIN10 SystemHiveRecoveryInfo");
 #endif
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
 #ifdef __x86_64__
@@ -1274,6 +1316,8 @@ typedef struct __attribute__((packed)) {
     uint32_t MajorRelease;
     uint32_t Reserved1;
 } LOADER_PARAMETER_EXTENSION_WIN10_1607;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1607) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10_1607 has incorrect size.");
@@ -1414,7 +1458,9 @@ typedef struct {
     uint8_t KdEntropy[32];
 } BOOT_ENTROPY_LDR_RESULT_WIN1703;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint8_t Supplied;
     uint8_t padding[7];
     uint8_t Pch;
@@ -1423,7 +1469,7 @@ typedef struct __attribute__((packed)) {
     uint32_t AdditionalInfo[8];
 } LOADER_RESET_REASON;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
 #ifdef __x86_64__
@@ -1472,6 +1518,8 @@ typedef struct __attribute__((packed)) {
     uint32_t MaxPciBusNumber;
     uint32_t padding4;
 } LOADER_PARAMETER_EXTENSION_WIN10_1703;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1703) == 0xb68, "LOADER_PARAMETER_EXTENSION_WIN10_1703 has incorrect size.");
@@ -1650,7 +1698,9 @@ typedef struct {
     uint64_t Data[1];
 } LEAP_SECOND_DATA;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
 #ifdef __x86_64__
@@ -1700,6 +1750,8 @@ typedef struct __attribute__((packed)) {
     uint32_t MaxPciBusNumber;
     uint32_t FeatureSettings;
 } LOADER_PARAMETER_EXTENSION_WIN10_1809;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1809) == 0xc88, "LOADER_PARAMETER_EXTENSION_WIN10_1809 has incorrect size.");
@@ -1865,7 +1917,7 @@ typedef struct {
     uint64_t LaunchVsmMark[8];
 } VSM_PERFORMANCE_DATA;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
 #ifdef __x86_64__
@@ -2345,7 +2397,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block2.u.I386) == 0xc0, "LOA
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, FirmwareInformation) == 0xd0, "LOADER_PARAMETER_BLOCK_WIN7 FirmwareInformation");
 #endif
 
-typedef struct __attribute__ ((aligned(4))) {
+#pragma pack(push,4)
+
+typedef struct {
     uint32_t OsMajorVersion;
     uint32_t OsMinorVersion;
     uint32_t Size;
@@ -2361,6 +2415,8 @@ typedef struct __attribute__ ((aligned(4))) {
     LOADER_BLOCK2 Block2;
     FIRMWARE_INFORMATION_LOADER_BLOCK_WIN8 FirmwareInformation;
 } LOADER_PARAMETER_BLOCK_WIN8;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_WIN8) == 0xa0, "LOADER_PARAMETER_BLOCK_WIN8 has incorrect size.");
@@ -2442,7 +2498,9 @@ typedef struct {
     };
 } FIRMWARE_INFORMATION_LOADER_BLOCK_WIN81;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t OsMajorVersion;
     uint32_t OsMinorVersion;
     uint32_t Size;
@@ -2458,6 +2516,8 @@ typedef struct __attribute__((packed)) {
     LOADER_BLOCK2 Block2;
     FIRMWARE_INFORMATION_LOADER_BLOCK_WIN81 FirmwareInformation;
 } LOADER_PARAMETER_BLOCK_WIN81;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_WIN81) == 0xac, "LOADER_PARAMETER_BLOCK_WIN81 has incorrect size.");
@@ -2519,7 +2579,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block2.u.I386) == 0xd8, "LO
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, FirmwareInformation) == 0xe8, "LOADER_PARAMETER_BLOCK_WIN81 FirmwareInformation");
 #endif
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t OsMajorVersion;
     uint32_t OsMinorVersion;
     uint32_t Size;
@@ -2540,6 +2602,8 @@ typedef struct __attribute__((packed)) {
     char* ArcOSDataDeviceName;
     char* ArcWindowsSysPartName;
 } LOADER_PARAMETER_BLOCK_WIN10;
+
+#pragma pack(pop)
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_WIN10) == 0xc8, "LOADER_PARAMETER_BLOCK_WIN10 has incorrect size.");
@@ -2658,48 +2722,52 @@ typedef enum {
     CmResourceShareShared
 } CM_SHARE_DISPOSITION;
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint8_t Type;
     uint8_t ShareDisposition;
     uint16_t Flags;
     union {
-        struct __attribute__((packed)) {
+        struct {
             uint64_t Start;
             uint32_t Length;
         } Generic;
-        struct __attribute__((packed)) {
+        struct {
             uint64_t Start;
             uint32_t Length;
         } Port;
-        struct __attribute__((packed)) {
+        struct {
             uint32_t Level;
             uint32_t Vector;
             uintptr_t Affinity;
         } Interrupt;
-        struct __attribute__((packed)) {
+        struct {
             uint64_t Start;
             uint32_t Length;
         } Memory;
-        struct __attribute__((packed)) {
+        struct {
             uint32_t Channel;
             uint32_t Port;
             uint32_t Reserved1;
         } Dma;
-        struct __attribute__((packed)) {
+        struct {
             uint32_t Data[3];
         } DevicePrivate;
-        struct __attribute__((packed)) {
+        struct {
             uint32_t Start;
             uint32_t Length;
             uint32_t Reserved;
         } BusNumber;
-        struct __attribute__((packed)) {
+        struct {
             uint32_t DataSize;
             uint32_t Reserved1;
             uint32_t Reserved2;
         } DeviceSpecificData;
     } u;
 } CM_PARTIAL_RESOURCE_DESCRIPTOR;
+
+#pragma pack(pop)
 
 typedef struct {
     uint16_t Version;
@@ -2847,14 +2915,16 @@ typedef struct {
 #define SERVICE_DEMAND_START    0x00000003
 #define SERVICE_DISABLED        0x00000004
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint8_t MajorRevision;
     uint8_t MinorRevision;
     uint8_t NoBuses;
     uint8_t HardwareMechanism;
 } PCI_REGISTRY_INFO;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t DriveSelect;
     uint32_t MaxCylinders;
     uint16_t SectorsPerTrack;
@@ -2862,12 +2932,14 @@ typedef struct __attribute__((packed)) {
     uint16_t NumberDrives;
 } CM_INT13_DRIVE_PARAMETER;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t BytesPerSector;
     uint32_t NumberOfCylinders;
     uint32_t SectorsPerTrack;
     uint32_t NumberOfHeads;
 } CM_DISK_GEOMETRY_DEVICE_DATA;
+
+#pragma pack(pop)
 
 typedef struct {
     uint32_t NameOffset;

@@ -44,7 +44,9 @@
 
 #define VS_FFI_SIGNATURE    0xfeef04bd
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint16_t e_magic;
     uint16_t e_cblp;
     uint16_t e_cp;
@@ -66,7 +68,7 @@ typedef struct __attribute__((packed)) {
     uint32_t e_lfanew;
 } IMAGE_DOS_HEADER;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Machine;
     uint16_t NumberOfSections;
     uint32_t TimeDateStamp;
@@ -76,12 +78,12 @@ typedef struct __attribute__((packed)) {
     uint16_t Characteristics;
 } IMAGE_FILE_HEADER;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t VirtualAddress;
     uint32_t Size;
 } IMAGE_DATA_DIRECTORY;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Magic;
     uint8_t MajorLinkerVersion;
     uint8_t MinorLinkerVersion;
@@ -115,7 +117,7 @@ typedef struct __attribute__((packed)) {
     IMAGE_DATA_DIRECTORY DataDirectory[0];
 } IMAGE_OPTIONAL_HEADER32;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Magic;
     uint8_t MajorLinkerVersion;
     uint8_t MinorLinkerVersion;
@@ -148,7 +150,7 @@ typedef struct __attribute__((packed)) {
     IMAGE_DATA_DIRECTORY DataDirectory[0];
 } IMAGE_OPTIONAL_HEADER64;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Signature;
     IMAGE_FILE_HEADER FileHeader;
     union {
@@ -157,7 +159,7 @@ typedef struct __attribute__((packed)) {
     };
 } IMAGE_NT_HEADERS;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Characteristics;
     uint32_t TimeDateStamp;
     uint32_t ForwarderChain;
@@ -165,7 +167,7 @@ typedef struct __attribute__((packed)) {
     uint32_t FirstThunk;
 } IMAGE_IMPORT_DESCRIPTOR;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Characteristics;
     uint32_t TimeDateStamp;
     uint16_t MajorVersion;
@@ -179,12 +181,12 @@ typedef struct __attribute__((packed)) {
     uint32_t AddressOfNameOrdinals;
 } IMAGE_EXPORT_DIRECTORY;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t VirtualAddress;
     uint32_t SizeOfBlock;
 } IMAGE_BASE_RELOCATION;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Characteristics;
     uint32_t TimeDateStamp;
     uint16_t MajorVersion;
@@ -193,9 +195,9 @@ typedef struct __attribute__((packed)) {
     uint16_t NumberOfIdEntries;
 } IMAGE_RESOURCE_DIRECTORY;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     union {
-        struct __attribute__((packed)) {
+        struct {
             uint32_t NameOffset:31;
             uint32_t NameIsString:1;
         };
@@ -204,21 +206,21 @@ typedef struct __attribute__((packed)) {
     };
     union {
         uint32_t OffsetToData;
-        struct __attribute__((packed)) {
+        struct {
             uint32_t OffsetToDirectory:31;
             uint32_t DataIsDirectory:1;
         };
     };
 } IMAGE_RESOURCE_DIRECTORY_ENTRY;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t OffsetToData;
     uint32_t Size;
     uint32_t CodePage;
     uint32_t Reserved;
 } IMAGE_RESOURCE_DATA_ENTRY;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t dwSignature;
     uint32_t dwStrucVersion;
     uint32_t dwFileVersionMS;
@@ -234,7 +236,7 @@ typedef struct __attribute__((packed)) {
     uint32_t dwFileDateLS;
 } VS_FIXEDFILEINFO;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t wLength;
     uint16_t wValueLength;
     uint16_t wType;
@@ -243,7 +245,7 @@ typedef struct __attribute__((packed)) {
     VS_FIXEDFILEINFO Value;
 } VS_VERSION_INFO;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Size;
     uint32_t TimeDateStamp;
     uint16_t MajorVersion;
@@ -266,14 +268,14 @@ typedef struct __attribute__((packed)) {
     uint32_t SEHandlerCount;
 } IMAGE_LOAD_CONFIG_DIRECTORY32;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Flags;
     uint16_t Catalog;
     uint32_t CatalogOffset;
     uint32_t Reserved;
 } IMAGE_LOAD_CONFIG_CODE_INTEGRITY;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Size;
     uint32_t TimeDateStamp;
     uint16_t MajorVersion;
@@ -317,3 +319,5 @@ typedef struct __attribute__((packed)) {
     uint64_t EnclaveConfigurationPointer;
     uint64_t VolatileMetadataPointer;
 } IMAGE_LOAD_CONFIG_DIRECTORY64;
+
+#pragma pack(pop)

@@ -124,7 +124,9 @@ typedef EFI_STATUS (EFIAPI* EFI_PE_IMAGE_RELOCATE) (
     IN EFI_VIRTUAL_ADDRESS Address
 );
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     char Name[8];
     uint32_t VirtualSize;
     uint32_t VirtualAddress;
@@ -136,6 +138,8 @@ typedef struct __attribute__((packed)) {
     uint16_t NumberOfLinenumbers;
     uint32_t Characteristics;
 } IMAGE_SECTION_HEADER;
+
+#pragma pack(pop)
 
 #define IMAGE_SCN_MEM_DISCARDABLE   0x02000000
 #define IMAGE_SCN_MEM_NOT_CACHED    0x04000000

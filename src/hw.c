@@ -31,7 +31,9 @@
 #include "misc.h"
 #include "quibble.h"
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint8_t space_descriptor;
     uint16_t length;
     uint8_t resource_type;
@@ -43,6 +45,8 @@ typedef struct __attribute__((packed)) {
     uint64_t translation_offset;
     uint64_t address_length;
 } pci_bar_info;
+
+#pragma pack(pop)
 
 LIST_ENTRY block_devices;
 

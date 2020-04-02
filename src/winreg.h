@@ -49,7 +49,9 @@
 
 #define HIVE_FILENAME_MAXLEN 31
 
-typedef struct __attribute__((packed)) {
+#pragma pack(push,1)
+
+typedef struct {
     uint32_t Signature;
     uint32_t Sequence1;
     uint32_t Sequence2;
@@ -69,7 +71,7 @@ typedef struct __attribute__((packed)) {
     uint32_t BootRecover;
 } HBASE_BLOCK;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Signature;
     uint16_t Flags;
     uint64_t LastWriteTime;
@@ -93,18 +95,18 @@ typedef struct __attribute__((packed)) {
     WCHAR Name[1];
 } CM_KEY_NODE;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Cell;
     uint32_t HashKey;
 } CM_INDEX;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Signature;
     uint16_t Count;
     CM_INDEX List[1];
 } CM_KEY_FAST_INDEX;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Signature;
     uint16_t NameLength;
     uint32_t DataLength;
@@ -115,8 +117,10 @@ typedef struct __attribute__((packed)) {
     WCHAR Name[1];
 } CM_KEY_VALUE;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Signature;
     uint16_t Count;
     uint32_t List[1];
 } CM_KEY_INDEX;
+
+#pragma pack(pop)

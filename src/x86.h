@@ -120,8 +120,10 @@ typedef struct {
     uint8_t IoMap[IOPM_FULL_SIZE];
 } KIIO_ACCESS_MAP;
 
+#pragma pack(push,1)
+
 #ifdef __x86_64__
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint32_t Reserved0;
     uint64_t Rsp0;
     uint64_t Rsp1;
@@ -172,18 +174,18 @@ typedef struct {
 #endif
 
 #ifdef __x86_64__
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Limit;
     uint64_t Base;
 } GDTIDT;
 #else
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t Limit;
     uint32_t Base;
 } GDTIDT;
 #endif
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     char signature[8];
     uint8_t checksum;
     char oem_id [6];
@@ -195,7 +197,9 @@ typedef struct __attribute__((packed)) {
     char reserved[3];
 } RSDP_DESCRIPTOR;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t address;
     uint16_t segment;
 } ivt_entry;
+
+#pragma pack(pop)
