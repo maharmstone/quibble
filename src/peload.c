@@ -127,7 +127,7 @@ static EFI_STATUS EFIAPI get_entry_point(EFI_PE_IMAGE* This, void** EntryPoint) 
         return EFI_INVALID_PARAMETER;
 
     dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
 
     if (nt_header->OptionalHeader32.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
         *EntryPoint = (uint8_t*)img->va + nt_header->OptionalHeader64.AddressOfEntryPoint;
@@ -148,7 +148,7 @@ static EFI_STATUS EFIAPI list_imports(EFI_PE_IMAGE* This, EFI_IMPORT_LIST* Impor
         return EFI_INVALID_PARAMETER;
 
     dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
 
     if (nt_header->OptionalHeader32.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
         if (nt_header->OptionalHeader64.NumberOfRvaAndSizes <= IMAGE_DIRECTORY_ENTRY_IMPORT ||
@@ -189,7 +189,7 @@ static EFI_STATUS EFIAPI list_imports(EFI_PE_IMAGE* This, EFI_IMPORT_LIST* Impor
             break;
 
         for (unsigned int j = 0; j < i; j++) {
-            if (!stricmp((char*)(img->public.Data + iid[i].Name), (char*)(img->public.Data + iid[j].Name))) {
+            if (!stricmp((char*)((uint8_t*)img->public.Data + iid[i].Name), (char*)((uint8_t*)img->public.Data + iid[j].Name))) {
                 dupe = true;
                 break;
             }
@@ -200,7 +200,7 @@ static EFI_STATUS EFIAPI list_imports(EFI_PE_IMAGE* This, EFI_IMPORT_LIST* Impor
 
         needed_size += sizeof(UINT32);
 
-        name = (char*)(img->public.Data + iid[i].Name);
+        name = (char*)((uint8_t*)img->public.Data + iid[i].Name);
 
         needed_size += strlen(name) + 1;
 
@@ -235,7 +235,7 @@ static EFI_STATUS EFIAPI list_imports(EFI_PE_IMAGE* This, EFI_IMPORT_LIST* Impor
             break;
 
         for (unsigned int j = 0; j < i; j++) {
-            if (!stricmp((char*)(img->public.Data + iid[i].Name), (char*)(img->public.Data + iid[j].Name))) {
+            if (!stricmp((char*)((uint8_t*)img->public.Data + iid[i].Name), (char*)((uint8_t*)img->public.Data + iid[j].Name))) {
                 dupe = true;
                 break;
             }
@@ -244,7 +244,7 @@ static EFI_STATUS EFIAPI list_imports(EFI_PE_IMAGE* This, EFI_IMPORT_LIST* Impor
         if (dupe)
             continue;
 
-        name = (char*)(img->public.Data + iid[i].Name);
+        name = (char*)((uint8_t*)img->public.Data + iid[i].Name);
         namelen = strlen(name);
 
         ImportList->Imports[pos] = next_text;
@@ -276,7 +276,7 @@ static UINT32 EFIAPI get_checksum(EFI_PE_IMAGE* This) {
     IMAGE_NT_HEADERS* nt_header;
 
     dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
 
     if (nt_header->OptionalHeader32.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
         return nt_header->OptionalHeader64.CheckSum;
@@ -290,7 +290,7 @@ static UINT16 EFIAPI get_dll_characteristics(EFI_PE_IMAGE* This) {
     IMAGE_NT_HEADERS* nt_header;
 
     dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
 
     if (nt_header->OptionalHeader32.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
         return nt_header->OptionalHeader64.DllCharacteristics;
@@ -303,17 +303,17 @@ static EFI_STATUS resolve_imports2_64(pe_image* img, pe_image* img2, IMAGE_EXPOR
                                    EFI_PE_IMAGE_RESOLVE_FORWARD ResolveForward) {
     EFI_STATUS Status;
     IMAGE_DOS_HEADER* dos_header2 = (IMAGE_DOS_HEADER*)img2->public.Data;
-    IMAGE_NT_HEADERS* nt_header2 = (IMAGE_NT_HEADERS*)(img2->public.Data + dos_header2->e_lfanew);
-    uint16_t* ordinal_table = (uint16_t*)(img2->public.Data + export_dir->AddressOfNameOrdinals);
-    uint32_t* name_table = (uint32_t*)(img2->public.Data + export_dir->AddressOfNames);
-    uint32_t* function_table = (uint32_t*)(img2->public.Data + export_dir->AddressOfFunctions);
+    IMAGE_NT_HEADERS* nt_header2 = (IMAGE_NT_HEADERS*)((uint8_t*)img2->public.Data + dos_header2->e_lfanew);
+    uint16_t* ordinal_table = (uint16_t*)((uint8_t*)img2->public.Data + export_dir->AddressOfNameOrdinals);
+    uint32_t* name_table = (uint32_t*)((uint8_t*)img2->public.Data + export_dir->AddressOfNames);
+    uint32_t* function_table = (uint32_t*)((uint8_t*)img2->public.Data + export_dir->AddressOfFunctions);
 
     // FIXME - use hints?
 
     // loop through import names
 
     while (*orig_thunk_table) {
-        char* name = (char*)(img->public.Data + *orig_thunk_table + sizeof(uint16_t));
+        char* name = (char*)((uint8_t*)img->public.Data + *orig_thunk_table + sizeof(uint16_t));
         uint32_t index;
         uint16_t ordinal;
         void* func;
@@ -323,7 +323,7 @@ static EFI_STATUS resolve_imports2_64(pe_image* img, pe_image* img2, IMAGE_EXPOR
             ordinal = (*orig_thunk_table & ~0x8000000000000000) - 1; // FIXME - make sure not out of bounds
         else {
             for (unsigned int i = 0; i < export_dir->NumberOfNames; i++) {
-                char* export_name = (char*)(img2->public.Data + name_table[i]);
+                char* export_name = (char*)((uint8_t*)img2->public.Data + name_table[i]);
 
                 if (!strcmp(export_name, name)) {
                     index = i;
@@ -351,13 +351,13 @@ static EFI_STATUS resolve_imports2_64(pe_image* img, pe_image* img2, IMAGE_EXPOR
             function_table[ordinal] >= nt_header2->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress &&
             function_table[ordinal] < nt_header2->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress +
             nt_header2->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size)) { // forwarded
-            char* redir_name = (char*)(img2->public.Data + function_table[ordinal]);
+            char* redir_name = (char*)((uint8_t*)img2->public.Data + function_table[ordinal]);
 
             Status = ResolveForward(redir_name, thunk_table);
             if (EFI_ERROR(Status))
                 return Status;
         } else {
-            func = img2->va + function_table[ordinal];
+            func = (uint8_t*)img2->va + function_table[ordinal];
 
             *thunk_table = (uintptr_t)func;
         }
@@ -374,17 +374,17 @@ static EFI_STATUS resolve_imports2_32(pe_image* img, pe_image* img2, IMAGE_EXPOR
                                       EFI_PE_IMAGE_RESOLVE_FORWARD ResolveForward) {
     EFI_STATUS Status;
     IMAGE_DOS_HEADER* dos_header2 = (IMAGE_DOS_HEADER*)img2->public.Data;
-    IMAGE_NT_HEADERS* nt_header2 = (IMAGE_NT_HEADERS*)(img2->public.Data + dos_header2->e_lfanew);
-    uint16_t* ordinal_table = (uint16_t*)(img2->public.Data + export_dir->AddressOfNameOrdinals);
-    uint32_t* name_table = (uint32_t*)(img2->public.Data + export_dir->AddressOfNames);
-    uint32_t* function_table = (uint32_t*)(img2->public.Data + export_dir->AddressOfFunctions);
+    IMAGE_NT_HEADERS* nt_header2 = (IMAGE_NT_HEADERS*)((uint8_t*)img2->public.Data + dos_header2->e_lfanew);
+    uint16_t* ordinal_table = (uint16_t*)((uint8_t*)img2->public.Data + export_dir->AddressOfNameOrdinals);
+    uint32_t* name_table = (uint32_t*)((uint8_t*)img2->public.Data + export_dir->AddressOfNames);
+    uint32_t* function_table = (uint32_t*)((uint8_t*)img2->public.Data + export_dir->AddressOfFunctions);
 
     // FIXME - use hints?
 
     // loop through import names
 
     while (*orig_thunk_table) {
-        char* name = (char*)(img->public.Data + *orig_thunk_table + sizeof(uint16_t));
+        char* name = (char*)((uint8_t*)img->public.Data + *orig_thunk_table + sizeof(uint16_t));
         uint32_t index;
         uint16_t ordinal;
         void* func;
@@ -394,7 +394,7 @@ static EFI_STATUS resolve_imports2_32(pe_image* img, pe_image* img2, IMAGE_EXPOR
             ordinal = (*orig_thunk_table & ~0x80000000) - 1; // FIXME - make sure not out of bounds
         else {
             for (unsigned int i = 0; i < export_dir->NumberOfNames; i++) {
-                char* export_name = (char*)(img2->public.Data + name_table[i]);
+                char* export_name = (char*)((uint8_t*)img2->public.Data + name_table[i]);
 
                 if (!strcmp(export_name, name)) {
                     index = i;
@@ -422,7 +422,7 @@ static EFI_STATUS resolve_imports2_32(pe_image* img, pe_image* img2, IMAGE_EXPOR
             function_table[ordinal] >= nt_header2->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress &&
             function_table[ordinal] < nt_header2->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress +
             nt_header2->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size)) { // forwarded
-            char* redir_name = (char*)(img2->public.Data + function_table[ordinal]);
+            char* redir_name = (char*)((uint8_t*)img2->public.Data + function_table[ordinal]);
             uint64_t addr;
 
             Status = ResolveForward(redir_name, &addr);
@@ -431,7 +431,7 @@ static EFI_STATUS resolve_imports2_32(pe_image* img, pe_image* img2, IMAGE_EXPOR
 
             *thunk_table = addr;
         } else {
-            func = img2->va + function_table[ordinal];
+            func = (uint8_t*)img2->va + function_table[ordinal];
 
             *thunk_table = (uintptr_t)func;
         }
@@ -449,9 +449,9 @@ static EFI_STATUS EFIAPI resolve_imports(EFI_PE_IMAGE* This, char* LibraryName, 
     pe_image* img = _CR(This, pe_image, public);
     pe_image* img2 = _CR(Library, pe_image, public);
     IMAGE_DOS_HEADER* dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    IMAGE_NT_HEADERS* nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    IMAGE_NT_HEADERS* nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
     IMAGE_DOS_HEADER* dos_header2 = (IMAGE_DOS_HEADER*)img2->public.Data;
-    IMAGE_NT_HEADERS* nt_header2 = (IMAGE_NT_HEADERS*)(img2->public.Data + dos_header2->e_lfanew);
+    IMAGE_NT_HEADERS* nt_header2 = (IMAGE_NT_HEADERS*)((uint8_t*)img2->public.Data + dos_header2->e_lfanew);
     IMAGE_EXPORT_DIRECTORY* export_dir;
     IMAGE_IMPORT_DESCRIPTOR* iid;
     bool found = false;
@@ -491,7 +491,7 @@ static EFI_STATUS EFIAPI resolve_imports(EFI_PE_IMAGE* This, char* LibraryName, 
             return EFI_INVALID_PARAMETER;
         }
 
-        export_dir = (IMAGE_EXPORT_DIRECTORY*)(img2->public.Data + nt_header2->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+        export_dir = (IMAGE_EXPORT_DIRECTORY*)((uint8_t*)img2->public.Data + nt_header2->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
     } else {
         if (nt_header2->OptionalHeader32.NumberOfRvaAndSizes <= IMAGE_DIRECTORY_ENTRY_EXPORT ||
             nt_header2->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress == 0 ||
@@ -500,25 +500,25 @@ static EFI_STATUS EFIAPI resolve_imports(EFI_PE_IMAGE* This, char* LibraryName, 
             return EFI_INVALID_PARAMETER;
         }
 
-        export_dir = (IMAGE_EXPORT_DIRECTORY*)(img2->public.Data + nt_header2->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+        export_dir = (IMAGE_EXPORT_DIRECTORY*)((uint8_t*)img2->public.Data + nt_header2->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
     }
 
     // find import for library name
 
     for (unsigned int i = 0; i < num_entries; i++) {
-        const char* name = (const char*)(img->public.Data + iid[i].Name);
+        const char* name = (const char*)((uint8_t*)img->public.Data + iid[i].Name);
 
         if (!stricmp(name, LibraryName)) {
             if (nt_header->OptionalHeader32.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
-                uint64_t* orig_thunk_table = (uint64_t*)(img->public.Data + iid[i].Characteristics);
-                uint64_t* thunk_table = (uint64_t*)(img->public.Data + iid[i].FirstThunk);
+                uint64_t* orig_thunk_table = (uint64_t*)((uint8_t*)img->public.Data + iid[i].Characteristics);
+                uint64_t* thunk_table = (uint64_t*)((uint8_t*)img->public.Data + iid[i].FirstThunk);
 
                 Status = resolve_imports2_64(img, img2, export_dir, orig_thunk_table, thunk_table, ResolveForward);
                 if (EFI_ERROR(Status))
                     return Status;
             } else {
-                uint32_t* orig_thunk_table = (uint32_t*)(img->public.Data + iid[i].Characteristics);
-                uint32_t* thunk_table = (uint32_t*)(img->public.Data + iid[i].FirstThunk);
+                uint32_t* orig_thunk_table = (uint32_t*)((uint8_t*)img->public.Data + iid[i].Characteristics);
+                uint32_t* thunk_table = (uint32_t*)((uint8_t*)img->public.Data + iid[i].FirstThunk);
 
                 Status = resolve_imports2_32(img, img2, export_dir, orig_thunk_table, thunk_table, ResolveForward);
                 if (EFI_ERROR(Status))
@@ -552,7 +552,7 @@ static void do_relocations(pe_image* img, IMAGE_NT_HEADERS* nt_header) {
 
         size = nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size;
 
-        reloc = (IMAGE_BASE_RELOCATION*)(img->public.Data + nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
+        reloc = (IMAGE_BASE_RELOCATION*)((uint8_t*)img->public.Data + nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
 
         base = nt_header->OptionalHeader64.ImageBase;
     } else {
@@ -564,7 +564,7 @@ static void do_relocations(pe_image* img, IMAGE_NT_HEADERS* nt_header) {
 
         size = nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size;
 
-        reloc = (IMAGE_BASE_RELOCATION*)(img->public.Data + nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
+        reloc = (IMAGE_BASE_RELOCATION*)((uint8_t*)img->public.Data + nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
 
         base = nt_header->OptionalHeader32.ImageBase;
     }
@@ -576,7 +576,7 @@ static void do_relocations(pe_image* img, IMAGE_NT_HEADERS* nt_header) {
             return;
 
         // FIXME - check not out of bounds
-        ptr = (uint32_t*)(img->public.Data + reloc->VirtualAddress);
+        ptr = (uint32_t*)((uint8_t*)img->public.Data + reloc->VirtualAddress);
 
         addr = (uint16_t*)((uint8_t*)reloc + sizeof(IMAGE_BASE_RELOCATION));
         count = (reloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(uint16_t);
@@ -638,7 +638,7 @@ static void randomize_security_cookie(pe_image* img, IMAGE_NT_HEADERS* nt_header
 
         size = nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG].Size;
 
-        config = (IMAGE_LOAD_CONFIG_DIRECTORY64*)(img->public.Data + nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG].VirtualAddress);
+        config = (IMAGE_LOAD_CONFIG_DIRECTORY64*)((uint8_t*)img->public.Data + nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG].VirtualAddress);
 
         if (config->Size < size)
             size = config->Size;
@@ -668,7 +668,7 @@ static void randomize_security_cookie(pe_image* img, IMAGE_NT_HEADERS* nt_header
 
         size = nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG].Size;
 
-        config = (IMAGE_LOAD_CONFIG_DIRECTORY32*)(img->public.Data + nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG].VirtualAddress);
+        config = (IMAGE_LOAD_CONFIG_DIRECTORY32*)((uint8_t*)img->public.Data + nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG].VirtualAddress);
 
         if (config->Size < size)
             size = config->Size;
@@ -813,7 +813,7 @@ static EFI_STATUS EFIAPI get_version(EFI_PE_IMAGE* This, UINT32* VersionMS, UINT
     EFI_STATUS Status;
     pe_image* img = _CR(This, pe_image, public);
     IMAGE_DOS_HEADER* dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    IMAGE_NT_HEADERS* nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    IMAGE_NT_HEADERS* nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
     IMAGE_RESOURCE_DIRECTORY* resdir;
     IMAGE_RESOURCE_DIRECTORY_ENTRY* ents;
     unsigned int dirsize;
@@ -826,7 +826,7 @@ static EFI_STATUS EFIAPI get_version(EFI_PE_IMAGE* This, UINT32* VersionMS, UINT
             return EFI_NOT_FOUND;
         }
 
-        resdir = (IMAGE_RESOURCE_DIRECTORY*)(img->public.Data + nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress);
+        resdir = (IMAGE_RESOURCE_DIRECTORY*)((uint8_t*)img->public.Data + nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress);
 
         if (nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].Size <
             sizeof(IMAGE_RESOURCE_DIRECTORY) + ((resdir->NumberOfNamedEntries + resdir->NumberOfIdEntries) * sizeof(IMAGE_RESOURCE_DIRECTORY_ENTRY))) {
@@ -843,7 +843,7 @@ static EFI_STATUS EFIAPI get_version(EFI_PE_IMAGE* This, UINT32* VersionMS, UINT
             return EFI_NOT_FOUND;
         }
 
-        resdir = (IMAGE_RESOURCE_DIRECTORY*)(img->public.Data + nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress);
+        resdir = (IMAGE_RESOURCE_DIRECTORY*)((uint8_t*)img->public.Data + nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress);
 
         if (nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].Size <
             sizeof(IMAGE_RESOURCE_DIRECTORY) + ((resdir->NumberOfNamedEntries + resdir->NumberOfIdEntries) * sizeof(IMAGE_RESOURCE_DIRECTORY_ENTRY))) {
@@ -890,7 +890,7 @@ static EFI_STATUS EFIAPI find_export(EFI_PE_IMAGE* This, char* Function, UINT64*
                                      EFI_PE_IMAGE_RESOLVE_FORWARD ResolveForward) {
     pe_image* img = _CR(This, pe_image, public);
     IMAGE_DOS_HEADER* dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    IMAGE_NT_HEADERS* nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    IMAGE_NT_HEADERS* nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
     IMAGE_EXPORT_DIRECTORY* export_dir;
     uint16_t* ordinal_table;
     uint32_t* name_table;
@@ -906,7 +906,7 @@ static EFI_STATUS EFIAPI find_export(EFI_PE_IMAGE* This, char* Function, UINT64*
             return EFI_INVALID_PARAMETER;
         }
 
-        export_dir = (IMAGE_EXPORT_DIRECTORY*)(img->public.Data + nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+        export_dir = (IMAGE_EXPORT_DIRECTORY*)((uint8_t*)img->public.Data + nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
     } else {
         if (nt_header->OptionalHeader32.NumberOfRvaAndSizes <= IMAGE_DIRECTORY_ENTRY_EXPORT ||
             nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress == 0 ||
@@ -915,15 +915,15 @@ static EFI_STATUS EFIAPI find_export(EFI_PE_IMAGE* This, char* Function, UINT64*
             return EFI_INVALID_PARAMETER;
         }
 
-        export_dir = (IMAGE_EXPORT_DIRECTORY*)(img->public.Data + nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+        export_dir = (IMAGE_EXPORT_DIRECTORY*)((uint8_t*)img->public.Data + nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
     }
 
-    ordinal_table = (uint16_t*)(img->public.Data + export_dir->AddressOfNameOrdinals);
-    name_table = (uint32_t*)(img->public.Data + export_dir->AddressOfNames);
-    function_table = (uint32_t*)(img->public.Data + export_dir->AddressOfFunctions);
+    ordinal_table = (uint16_t*)((uint8_t*)img->public.Data + export_dir->AddressOfNameOrdinals);
+    name_table = (uint32_t*)((uint8_t*)img->public.Data + export_dir->AddressOfNames);
+    function_table = (uint32_t*)((uint8_t*)img->public.Data + export_dir->AddressOfFunctions);
 
     for (unsigned int i = 0; i < export_dir->NumberOfNames; i++) {
-        char* export_name = (char*)(img->public.Data + name_table[i]);
+        char* export_name = (char*)((uint8_t*)img->public.Data + name_table[i]);
 
         if (!strcmp(export_name, Function)) {
             index = i;
@@ -946,7 +946,7 @@ static EFI_STATUS EFIAPI find_export(EFI_PE_IMAGE* This, char* Function, UINT64*
         if (function_table[ordinal] >= nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress &&
             function_table[ordinal] < nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress +
             nt_header->OptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size) { // forwarded
-                char* redir_name = (char*)(img->public.Data + function_table[ordinal]);
+                char* redir_name = (char*)((uint8_t*)img->public.Data + function_table[ordinal]);
 
             return ResolveForward(redir_name, Address);
         }
@@ -954,7 +954,7 @@ static EFI_STATUS EFIAPI find_export(EFI_PE_IMAGE* This, char* Function, UINT64*
         if (function_table[ordinal] >= nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress &&
             function_table[ordinal] < nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress +
             nt_header->OptionalHeader32.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size) { // forwarded
-                char* redir_name = (char*)(img->public.Data + function_table[ordinal]);
+                char* redir_name = (char*)((uint8_t*)img->public.Data + function_table[ordinal]);
 
             return ResolveForward(redir_name, Address);
         }
@@ -971,7 +971,7 @@ static UINT32 EFIAPI get_characteristics(EFI_PE_IMAGE* This) {
     IMAGE_NT_HEADERS* nt_header;
 
     dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
 
     return nt_header->FileHeader.Characteristics;
 }
@@ -982,7 +982,7 @@ static EFI_STATUS EFIAPI get_sections(EFI_PE_IMAGE* This, IMAGE_SECTION_HEADER**
     IMAGE_NT_HEADERS* nt_header;
 
     dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
 
     *Sections = (IMAGE_SECTION_HEADER*)((uint8_t*)&nt_header->OptionalHeader32 + nt_header->FileHeader.SizeOfOptionalHeader);
     *NumberOfSections = nt_header->FileHeader.NumberOfSections;
@@ -997,7 +997,7 @@ static EFI_STATUS relocate(EFI_PE_IMAGE* This, EFI_VIRTUAL_ADDRESS Address) {
     uint64_t old_va, base;
 
     dos_header = (IMAGE_DOS_HEADER*)img->public.Data;
-    nt_header = (IMAGE_NT_HEADERS*)(img->public.Data + dos_header->e_lfanew);
+    nt_header = (IMAGE_NT_HEADERS*)((uint8_t*)img->public.Data + dos_header->e_lfanew);
 
     old_va = (uintptr_t)img->va;
 
@@ -1169,10 +1169,10 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
             section_size = sections[i].SizeOfRawData;
 
         if (section_size > 0 && sections[i].PointerToRawData != 0)
-            memcpy(img->public.Data + sections[i].VirtualAddress, data + sections[i].PointerToRawData, section_size);
+            memcpy((uint8_t*)img->public.Data + sections[i].VirtualAddress, data + sections[i].PointerToRawData, section_size);
 
         if (section_size < sections[i].VirtualSize) // if short, pad with zeroes
-            memset(img->public.Data + sections[i].VirtualAddress + section_size, 0, sections[i].VirtualSize - section_size);
+            memset((uint8_t*)img->public.Data + sections[i].VirtualAddress + section_size, 0, sections[i].VirtualSize - section_size);
     }
 
     do_relocations(img, nt_header);

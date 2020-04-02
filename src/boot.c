@@ -1970,7 +1970,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
             goto end;
         }
 
-        va2 += PAGE_COUNT(boot_list_size) * EFI_PAGE_SIZE;
+        va2 = (uint8_t*)va2 + (PAGE_COUNT(boot_list_size) * EFI_PAGE_SIZE);
         *va = va2;
     }
 
