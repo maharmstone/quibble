@@ -17,7 +17,12 @@
 
 #pragma once
 
-#include <efi.h>
+#include <efibind.h>
+#include <efidef.h>
+#include <efidevp.h>
+#include <efiprot.h>
+#include <eficon.h>
+#include <efiapi.h>
 #include <efilink.h>
 
 #define WINDOWS_REGISTRY_PROTOCOL { 0x6C977486, 0xB9EB, 0x475C, {0xBC, 0xD4, 0x52, 0xD5, 0xDF, 0xB5, 0x63, 0x8F} }

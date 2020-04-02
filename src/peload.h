@@ -17,7 +17,12 @@
 
 #pragma once
 
-#include <efi.h>
+#include <efibind.h>
+#include <efidef.h>
+#include <efidevp.h>
+#include <efiprot.h>
+#include <eficon.h>
+#include <efiapi.h>
 
 #define PE_LOADER_PROTOCOL { 0xBA5A36D4, 0xC83C, 0x4D81, {0xB1, 0x6E, 0xBF, 0x39, 0xF7, 0x40, 0xEA, 0x79 } }
 

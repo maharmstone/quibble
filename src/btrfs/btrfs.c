@@ -15,7 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public Licence
  * along with Quibble.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include <efi.h>
+#include <efibind.h>
+#include <efidef.h>
 #include <efilink.h>
 #include <stdbool.h>
 #include <string.h>

@@ -17,7 +17,12 @@
 
 #pragma once
 
-#include <efi.h>
+#include <efibind.h>
+#include <efidef.h>
+#include <efidevp.h>
+#include <efiprot.h>
+#include <eficon.h>
+#include <efiapi.h>
 #include <efilink.h>
 #include <efipart.h>
 #include <stdbool.h>

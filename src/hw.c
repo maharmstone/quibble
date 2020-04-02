@@ -17,9 +17,15 @@
 
 #include <stddef.h>
 #include <string.h>
-#include <efi.h>
+#include <efibind.h>
+#include <efidef.h>
+#include <efidevp.h>
+#include <efiprot.h>
+#include <eficon.h>
+#include <efiapi.h>
 #include <efigpt.h>
 #include <efilink.h>
+#include <efipciio.h>
 #include <pci22.h>
 #include "x86.h"
 #include "misc.h"

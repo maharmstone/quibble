@@ -17,7 +17,13 @@
 
 #pragma once
 
-#include <efi.h>
+#include <efibind.h>
+#include <efidef.h>
+#include <efidevp.h>
+#include <efiprot.h>
+#include <eficon.h>
+#include <efiapi.h>
+#include <efierr.h>
 #include <stddef.h>
 
 extern EFI_SYSTEM_TABLE* systable;
