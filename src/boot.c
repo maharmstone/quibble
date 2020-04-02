@@ -2737,19 +2737,6 @@ static EFI_STATUS resolve_forward(char* name, uint64_t* address) {
     return EFI_NOT_FOUND;
 }
 
-#if defined(_X86_) || defined(__x86_64__)
-__inline static void outb(uint16_t port, uint8_t val) {
-    __asm__ __volatile__ (
-        "mov dx, %0\n\t"
-        "mov al, %1\n\t"
-        "out dx, al\n\t"
-        :
-        : "" (port), "" (val)
-        : "dx","al"
-    );
-}
-#endif
-
 static EFI_STATUS initialize_csm(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs) {
     EFI_GUID guid = EFI_LEGACY_BIOS_PROTOCOL_GUID;
     EFI_HANDLE* handles = NULL;
@@ -4073,8 +4060,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 #if defined(_X86_) || defined(__x86_64__)
     /* Re-enable IDE interrupts - the IDE driver on OVMF disables them when not expecting anything,
      * which confuses Vista. */
-    outb(0x3f6, 0);
-    outb(0x376, 0);
+    __outbyte(0x3f6, 0);
+    __outbyte(0x376, 0);
 #endif
 
 //     halt();
