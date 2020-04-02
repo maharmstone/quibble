@@ -35,6 +35,12 @@ target_compile_options(quibble PRIVATE
      $<$<CXX_COMPILER_ID:MSVC>:
           /W4>)
 
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
+    add_definitions(-D__x86_64__)
+elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "X86")
+    add_definitions(-D_X86_)
+endif()
+
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
 target_compile_options(quibble PRIVATE "-ffreestanding")
 target_compile_options(quibble PRIVATE "-fno-stack-protector")
