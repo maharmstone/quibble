@@ -7,6 +7,13 @@ endif()
 
 project(quibble)
 
+if(MSVC)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB /ENTRY:efi_main")
+add_compile_options("/GS-")
+string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+endif()
+
 set(SRC_FILES src/apiset.c
     src/boot.c
     src/debug.c
@@ -24,7 +31,11 @@ if(MSVC)
 endif()
 
 add_executable(quibble ${SRC_FILES})
-target_link_libraries(quibble libucrt.a libgcc.a)
+
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    target_link_libraries(quibble libgcc.a)
+endif()
+
 set_target_properties(quibble PROPERTIES SUFFIX ".efi")
 
 include_directories(gnu-efi)
@@ -71,7 +82,11 @@ set(SRC_FILES src/btrfs/btrfs.c
     src/misc.c)
 
 add_executable(btrfs ${SRC_FILES})
-target_link_libraries(btrfs libucrt.a libgcc.a)
+
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    target_link_libraries(btrfs libgcc.a)
+endif()
+
 set_target_properties(btrfs PROPERTIES SUFFIX ".efi")
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
