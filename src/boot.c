@@ -2746,23 +2746,14 @@ end:
 
 static EFI_STATUS load_kernel(image* img, EFI_PE_LOADER_PROTOCOL* pe, void* va, EFI_FILE_HANDLE system32,
                               command_line* cmdline) {
+    EFI_STATUS Status;
 #ifdef _X86_
     bool try_pae = true;
-    unsigned int cpu_flags;
-#endif
-    EFI_STATUS Status;
+    int cpu_info[4];
 
-#ifdef _X86_
-    __asm__ __volatile__ (
-        "mov eax, 0x80000001\n\t"
-        "cpuid\n\t"
-        "mov %0, edx\n\t"
-        : "=m" (cpu_flags)
-        :
-        : "eax", "ebx", "ecx", "edx"
-    );
+    __cpuid(cpu_info, 0x80000001);
 
-    if (!(cpu_flags & 0x40)) // PAE not supported
+    if (!(cpu_info[3] & 0x40)) // PAE not supported
         try_pae = false;
 
     if (try_pae) {
@@ -2771,7 +2762,7 @@ static EFI_STATUS load_kernel(image* img, EFI_PE_LOADER_PROTOCOL* pe, void* va, 
         if (cmdline->nx == NX_ALWAYSOFF)
             nx_supported = false;
         else {
-            if (!(cpu_flags & 0x100000)) // NX not supported
+            if (!(cpu_info[3] & 0x100000)) // NX not supported
                 nx_supported = false;
         }
 
