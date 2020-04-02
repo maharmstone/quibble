@@ -1,8 +1,9 @@
+#include <string.h>
+#include <intrin.h>
 #include "quibble.h"
 #include "misc.h"
 #include "peload.h"
 #include "x86.h"
-#include <string.h>
 
 typedef int32_t NTSTATUS;
 #define NT_SUCCESS(Status) ((Status)>=0)
@@ -249,39 +250,15 @@ static __stdcall NTSTATUS write_register_ulong(void* addr, uint32_t value) {
 }
 
 static __stdcall void stall_cpu(int microseconds) {
-#ifdef __x86_64__
-    uint32_t tsc1, tsc2;
     uint64_t tsc;
 
-    __asm__ __volatile__ (
-        "rdtsc\n\t"
-        "mov %0, eax\n\t"
-        "mov %1, edx\n\t"
-        : "=m" (tsc1), "=m" (tsc2)
-        :
-        : "eax", "edx"
-    );
-
-    tsc = ((uint64_t)tsc2 << 32) | tsc1;
+    tsc = __rdtsc();
     tsc += (cpu_frequency / 1000000ull) * microseconds;
 
     while (true) {
-        __asm__ __volatile__ (
-            "rdtsc\n\t"
-            "mov %0, eax\n\t"
-            "mov %1, edx\n\t"
-            : "=m" (tsc1), "=m" (tsc2)
-            :
-            : "eax", "edx"
-        );
-
-        if ((((uint64_t)tsc2 << 32) | tsc1) >= tsc)
+        if (__rdtsc() >= tsc)
             return;
     }
-#else
-    UNUSED(microseconds);
-    // FIXME
-#endif
 }
 
 static __stdcall NTSTATUS write_port_ulong(uint16_t port, uint32_t value) {
