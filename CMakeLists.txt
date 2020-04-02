@@ -18,6 +18,11 @@ set(SRC_FILES src/apiset.c
     src/reg.c
     src/tinymt32.c)
 
+if(MSVC)
+    enable_language(ASM_MASM)
+    set(SRC_FILES ${SRC_FILES} src/quibble.asm)
+endif()
+
 add_executable(quibble ${SRC_FILES})
 target_link_libraries(quibble libucrt.a libgcc.a)
 set_target_properties(quibble PROPERTIES SUFFIX ".efi")

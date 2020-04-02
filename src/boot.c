@@ -4145,25 +4145,8 @@ static EFI_STATUS load_pe_proto(EFI_BOOT_SERVICES* bs, EFI_HANDLE ImageHandle, E
     return EFI_NOT_FOUND;
 }
 
-static EFI_STATUS change_stack(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, change_stack_cb cb) {
-    EFI_STATUS Status;
-    EFI_PHYSICAL_ADDRESS addr;
-    void* stack_end;
-
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, STACK_SIZE, &addr);
-    if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
-        return Status;
-    }
-
-    stack = (void*)(uintptr_t)addr;
-    stack_end = (uint8_t*)stack + (STACK_SIZE * EFI_PAGE_SIZE);
-
-#ifdef __x86_64__
-    // GCC's function prologue on amd64 uses [rbp+0x10] and [rbp+0x18]
-    stack_end = (uint8_t*)stack_end - EFI_PAGE_SIZE;
-#endif
-
+#ifndef _MSC_VER
+static void change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* stack_end, change_stack_cb cb) {
 #ifdef _X86_
     __asm__ __volatile__ (
         "mov eax, %0\n\t"
@@ -4185,6 +4168,8 @@ static EFI_STATUS change_stack(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, c
         : "eax", "ebx", "ecx", "edx"
     );
 #elif defined(__x86_64__)
+    // FIXME - probably should restore original rbx
+
     __asm__ __volatile__ (
         "mov rcx, %0\n\t"
         "mov rdx, %1\n\t"
@@ -4205,6 +4190,31 @@ static EFI_STATUS change_stack(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, c
         : "rax", "rcx", "rdx", "rbx"
     );
 #endif
+}
+#else // in ASM file
+void change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* stack_end, change_stack_cb cb);
+#endif
+
+static EFI_STATUS change_stack(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, change_stack_cb cb) {
+    EFI_STATUS Status;
+    EFI_PHYSICAL_ADDRESS addr;
+    void* stack_end;
+
+    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, STACK_SIZE, &addr);
+    if (EFI_ERROR(Status)) {
+        print_error(L"AllocatePages", Status);
+        return Status;
+    }
+
+    stack = (void*)(uintptr_t)addr;
+    stack_end = (uint8_t*)stack + (STACK_SIZE * EFI_PAGE_SIZE);
+
+#ifdef __x86_64__
+    // GCC's function prologue on amd64 uses [rbp+0x10] and [rbp+0x18]
+    stack_end = (uint8_t*)stack_end - EFI_PAGE_SIZE;
+#endif
+
+    change_stack2(bs, image_handle, stack_end, cb);
 
     // only returns if unsuccessful
 

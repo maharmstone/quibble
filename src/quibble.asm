@@ -1,0 +1,62 @@
+IFDEF RAX
+ELSE
+.686P
+ENDIF
+
+_TEXT  SEGMENT
+
+IFDEF RAX
+
+; void change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* stack_end, change_stack_cb cb);
+PUBLIC change_stack2
+
+; rcx = bs
+; rdx = image_handle
+; r8 = stack_end
+; r9 = cb
+
+; FIXME - probably should restore original rbx
+
+change_stack2:
+    mov rbx, rsp
+    mov rsp, r8
+    push rbp
+    mov rbp, rsp
+    push rbx
+    sub rsp, 32
+    call r9
+    add rsp, 32
+    pop rbx
+    pop rbp
+    mov rsp, rbx
+    ret
+
+ELSE
+
+; FIXME
+
+;     __asm__ __volatile__ (
+;         "mov eax, %0\n\t"
+;         "mov ebx, %1\n\t"
+;         "mov ecx, %3\n\t"
+;         "mov edx, esp\n\t"
+;         "mov esp, %2\n\t"
+;         "push ebp\n\t"
+;         "mov ebp, esp\n\t"
+;         "push edx\n\t"
+;         "push ebx\n\t"
+;         "push eax\n\t"
+;         "call ecx\n\t"
+;         "pop edx\n\t"
+;         "pop ebp\n\t"
+;         "mov esp, edx\n\t"
+;         :
+;         : "m" (bs), "m" (image_handle), "m" (stack_end), "" (cb)
+;         : "eax", "ebx", "ecx", "edx"
+;     );
+
+ENDIF
+
+_TEXT  ENDS
+
+end
