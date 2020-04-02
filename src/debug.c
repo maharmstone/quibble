@@ -170,7 +170,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
 }
 
 #if defined(_X86_) || defined(__x86_64__)
-__inline static void outl(uint16_t port, uint32_t val) {
+static void outl(uint16_t port, uint32_t val) {
     __asm__ __volatile__ (
         "mov dx, %0\n\t"
         "mov eax, %1\n\t"
@@ -180,22 +180,6 @@ __inline static void outl(uint16_t port, uint32_t val) {
         : "dx", "eax"
     );
 }
-
-__inline static uint32_t inl(uint16_t port) {
-    uint32_t ret;
-
-    __asm__ __volatile__ (
-        "mov dx, %1\n\t"
-        "in eax, dx\n\t"
-        "mov %0, eax\n\t"
-        : "=m" (ret)
-        : "" (port)
-        : "dx", "eax"
-    );
-
-    return ret;
-}
-
 #endif
 
 static __stdcall NTSTATUS get_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
@@ -206,8 +190,8 @@ static __stdcall NTSTATUS get_device_pci_data_by_offset(uint32_t bus, uint32_t s
             address &= 0xffffff00;
             address |= offset;
 
-            outl(0xcf8, address);
-            *(uint32_t*)data = inl(0xcfc);
+            __outdword(0xcf8, address);
+            *(uint32_t*)data = __indword(0xcfc);
 
             data = (uint8_t*)data + sizeof(uint32_t);
             offset += sizeof(uint32_t);
@@ -220,8 +204,8 @@ static __stdcall NTSTATUS get_device_pci_data_by_offset(uint32_t bus, uint32_t s
             address &= 0xffffff00;
             address |= offset & 0xfc;
 
-            outl(0xcf8, address);
-            val = inl(0xcfc);
+            __outdword(0xcf8, address);
+            val = __indword(0xcfc);
 
             if (offset % sizeof(uint32_t) != 0)
                 *(uint16_t*)data = val >> 16;
