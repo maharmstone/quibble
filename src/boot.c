@@ -1204,11 +1204,15 @@ static void set_idt(idt_entry* idt) {
     desc.Limit = (NUM_IDT * sizeof(idt_entry)) - 1;
 
     // set GDT
+#ifdef _MSC_VER
+    __lidt(&desc);
+#else
     __asm__ __volatile__ (
         "lidt %0\n\t"
         :
         : "m" (desc)
     );
+#endif
 }
 
 static KTSS* allocate_tss(EFI_BOOT_SERVICES* bs) {
