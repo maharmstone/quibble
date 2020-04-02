@@ -29,10 +29,17 @@
 #include "win.h"
 
 // FIXME - only in debug mode
+#ifndef _MSC_VER
 #define halt() { \
     unsigned int __volatile wait = 1; \
     while (wait) { __asm __volatile("pause"); } \
 }
+#else
+#define halt() { \
+    unsigned int __volatile wait = 1; \
+    while (wait) { } \
+}
+#endif
 
 #define UNUSED(x) (void)(x)
 
