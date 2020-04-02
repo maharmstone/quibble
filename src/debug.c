@@ -169,19 +169,6 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
     return EFI_SUCCESS;
 }
 
-#if defined(_X86_) || defined(__x86_64__)
-static void outl(uint16_t port, uint32_t val) {
-    __asm__ __volatile__ (
-        "mov dx, %0\n\t"
-        "mov eax, %1\n\t"
-        "out dx, eax\n\t"
-        :
-        : "" (port), "" (val)
-        : "dx", "eax"
-    );
-}
-#endif
-
 static __stdcall NTSTATUS get_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
     uint32_t address = 0x80000000 | ((bus & 0xff) << 16) | ((slot & 0x1f) << 11);
 
@@ -246,7 +233,7 @@ static __stdcall void stall_cpu(int microseconds) {
 }
 
 static __stdcall NTSTATUS write_port_ulong(uint16_t port, uint32_t value) {
-    outl(port, value);
+    __outdword(port, value);
 
     return STATUS_SUCCESS;
 }
