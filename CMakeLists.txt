@@ -75,6 +75,8 @@ else()
 target_link_options(quibble PRIVATE "-eefi_main")
 endif()
 
+elseif(MSVC)
+target_link_options(quibble PRIVATE "/SUBSYSTEM:EFI_APPLICATION")
 endif()
 
 set(SRC_FILES src/btrfs/btrfs.c
@@ -107,4 +109,6 @@ else()
 target_link_options(btrfs PRIVATE "-eefi_main")
 endif()
 
+elseif(MSVC)
+target_link_options(btrfs PRIVATE "/SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER")
 endif()
