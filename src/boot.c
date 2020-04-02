@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <wchar.h>
+#include <intrin.h>
 #include "quibble.h"
 #include "reg.h"
 #include "peload.h"
@@ -185,35 +186,17 @@ static void get_system_time(int64_t* time) {
 }
 
 static uint64_t get_cpu_frequency(EFI_BOOT_SERVICES* bs) {
-    uint32_t tsc1a, tsc1b, tsc2a, tsc2b;
     uint64_t tsc1, tsc2;
 
     static const UINTN delay = 50; // 50 ms
 
     // FIXME - should probably do cpuid to check that rdtsc is available
 
-    __asm__ __volatile__ (
-        "rdtsc\n\t"
-        "mov %0, eax\n\t"
-        "mov %1, edx\n\t"
-        :
-        : "m" (tsc1a), "m" (tsc1b)
-        : "eax", "edx"
-    );
+    tsc1 = __rdtsc();
 
     bs->Stall(delay * 1000);
 
-    __asm__ __volatile__ (
-        "rdtsc\n\t"
-        "mov %0, eax\n\t"
-        "mov %1, edx\n\t"
-        :
-        : "m" (tsc2a), "m" (tsc2b)
-        : "eax", "edx"
-    );
-
-    tsc1 = ((uint64_t)tsc1b << 32) | tsc1a;
-    tsc2 = ((uint64_t)tsc2b << 32) | tsc2a;
+    tsc2 = __rdtsc();
 
     return (tsc2 - tsc1) * (1000 / delay);
 }
