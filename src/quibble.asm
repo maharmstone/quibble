@@ -31,10 +31,38 @@ change_stack2:
     mov rsp, rbx
     ret
 
+; void set_gdt2(GDTIDT* desc, uint16_t selector);
+
+PUBLIC set_gdt2
+
+; rcx = desc
+; rdx = selector
+
+set_gdt2:
+    ; set GDT
+    lgdt fword ptr [rcx]
+
+    ; set task register
+    ltr dx
+
+    ; change cs to 0x10
+    mov rax, 10h
+    push rax
+    lea rax, [set_gdt2_label]
+    push rax
+    retf
+
+set_gdt2_label:
+    ; change ss to 0x18
+    mov ax, 18h
+    mov ss, ax
+
+    ret
+
 ELSE
 
-; FIXME
-
+; FIXME - change_stack2
+; change_stack2:
 ;     __asm__ __volatile__ (
 ;         "mov eax, %0\n\t"
 ;         "mov ebx, %1\n\t"
@@ -54,6 +82,8 @@ ELSE
 ;         : "m" (bs), "m" (image_handle), "m" (stack_end), "" (cb)
 ;         : "eax", "ebx", "ecx", "edx"
 ;     );
+
+; FIXME - set_gdt2
 
 ENDIF
 

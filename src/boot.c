@@ -1142,12 +1142,17 @@ static void* initialize_idt(EFI_BOOT_SERVICES* bs) {
     return idt;
 }
 
+#ifdef _MSC_VER
+void set_gdt2(GDTIDT* desc, uint16_t selector);
+#endif
+
 static void set_gdt(gdt_entry* gdt) {
     GDTIDT desc;
 
     desc.Base = (uintptr_t)gdt;
     desc.Limit = (NUM_GDT * sizeof(gdt_entry)) - 1;
 
+#ifndef _MSC_VER
     // set GDT
     __asm__ __volatile__ (
         "lgdt %0\n\t"
@@ -1194,6 +1199,9 @@ static void set_gdt(gdt_entry* gdt) {
         : "i" (0x18)
         : "ax"
     );
+#endif
+#else
+    set_gdt2(&desc, KGDT_TSS);
 #endif
 }
 
