@@ -59,6 +59,20 @@ set_gdt2_label:
 
     ret
 
+; void call_startup(void* stack, void* loader_block, void* KiSystemStartup);
+
+PUBLIC call_startup
+
+; rcx = stack
+; rdx = loader_block
+; r8 = KiSystemStarutp
+
+call_startup:
+    mov rsp, rcx
+    mov rcx, rdx
+    call r8
+    ret
+
 ELSE
 
 ; FIXME - change_stack2

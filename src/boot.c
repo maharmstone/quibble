@@ -3170,6 +3170,10 @@ static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappin
     return EFI_SUCCESS;
 }
 
+#if defined(_MSC_VER) && defined(__x86_64__)
+void call_startup(void* stack, void* loader_block, void* KiSystemStartup);
+#endif
+
 static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE root, char* options,
                        char* path, char* arc_name, EFI_PE_LOADER_PROTOCOL* pe, EFI_REGISTRY_PROTOCOL* reg,
                        command_line* cmdline, WCHAR* fs_driver) {
@@ -4042,6 +4046,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     // set syscall flag in EFER MSR
     __writemsr(0xc0000080, __readmsr(0xc0000080) | 1);
 
+#ifndef _MSC_VER
     __asm__ __volatile__ (
         "mov rsp, %0\n\t"
         "lea rcx, %1\n\t"
@@ -4050,6 +4055,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         : "m" (tss->Rsp0), "m" (store->loader_block), "m" (KiSystemStartup)
         : "rcx"
     );
+#else
+    call_startup(tss->Rsp0, store->loader_block, KiSystemStartup);
+#endif
+
 #else
     KiSystemStartup(&store->loader_block);
 #endif
