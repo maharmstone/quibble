@@ -73,7 +73,9 @@ typedef struct {
 
 typedef struct {
     uint32_t unknown1;
+#ifdef __x86_64__
     uint32_t padding;
+#endif
     kd_funcs* funcs;
     GET_DEVICE_PCI_DATA_BY_OFFSET GetDevicePciDataByOffset;
     void* unknown3;
