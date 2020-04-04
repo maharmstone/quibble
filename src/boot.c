@@ -550,12 +550,9 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             extblock5a = &store->extension_win10.Block5a;
             extblock6 = &store->extension_win10.Block6;
 
-            if (build < WIN10_BUILD_1511) {
-                store->extension_win10.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SystemHiveRecoveryInfo);
-#ifdef __x86_64__
-                store->extension_win10.Size += sizeof(uint32_t);
-#endif
-            } else
+            if (build < WIN10_BUILD_1511)
+                store->extension_win10.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SystemHiveRecoveryInfo) + sizeof(uint32_t);
+            else
                 store->extension_win10.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10);
 
             store->extension_win10.Profile.Status = 2;
