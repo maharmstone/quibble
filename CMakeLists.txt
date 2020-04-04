@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 3.14)
 
-# work around bug in Visual Studio
-if(MSVC)
-set(CMAKE_SYSTEM_PROCESSOR ${MSVC_CXX_ARCHITECTURE_ID})
-endif()
-
 project(quibble)
 
 if(MSVC)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB /ENTRY:efi_main")
-add_compile_options("/GS-")
-string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB /ENTRY:efi_main")
+    add_compile_options("/GS-")
+    string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+
+    # work around bug in Visual Studio
+    if (${MSVC_CXX_ARCHITECTURE_ID} STREQUAL "X86")
+        set(CMAKE_SYSTEM_PROCESSOR "X86")
+    endif()
 endif()
 
 set(SRC_FILES src/apiset.c
