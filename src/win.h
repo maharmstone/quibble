@@ -58,6 +58,7 @@
 
 #ifdef _X86_
 #define SELFMAP                 0xc0000000
+#define SELFMAP2                0xc0600000
 #define APIC_BASE               0xfffe0000
 #define KI_USER_SHARED_DATA     0xffdf0000
 #define KIP0PCRADDRESS          0xffdff000

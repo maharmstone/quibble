@@ -276,12 +276,27 @@ static void* __stdcall get_physical_address(void* va) {
 
     return (void*)ret;
 #else
-    UNUSED(va);
+    uintptr_t addr = (uintptr_t)va, ret;
+    uint32_t off1, off2;
+    HARDWARE_PTE_PAE* map = (HARDWARE_PTE_PAE*)SELFMAP2;
 
-    // FIXME
-    halt();
+    // Assume PAE - it's mandatory on all the OSes which will call this function
 
-    return NULL;
+    off1 = (addr & 0xffe00000) >> 21;
+
+    if (!map[off1].Valid)
+        return NULL;
+
+    map = (HARDWARE_PTE_PAE*)(SELFMAP | (off1 << 12));
+
+    off2 = (addr & 0x1ff000) >> 12;
+
+    if (!map[off2].Valid)
+        return NULL;
+
+    ret = (map[off2].PageFrameNumber << 12) | (addr & 0xfff);
+
+    return (void*)ret;
 #endif
 }
 
