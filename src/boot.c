@@ -1143,7 +1143,7 @@ static void* initialize_idt(EFI_BOOT_SERVICES* bs) {
 }
 
 #ifdef _MSC_VER
-void set_gdt2(GDTIDT* desc, uint16_t selector);
+void __stdcall set_gdt2(GDTIDT* desc, uint16_t selector);
 #endif
 
 static void set_gdt(gdt_entry* gdt) {
@@ -4209,7 +4209,7 @@ static void change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* 
 #endif
 }
 #else // in ASM file
-void change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* stack_end, change_stack_cb cb);
+void __stdcall change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* stack_end, change_stack_cb cb);
 #endif
 
 static EFI_STATUS change_stack(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, change_stack_cb cb) {

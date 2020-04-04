@@ -35,5 +35,10 @@ void print_hex(uint64_t v);
 void print_dec(uint32_t v);
 void print_string(const char* s);
 void itow(int v, WCHAR* w);
+#ifdef _MSC_VER
+int wcsicmp(const WCHAR* s1, const WCHAR* s2);
+int stricmp(const char* s1, const char* s2);
+int strnicmp(const char* s1, const char* s2, int n);
+#endif
 EFI_STATUS utf8_to_utf16(WCHAR* dest, unsigned int dest_max, unsigned int* dest_len, const char* src, unsigned int src_len);
 EFI_STATUS utf16_to_utf8(char* dest, unsigned int dest_max, unsigned int* dest_len, const WCHAR* src, unsigned int src_len);

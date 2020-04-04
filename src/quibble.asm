@@ -7,7 +7,7 @@ _TEXT  SEGMENT
 
 IFDEF RAX
 
-; void change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* stack_end, change_stack_cb cb);
+; void __stdcall change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* stack_end, change_stack_cb cb);
 PUBLIC change_stack2
 
 ; rcx = bs
@@ -31,8 +31,7 @@ change_stack2:
     mov rsp, rbx
     ret
 
-; void set_gdt2(GDTIDT* desc, uint16_t selector);
-
+; void __stdcall set_gdt2(GDTIDT* desc);
 PUBLIC set_gdt2
 
 ; rcx = desc
@@ -76,29 +75,58 @@ call_startup:
 
 ELSE
 
-; FIXME - change_stack2
-; change_stack2:
-;     __asm__ __volatile__ (
-;         "mov eax, %0\n\t"
-;         "mov ebx, %1\n\t"
-;         "mov ecx, %3\n\t"
-;         "mov edx, esp\n\t"
-;         "mov esp, %2\n\t"
-;         "push ebp\n\t"
-;         "mov ebp, esp\n\t"
-;         "push edx\n\t"
-;         "push ebx\n\t"
-;         "push eax\n\t"
-;         "call ecx\n\t"
-;         "pop edx\n\t"
-;         "pop ebp\n\t"
-;         "mov esp, edx\n\t"
-;         :
-;         : "m" (bs), "m" (image_handle), "m" (stack_end), "" (cb)
-;         : "eax", "ebx", "ecx", "edx"
-;     );
+; void __stdcall change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* stack_end, change_stack_cb cb);
+PUBLIC _change_stack2@16
 
-; FIXME - set_gdt2
+; eax = bs
+; ebx = image_handle
+; ecx = cb
+; esi = stack_end (FIXME - ought to preserve)
+
+; FIXME - this probably doesn't fail gracefully
+
+_change_stack2@16:
+    mov ecx, [esp+10h]
+    mov esi, [esp+0ch]
+    mov ebx, [esp+8h]
+    mov eax, [esp+4h]
+    mov edx, esp
+    mov esp, esi
+    push ebp
+    mov ebp, esp
+    push edx
+    push ebx
+    push eax
+    call ecx
+    pop edx
+    pop ebp
+    mov esp, edx
+    ret
+
+; void __stdcall set_gdt2(GDTIDT* desc, uint16_t selector);
+PUBLIC _set_gdt2@8
+
+; ecx = desc
+; edx = selector
+
+_set_gdt2@8:
+    mov edx, [esp+8h]
+    mov ecx, [esp+4h]
+
+    ; set GDT
+    lgdt fword ptr [ecx]
+
+    ; set task register
+    ltr dx
+
+    ; change cs to 0x8
+    ;jump far 8:set_gdt2_label
+    DB 0EAh
+    DD [set_gdt2_label]
+    DW 8h
+
+set_gdt2_label:
+    ret 8
 
 ENDIF
 
