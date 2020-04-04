@@ -4056,7 +4056,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         : "rcx"
     );
 #else
-    call_startup(tss->Rsp0, store->loader_block, KiSystemStartup);
+    call_startup(tss->Rsp0, &store->loader_block, KiSystemStartup);
 #endif
 
 #else

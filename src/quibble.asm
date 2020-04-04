@@ -50,6 +50,7 @@ set_gdt2:
     push rax
     lea rax, [set_gdt2_label]
     push rax
+    DB 48h ; rex.W - masm doesn't seem to allow you setting this normally
     retf
 
 set_gdt2_label:
