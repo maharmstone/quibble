@@ -891,7 +891,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
     static const WCHAR dll_prefix[] = L"kd_02_";
     static const WCHAR dll_suffix[] = L".dll";
 
-    WCHAR dll[(sizeof(dll_prefix) / sizeof(WCHAR)) - 1 + (sizeof(dll_suffix) / sizeof(WCHAR)) - 1 + 4];
+    WCHAR dll[(sizeof(dll_prefix) / sizeof(WCHAR)) - 1 + (sizeof(dll_suffix) / sizeof(WCHAR)) - 1 + 4 + 1];
 
     memcpy(dll, dll_prefix, sizeof(dll_prefix) - sizeof(WCHAR));
     memcpy(dll + (sizeof(dll_prefix) / sizeof(WCHAR)) - 1 + 4, dll_suffix, sizeof(dll_suffix));
