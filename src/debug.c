@@ -14,6 +14,7 @@ typedef int32_t NTSTATUS;
 typedef struct {
     void* scratch;
     DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
+    // FIXME - Windows 8.1 wants some more stuff here
 } KD_NET_DATA;
 
 typedef NTSTATUS (__stdcall *KD_INITIALIZE_CONTROLLER) (
@@ -71,12 +72,9 @@ typedef struct {
     void* unknown3;
 } kd_funcs;
 
+#pragma pack(push,1)
+
 typedef struct {
-    uint32_t version;
-#ifdef __x86_64__
-    uint32_t padding;
-#endif
-    kd_funcs* funcs;
     GET_DEVICE_PCI_DATA_BY_OFFSET GetDevicePciDataByOffset;
     void* unknown3;
     GET_PHYSICAL_ADDRESS GetPhysicalAddress;
@@ -105,9 +103,26 @@ typedef struct {
     void* KdNetErrorStatus;
     void* KdNetErrorString;
     void* KdNetHardwareId;
+} kdnet_exports2;
+
+typedef struct {
+    uint32_t version;
+#ifdef __x86_64__
+    uint32_t padding;
+#endif
+    union {
+        kdnet_exports2 exports_win81;
+
+        struct {
+            kd_funcs* funcs;
+            kdnet_exports2 exports;
+        } win10;
+    };
 } kdnet_exports;
 
-typedef NTSTATUS (__stdcall KD_INITIALIZE_LIBRARY) (
+#pragma pack(pop)
+
+typedef NTSTATUS (__stdcall *KD_INITIALIZE_LIBRARY) (
     kdnet_exports* exports,
     void* param1,
     DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor
@@ -116,11 +131,12 @@ typedef NTSTATUS (__stdcall KD_INITIALIZE_LIBRARY) (
 static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports,
                                          kd_funcs* funcs, uint16_t build);
 
-KD_INITIALIZE_LIBRARY* KdInitializeLibrary = NULL;
+KD_INITIALIZE_LIBRARY KdInitializeLibrary = NULL;
+KD_INITIALIZE_CONTROLLER KdInitializeController = NULL;
 static DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
 void* kdnet_scratch = NULL;
 
-EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub) {
+EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub, uint16_t build) {
     UINT64 addr;
     EFI_STATUS Status;
 
@@ -131,7 +147,18 @@ EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub) {
         return Status;
     }
 
-    KdInitializeLibrary = (KD_INITIALIZE_LIBRARY*)(uintptr_t)addr;
+    KdInitializeLibrary = (KD_INITIALIZE_LIBRARY)(uintptr_t)addr;
+
+    if (build < WIN10_BUILD_1507) {
+        Status = kdstub->FindExport(kdstub, "KdInitializeController", &addr, NULL);
+
+        if (EFI_ERROR(Status)) {
+            print_error(L"FindExport", Status);
+            return Status;
+        }
+
+        KdInitializeController = (KD_INITIALIZE_CONTROLLER)(uintptr_t)addr;
+    }
 
     return EFI_SUCCESS;
 }
@@ -143,7 +170,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
     kd_funcs funcs;
     EFI_PHYSICAL_ADDRESS addr;
 
-    Status = find_kd_export(kdstub);
+    Status = find_kd_export(kdstub, build);
     if (EFI_ERROR(Status)) {
         print_error(L"find_kd_export", Status);
         return Status;
@@ -157,7 +184,10 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
         return EFI_INVALID_PARAMETER;
     }
 
-    ddd->TransportData.HwContextSize = funcs.KdGetHardwareContextSize(ddd);
+    if (build >= WIN10_BUILD_1507)
+        ddd->TransportData.HwContextSize = funcs.KdGetHardwareContextSize(ddd);
+    else
+        ddd->TransportData.HwContextSize = ddd->Memory.Length; // set by KdInitializeLibrary
 
     if (ddd->TransportData.HwContextSize != 0) {
         Status = systable->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(ddd->TransportData.HwContextSize), &addr);
@@ -303,24 +333,32 @@ static void* __stdcall get_physical_address(void* va) {
 
 static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports,
                                          kd_funcs* funcs, uint16_t build) {
+    kdnet_exports2* exp2;
     debug_device_descriptor = ddd;
 
     memset(exports, 0, sizeof(*exports));
 
     if (build >= WIN10_BUILD_1607)
         exports->version = 0x1e;
-    else
+    else if (build >= WIN10_BUILD_1507)
         exports->version = 0x1d;
+    else
+        exports->version = 0x18;
 
-    exports->funcs = funcs;
-    exports->GetDevicePciDataByOffset = get_device_pci_data_by_offset;
-    exports->KdStallExecutionProcessor = stall_cpu;
-    exports->READ_REGISTER_ULONG = read_register_ulong;
-    exports->WRITE_REGISTER_ULONG = write_register_ulong;
-    exports->WRITE_PORT_ULONG = write_port_ulong;
-    exports->GetPhysicalAddress = get_physical_address;
+    if (build >= WIN10_BUILD_1507) {
+        exports->win10.funcs = funcs;
+        exp2 = &exports->win10.exports;
 
-    funcs->count = 13; // number of functions
+        funcs->count = 13; // number of functions
+    } else
+        exp2 = &exports->exports_win81;
+
+    exp2->GetDevicePciDataByOffset = get_device_pci_data_by_offset;
+    exp2->KdStallExecutionProcessor = stall_cpu;
+    exp2->READ_REGISTER_ULONG = read_register_ulong;
+    exp2->WRITE_REGISTER_ULONG = write_register_ulong;
+    exp2->WRITE_PORT_ULONG = write_port_ulong;
+    exp2->GetPhysicalAddress = get_physical_address;
 
     return KdInitializeLibrary(exports, NULL, ddd);
 }
@@ -340,7 +378,10 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     kd_net_data.scratch = kdnet_scratch;
     kd_net_data.debug_device_descriptor = ddd;
 
-    Status = funcs.KdInitializeController(&kd_net_data);
+    if (build >= WIN10_BUILD_1507)
+        Status = funcs.KdInitializeController(&kd_net_data);
+    else
+        Status = KdInitializeController(&kd_net_data);
 
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
