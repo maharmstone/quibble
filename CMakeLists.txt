@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(quibble VERSION 20200213)
+project(quibble VERSION 20200405)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 

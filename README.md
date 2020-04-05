@@ -29,7 +29,7 @@ version of OVMF, which isn't the usual one bundled with Qemu. Precompiled versio
 
 * Set up your VM, and install Windows on an NTFS volume.
 
-* Install [WinBtrfs](https://github.com/maharmstone/btrfs) - you will need version 1.6 at least.
+* Install [WinBtrfs](https://github.com/maharmstone/btrfs) - you will need version 1.6 at least, but the later the better.
 
 * On modern versions of Windows, turn off Fast Startup in the Control Panel.
 
@@ -45,6 +45,40 @@ referring to the partition by UUID rather than number.
 
 * Add quibble.efi to your list of UEFI boot options, and hope that it works...
 
+Changelog
+---------
+
+* 20200405
+  * Fixed bug involving case-insensitivity
+  * Changed build system to cmake
+  * Included local copy of gnu-efi, to make things easier
+  * Added support for compiling on MSVC
+  * Added support for kdnet on Windows 10
+
+* 20200213
+  * Initial release
+
+Compiling
+---------
+
+On Linux:
+
+* Install a cross-compiler, either i686-w64-mingw32-gcc or x86_64-w64-mingw32-gcc, and cmake.
+* Run the following:
+  * `git clone https://github.com/maharmstone/quibble`
+  * `cd quibble`
+  * `mkdir build`
+  * `cd build`
+  * `cmake -DCMAKE_TOOLCHAIN_FILE=../mingw-amd64.cmake ..` or `cmake -DCMAKE_TOOLCHAIN_FILE=../mingw-x86.cmake ..`
+  * `make`
+
+On Windows:
+
+* Install a recent version of Visual C++ - I used the free Visual Studio Community 2019
+* Clone the repository, and open it as a folder
+* Wait for it to finish generating its cmake cache
+* Right-click on CMakeLists.txt and choose "Build"
+
 FAQs
 ----
 
@@ -58,31 +92,11 @@ point, but the Btrfs driver won't work.
 * Which filesystems does this support?
 
 The included Btrfs driver, and maybe also the FAT driver that's part of the UEFI specifications.
-Windows XP, Vista, and 7 will work fine from a FAT volume, though why you'd want to do that
-is anyone's guess.
+Windows XP, Vista, and 7 will work fine from a FAT volume, anything after that won't.
 
 * How can I extend this?
 
 Drop your EFI driver in the drivers folder, and it'll load it on startup.
-
-* How do I compile this?
-
-Install a cross-compiler version of GCC - either i686-w64-mingw32-gcc or x86_64-w64-mingw32-gcc -
-and gnu-efi.
-
-* UWP applications / the Start Menu / Calculator / Edge don't work
-
-I know. This is at least partly due to the NTFS permissions not being transferred. You can use
-Win+R to open the Run menu.
-
-* Why do I get a message about the Recycle Bin being corrupted?
-
-Again, permissions. Let Windows fix it and it won't happen again.
-
-* How do I stop Notepad popping up on startup?
-
-Mark the files C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\desktop.ini and
-C:\Users\[USERNAME]\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\desktop.ini.
 
 * Why do I get a message about Sequence1 and Sequence2?
 
@@ -93,26 +107,25 @@ Make sure you shut Windows down properly to avoid having to do this.
 * Can I boot Btrfs from an arbitrary subvolume, like I can on Linux?
 
 Yes - add /SUBVOL=xxx to your Options in freeldr.ini. You can find the number to use on the
-Properties page of your subvolume. Bear in mind that unlike Linux this is in hexadecimal.
+Properties page of your subvolume. On Linux you can use `btrfs subvol list`, but bear in mind
+that you will need to translate the number to hexadecimal.
 
 Licence
 -------
 
 This is released under the LGPL. The Mersenne Twister code is by Mutsuo Saito and Makoto Matsumoto -
-see the header of tinymt32.c.
+see the header of tinymt32.c. The GNU-EFI headers are under the BSD licence.
 
 Known issues
 ------------
 
-* Windows can hang while flushing the Registry
 * Multiple cores can be a bit ropey
+* Real-life UEFI implementations can differ in their adherence to the specs - caveat usor.
 
 To-do list
 ----------
 
-* Get compiling with MSVC
 * Booting on Windows 8+ without CSM
-* Get Windows 8.1 and 10 network debugging working
 * Get working with XP and Vista on amd64
 * Add NTFS driver
 * Parse BCD files
@@ -126,3 +139,4 @@ To-do list
 * Add RAID support for Btrfs
 * Add compression support for Btrfs
 * Hibernation, etc.
+* Get kdnet working with Windows 8.1
