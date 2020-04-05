@@ -1,0 +1,3 @@
+#pragma once
+
+#define PROJECT_VERW  L"@PROJECT_VERSION@"

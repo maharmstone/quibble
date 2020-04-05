@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(quibble)
+project(quibble VERSION 20200213)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 if(MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:efi_main")
@@ -31,6 +33,8 @@ if(MSVC)
 endif()
 
 add_executable(quibble ${SRC_FILES})
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     target_link_libraries(quibble libgcc.a)

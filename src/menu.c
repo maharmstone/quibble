@@ -16,6 +16,7 @@
  * along with Quibble.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <string.h>
+#include "config.h"
 #include "quibble.h"
 #include "misc.h"
 #include "x86.h"
@@ -32,7 +33,7 @@ typedef struct {
     char* value;
 } ini_value;
 
-#define VERSION L"Quibble 20200213"
+#define VERSION L"Quibble " PROJECT_VERW
 #define URL L"https://github.com/maharmstone/quibble"
 
 boot_option* options = NULL;
