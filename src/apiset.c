@@ -44,7 +44,7 @@ EFI_STATUS load_api_set(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, EFI_PE_LOADER
 
         img = _CR(images->Blink, image, list_entry); // get last item
 
-        Status = load_image(img, L"ApiSetSchema.dll", pe, *va, dir, cmdline);
+        Status = load_image(img, L"ApiSetSchema.dll", pe, *va, dir, cmdline, 0);
         if (EFI_ERROR(Status)) {
             print_error(L"load_image", Status);
             return Status;

@@ -98,7 +98,7 @@ EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const WCHAR* nam
                      const WCHAR* dir, bool dll, BOOT_DRIVER_LIST_ENTRY* bdle, unsigned int order,
                      bool no_reloc);
 EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void* va, EFI_FILE_HANDLE dir,
-                      command_line* cmdline);
+                      command_line* cmdline, uint16_t build);
 EFI_STATUS open_file(EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* h, const WCHAR* name);
 EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const WCHAR* name, void** data, size_t* size);
 EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, FILEPATH_DEVICE_PATH* dp, EFI_FILE_HANDLE* dir);
@@ -141,8 +141,8 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** opt);
 // debug.c
 extern void* kdnet_scratch;
 EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub);
-EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd);
-EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPTOR* ddd);
+EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build);
+EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build);
 
 // CSM (not in gnu-efi)
 

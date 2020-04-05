@@ -2449,7 +2449,7 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
 }
 
 EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void* va, EFI_FILE_HANDLE dir,
-                      command_line* cmdline) {
+                      command_line* cmdline, uint16_t build) {
     EFI_STATUS Status;
     EFI_FILE_HANDLE file;
     bool is_kdstub = false;
@@ -2589,7 +2589,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
     if (is_kdstub) {
         kdstub = img;
 
-        Status = allocate_kdnet_hw_context(img->img, &debug_device_descriptor);
+        Status = allocate_kdnet_hw_context(img->img, &debug_device_descriptor, build);
         if (EFI_ERROR(Status)) {
             print_error(L"allocate_kdnet_hw_context", Status);
             return Status;
@@ -2782,7 +2782,7 @@ static EFI_STATUS load_kernel(image* img, EFI_PE_LOADER_PROTOCOL* pe, void* va, 
     }
 
     if (!try_pae) {
-        Status = load_image(img, L"ntoskrnl.exe", pe, va, system32, cmdline);
+        Status = load_image(img, L"ntoskrnl.exe", pe, va, system32, cmdline, 0);
         if (EFI_ERROR(Status)) {
             print_error(L"load_image", Status);
             return Status;
@@ -2801,11 +2801,11 @@ static EFI_STATUS load_kernel(image* img, EFI_PE_LOADER_PROTOCOL* pe, void* va, 
     if (cmdline->kernel)
         Status = EFI_NOT_FOUND;
     else
-        Status = load_image(img, L"ntkrnlpa.exe", pe, va, system32, cmdline);
+        Status = load_image(img, L"ntkrnlpa.exe", pe, va, system32, cmdline, 0);
 
     if (Status == EFI_NOT_FOUND) {
 #endif
-        Status = load_image(img, L"ntoskrnl.exe", pe, va, system32, cmdline);
+        Status = load_image(img, L"ntoskrnl.exe", pe, va, system32, cmdline, 0);
 #ifdef _X86_
     }
 #endif
@@ -3401,7 +3401,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
             }
 
             if (is_driver_dir)
-                Status = load_image(img, img->name, pe, va, drivers_dir, cmdline);
+                Status = load_image(img, img->name, pe, va, drivers_dir, cmdline, build);
             else {
                 EFI_FILE_HANDLE dir;
 
@@ -3414,12 +3414,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                     goto end;
                 }
 
-                Status = load_image(img, img->name, pe, va, dir, cmdline);
+                Status = load_image(img, img->name, pe, va, dir, cmdline, build);
 
                 dir->Close(dir);
 
                 if (Status == EFI_NOT_FOUND)
-                    Status = load_image(img, img->name, pe, va, drivers_dir, cmdline);
+                    Status = load_image(img, img->name, pe, va, drivers_dir, cmdline, build);
             }
 
             if (EFI_ERROR(Status)) {
@@ -4037,7 +4037,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 //     halt();
 
     if (kdstub_export_loaded)
-        kdstub_init(&store->debug_device_descriptor);
+        kdstub_init(&store->debug_device_descriptor, build);
 
 #ifdef __x86_64__
     // set syscall flag in EFER MSR

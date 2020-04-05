@@ -72,7 +72,7 @@ typedef struct {
 } kd_funcs;
 
 typedef struct {
-    uint32_t unknown1;
+    uint32_t version;
 #ifdef __x86_64__
     uint32_t padding;
 #endif
@@ -113,7 +113,8 @@ typedef NTSTATUS (__stdcall KD_INITIALIZE_LIBRARY) (
     DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor
 );
 
-static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports, kd_funcs* funcs);
+static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports,
+                                         kd_funcs* funcs, uint16_t build);
 
 KD_INITIALIZE_LIBRARY* KdInitializeLibrary = NULL;
 static DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
@@ -135,7 +136,7 @@ EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub) {
     return EFI_SUCCESS;
 }
 
-EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPTOR* ddd) {
+EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     EFI_STATUS Status;
     NTSTATUS nt_Status;
     kdnet_exports exports;
@@ -148,7 +149,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
         return Status;
     }
 
-    nt_Status = call_KdInitializeLibrary(ddd, &exports, &funcs);
+    nt_Status = call_KdInitializeLibrary(ddd, &exports, &funcs, build);
     if (!NT_SUCCESS(nt_Status)) {
         print(L"KdInitializeLibrary returned ");
         print_hex((uint32_t)nt_Status);
@@ -300,12 +301,17 @@ static void* __stdcall get_physical_address(void* va) {
 #endif
 }
 
-static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports, kd_funcs* funcs) {
+static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports,
+                                         kd_funcs* funcs, uint16_t build) {
     debug_device_descriptor = ddd;
 
     memset(exports, 0, sizeof(*exports));
 
-    exports->unknown1 = 0x1d; // FIXME - ???
+    if (build >= WIN10_BUILD_1607)
+        exports->version = 0x1e;
+    else
+        exports->version = 0x1d;
+
     exports->funcs = funcs;
     exports->GetDevicePciDataByOffset = get_device_pci_data_by_offset;
     exports->KdStallExecutionProcessor = stall_cpu;
@@ -319,7 +325,7 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exp
     return KdInitializeLibrary(exports, NULL, ddd);
 }
 
-EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd) {
+EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     NTSTATUS Status;
     kdnet_exports exports;
     kd_funcs funcs;
@@ -327,7 +333,7 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd) {
 
     debug_device_descriptor = ddd;
 
-    Status = call_KdInitializeLibrary(ddd, &exports, &funcs);
+    Status = call_KdInitializeLibrary(ddd, &exports, &funcs, build);
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
 
