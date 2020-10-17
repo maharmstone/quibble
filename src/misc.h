@@ -28,7 +28,13 @@
 
 extern EFI_SYSTEM_TABLE* systable;
 
+// #define DEBUG_TO_VAR
+
+#ifdef DEBUG_TO_VAR
+void print(const WCHAR* s);
+#else
 #define print(s) systable->ConOut->OutputString(systable->ConOut, (s))
+#endif
 
 void print_error(const WCHAR* func, EFI_STATUS Status);
 void print_hex(uint64_t v);

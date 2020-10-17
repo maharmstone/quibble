@@ -58,6 +58,20 @@ size_t wcslen(const WCHAR* s) {
     return i;
 }
 
+#ifdef DEBUG_TO_VAR
+#define EFI_QUIBBLE_DEBUG_GUID { 0x94C55CBE, 0xD4B9, 0x43B1, { 0xB0, 0xBE, 0xA0, 0x25, 0x4B, 0xAF, 0x7B, 0x09 } }
+
+void print(const WCHAR* s) {
+    EFI_GUID guid = EFI_QUIBBLE_DEBUG_GUID;
+
+    systable->ConOut->OutputString(systable->ConOut, (CHAR16*)s);
+
+    systable->RuntimeServices->SetVariable(L"debug", &guid,
+                                           EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_APPEND_WRITE,
+                                           wcslen(s) * sizeof(CHAR16), (WCHAR*)s);
+}
+#endif
+
 size_t strlen(const char* s) {
     size_t i = 0;
 
