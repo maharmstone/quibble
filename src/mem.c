@@ -760,8 +760,14 @@ static EFI_STATUS add_hal_mappings(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings) 
         pml4[(HAL_MEMORY >> 39) & 0x1ff].Write = 1;
 
         pdpt = (HARDWARE_PTE_PAE*)(uintptr_t)addr;
-    } else
-        pdpt = (HARDWARE_PTE_PAE*)(uintptr_t)(pml4[(HAL_MEMORY >> 39) & 0x1ff].PageFrameNumber * EFI_PAGE_SIZE);
+    } else {
+        uint64_t ptr;
+
+        ptr = pml4[(HAL_MEMORY >> 39) & 0x1ff].PageFrameNumber;
+        ptr <<= EFI_PAGE_SHIFT;
+
+        pdpt = (HARDWARE_PTE_PAE*)(uintptr_t)ptr;
+    }
 
     if (!pdpt[(HAL_MEMORY >> 30) & 0x1ff].Valid) {
         EFI_STATUS Status;
@@ -786,8 +792,14 @@ static EFI_STATUS add_hal_mappings(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings) 
         pdpt[(HAL_MEMORY >> 30) & 0x1ff].Write = 1;
 
         pd = (HARDWARE_PTE_PAE*)(uintptr_t)addr;
-    } else
-        pd = (HARDWARE_PTE_PAE*)(uintptr_t)(pdpt[(HAL_MEMORY >> 30) & 0x1ff].PageFrameNumber * EFI_PAGE_SIZE);
+    } else {
+        uint64_t ptr;
+
+        ptr = pdpt[(HAL_MEMORY >> 30) & 0x1ff].PageFrameNumber;
+        ptr <<= EFI_PAGE_SHIFT;
+
+        pd = (HARDWARE_PTE_PAE*)(uintptr_t)ptr;
+    }
 
     for (unsigned int i = 0; i < 2; i++) {
         if (!pd[((HAL_MEMORY >> 21) & 0x1ff) + i].Valid) {
