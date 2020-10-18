@@ -75,15 +75,15 @@ void* find_virtual_address(void* pa, LIST_ENTRY* mappings) {
     return NULL;
 }
 
-static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, void* pa, unsigned int pages) {
+static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintptr_t va, uintptr_t pa, unsigned int pages) {
 #ifdef _X86_
     UNUSED(mappings);
 
     if (pae) {
         do {
-            HARDWARE_PTE_PAE* dir = (HARDWARE_PTE_PAE*)(pdpt[(uintptr_t)va >> 30].PageFrameNumber * EFI_PAGE_SIZE);
-            unsigned int index = ((uintptr_t)va >> 21) & 0x1ff;
-            unsigned int index2 = ((uintptr_t)va & 0x1ff000) >> 12;
+            HARDWARE_PTE_PAE* dir = (HARDWARE_PTE_PAE*)(pdpt[va >> 30].PageFrameNumber * EFI_PAGE_SIZE);
+            unsigned int index = (va >> 21) & 0x1ff;
+            unsigned int index2 = (va & 0x1ff000) >> 12;
             HARDWARE_PTE_PAE* page_table;
 
             if (!dir[index].Valid) { // allocate new page table
@@ -106,18 +106,18 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* 
             } else
                 page_table = (HARDWARE_PTE_PAE*)(dir[index].PageFrameNumber * EFI_PAGE_SIZE);
 
-            page_table[index2].PageFrameNumber = (uintptr_t)pa / EFI_PAGE_SIZE;
+            page_table[index2].PageFrameNumber = pa / EFI_PAGE_SIZE;
             page_table[index2].Valid = 1;
             page_table[index2].Write = 1;
 
-            va = (void*)((uintptr_t)va + EFI_PAGE_SIZE);
-            pa = (void*)((uintptr_t)pa + EFI_PAGE_SIZE);
+            va += EFI_PAGE_SIZE;
+            pa += EFI_PAGE_SIZE;
             pages--;
         } while (pages > 0);
     } else {
         do {
-            unsigned int index = (uintptr_t)va >> 22;
-            unsigned int index2 = ((uintptr_t)va & 0x3ff000) >> 12;
+            unsigned int index = va >> 22;
+            unsigned int index2 = (va & 0x3ff000) >> 12;
             HARDWARE_PTE* page_table;
 
             if (!page_directory[index].Valid) { // allocate new page table
@@ -140,12 +140,12 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* 
             } else
                 page_table = (HARDWARE_PTE*)(page_directory[index].PageFrameNumber * EFI_PAGE_SIZE);
 
-            page_table[index2].PageFrameNumber = (uintptr_t)pa / EFI_PAGE_SIZE;
+            page_table[index2].PageFrameNumber = pa / EFI_PAGE_SIZE;
             page_table[index2].Valid = 1;
             page_table[index2].Write = 1;
 
-            va = (void*)((uintptr_t)va + EFI_PAGE_SIZE);
-            pa = (void*)((uintptr_t)pa + EFI_PAGE_SIZE);
+            va += EFI_PAGE_SIZE;
+            pa += EFI_PAGE_SIZE;
             pages--;
         } while (pages > 0);
     }
@@ -154,10 +154,10 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* 
         HARDWARE_PTE_PAE* pdpt;
         HARDWARE_PTE_PAE* pd;
         HARDWARE_PTE_PAE* pt;
-        unsigned int index = ((uintptr_t)va & 0xff8000000000) >> 39;
-        unsigned int index2 = ((uintptr_t)va & 0x7fc0000000) >> 30;
-        unsigned int index3 = ((uintptr_t)va & 0x3fe00000) >> 21;
-        unsigned int index4 = ((uintptr_t)va & 0x1ff000) >> 12;
+        unsigned int index = (va & 0xff8000000000) >> 39;
+        unsigned int index2 = (va & 0x7fc0000000) >> 30;
+        unsigned int index3 = (va & 0x3fe00000) >> 21;
+        unsigned int index4 = (va & 0x1ff000) >> 12;
 
         if (!pml4[index].Valid) {
             EFI_STATUS Status;
@@ -237,12 +237,12 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* 
         } else
             pt = (HARDWARE_PTE_PAE*)(uintptr_t)(pd[index3].PageFrameNumber * EFI_PAGE_SIZE);
 
-        pt[index4].PageFrameNumber = (uintptr_t)pa / EFI_PAGE_SIZE;
+        pt[index4].PageFrameNumber = pa / EFI_PAGE_SIZE;
         pt[index4].Valid = 1;
         pt[index4].Write = 1;
 
-        va = (void*)((uintptr_t)va + EFI_PAGE_SIZE);
-        pa = (void*)((uintptr_t)pa + EFI_PAGE_SIZE);
+        va += EFI_PAGE_SIZE;
+        pa += EFI_PAGE_SIZE;
         pages--;
     } while (pages > 0);
 #endif
@@ -1028,7 +1028,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
                 if ((uint8_t*)systable >= (uint8_t*)m->pa && (uint8_t*)systable < (uint8_t*)m->pa + (m->pages * EFI_PAGE_SIZE))
                     new_ST = (EFI_SYSTEM_TABLE*)((uint8_t*)systable - (uint8_t*)m->pa + (uint8_t*)m->va);
 
-                Status = map_memory(bs, mappings, m->va, m->pa, m->pages);
+                Status = map_memory(bs, mappings, (uintptr_t)m->va, (uintptr_t)m->pa, m->pages);
                 if (EFI_ERROR(Status)) {
                     print_error(L"map_memory", Status);
                     return Status;
@@ -1048,7 +1048,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
 #ifdef _X86_
     if (pae) { // map cr3
-        Status = map_memory(bs, mappings, (void*)((uintptr_t)pdpt + MM_KSEG0_BASE), pdpt, 1);
+        Status = map_memory(bs, mappings, ((uintptr_t)pdpt + MM_KSEG0_BASE), (uintptr_t)pdpt, 1);
         if (EFI_ERROR(Status)) {
             print_error(L"map_memory", Status);
             return Status;
@@ -1102,7 +1102,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
         return Status;
     }
 
-    Status = map_memory(bs, mappings, va, mdl_pa, mdl_pages);
+    Status = map_memory(bs, mappings, (uintptr_t)va, (uintptr_t)mdl_pa, mdl_pages);
     if (EFI_ERROR(Status)) {
         print_error(L"map_memory", Status);
         return Status;
