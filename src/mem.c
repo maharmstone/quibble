@@ -182,8 +182,17 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
             pml4[index].Write = 1;
 
             pdpt = (HARDWARE_PTE_PAE*)(uintptr_t)addr;
-        } else
-            pdpt = (HARDWARE_PTE_PAE*)(uintptr_t)(pml4[index].PageFrameNumber * EFI_PAGE_SIZE);
+        } else {
+            uint64_t ptr;
+
+            /* Somewhat surprising behaviour from gcc here - combining the following two lines into one
+             * results in the value being sign-extended. Compiler bug? */
+
+            ptr = pml4[index].PageFrameNumber;
+            ptr <<= EFI_PAGE_SHIFT;
+
+            pdpt = (HARDWARE_PTE_PAE*)(uintptr_t)ptr;
+        }
 
         if (!pdpt[index2].Valid) {
             EFI_STATUS Status;
@@ -208,8 +217,14 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
             pdpt[index2].Write = 1;
 
             pd = (HARDWARE_PTE_PAE*)(uintptr_t)addr;
-        } else
-            pd = (HARDWARE_PTE_PAE*)(uintptr_t)(pdpt[index2].PageFrameNumber * EFI_PAGE_SIZE);
+        } else {
+            uint64_t ptr;
+
+            ptr = pdpt[index2].PageFrameNumber;
+            ptr <<= EFI_PAGE_SHIFT;
+
+            pd = (HARDWARE_PTE_PAE*)(uintptr_t)ptr;
+        }
 
         if (!pd[index3].Valid) {
             EFI_STATUS Status;
@@ -234,8 +249,14 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
             pd[index3].Write = 1;
 
             pt = (HARDWARE_PTE_PAE*)(uintptr_t)addr;
-        } else
-            pt = (HARDWARE_PTE_PAE*)(uintptr_t)(pd[index3].PageFrameNumber * EFI_PAGE_SIZE);
+        } else {
+            uint64_t ptr;
+
+            ptr = pd[index3].PageFrameNumber;
+            ptr <<= EFI_PAGE_SHIFT;
+
+            pt = (HARDWARE_PTE_PAE*)(uintptr_t)ptr;
+        }
 
         pt[index4].PageFrameNumber = pa / EFI_PAGE_SIZE;
         pt[index4].Valid = 1;
