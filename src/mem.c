@@ -1201,7 +1201,11 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     va = (uint8_t*)va + (mdl_pages * EFI_PAGE_SIZE);
 
     // get new key
-    bs->GetMemoryMap(&size, NULL, &key, &descsize, &version);
+    Status = bs->GetMemoryMap(&size, NULL, &key, &descsize, &version);
+    if (EFI_ERROR(Status)) {
+        print_error(L"GetMemoryMap", Status);
+        return Status;
+    }
 
     Status = bs->ExitBootServices(image_handle, key);
     if (EFI_ERROR(Status)) {
