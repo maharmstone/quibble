@@ -43,7 +43,7 @@ endif()
 set_target_properties(quibble PROPERTIES SUFFIX ".efi")
 
 include_directories(gnu-efi)
-if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     include_directories(gnu-efi/x86_64)
 elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "X86")
     include_directories(gnu-efi/ia32)
@@ -55,7 +55,7 @@ target_compile_options(quibble PRIVATE
      $<$<CXX_COMPILER_ID:MSVC>:
           /W4>)
 
-if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     add_definitions(-D__x86_64__)
 elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "X86")
     add_definitions(-D_X86_)
