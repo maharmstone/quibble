@@ -1214,6 +1214,20 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
     // get new key
     Status = bs->GetMemoryMap(&size, NULL, &key, &descsize, &version);
+    if (EFI_ERROR(Status) && Status != EFI_BUFFER_TOO_SMALL) {
+        print_error(L"GetMemoryMap", Status);
+        return Status;
+    }
+
+    size *= 2;
+
+    Status = bs->AllocatePool(EfiLoaderData, size, (void**)&mapdesc);
+    if (EFI_ERROR(Status)) {
+        print_error(L"AllocatePool", Status);
+        return Status;
+    }
+
+    Status = bs->GetMemoryMap(&size, mapdesc, &key, &descsize, &version);
     if (EFI_ERROR(Status)) {
         print_error(L"GetMemoryMap", Status);
         return Status;
