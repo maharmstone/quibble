@@ -96,6 +96,7 @@ bool kdnet_loaded = false;
 static DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
 image* kdstub = NULL;
 uint64_t cpu_frequency;
+void* apic = NULL;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -1253,7 +1254,6 @@ static void* allocate_page(EFI_BOOT_SERVICES* bs) {
 
 static EFI_STATUS map_apic(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings) {
     int cpu_info[4];
-    void* apic;
 
     __cpuid(cpu_info, 1);
 
