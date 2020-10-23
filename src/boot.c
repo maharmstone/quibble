@@ -219,6 +219,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
     LOADER_BLOCK2* block2;
     LOADER_EXTENSION_BLOCK1A* extblock1a;
     LOADER_EXTENSION_BLOCK1B* extblock1b;
+    LOADER_EXTENSION_BLOCK1C* extblock1c;
     LOADER_EXTENSION_BLOCK2B* extblock2b;
     LOADER_EXTENSION_BLOCK3* extblock3;
     LOADER_EXTENSION_BLOCK4* extblock4;
@@ -251,6 +252,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         extblock1a = &store->extension_ws03.Block1a;
         loader_pages_spanned = &store->extension_ws03.LoaderPagesSpanned;
         extblock1b = &store->extension_ws03.Block1b;
+        extblock1c = &store->extension_ws03.Block1c;
         extblock2b = NULL;
         extblock3 = NULL;
         extblock4 = NULL;
@@ -278,6 +280,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             extblock1a = &store->extension_vista_sp2.Block1a;
             loader_pages_spanned = &store->extension_vista_sp2.LoaderPagesSpanned;
             extblock1b = &store->extension_vista_sp2.Block1b;
+            extblock1c = &store->extension_vista_sp2.Block1c;
             extblock2b = &store->extension_vista_sp2.Block2b;
 
             store->extension_vista_sp2.Size = sizeof(LOADER_PARAMETER_EXTENSION_VISTA_SP2);
@@ -290,6 +293,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             extblock1a = &store->extension_vista.Block1a;
             loader_pages_spanned = &store->extension_vista.LoaderPagesSpanned;
             extblock1b = &store->extension_vista.Block1b;
+            extblock1c = &store->extension_vista.Block1c;
             extblock2b = &store->extension_vista.Block2b;
 
             store->extension_vista.Size = sizeof(LOADER_PARAMETER_EXTENSION_VISTA);
@@ -313,6 +317,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         extblock1a = &store->extension_win7.Block1a;
         loader_pages_spanned = &store->extension_win7.LoaderPagesSpanned;
         extblock1b = &store->extension_win7.Block1b;
+        extblock1c = &store->extension_win7.Block1c;
         extblock2b = &store->extension_win7.Block2b;
         extblock3 = &store->extension_win7.Block3;
         extblock4 = NULL;
@@ -345,6 +350,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         extblock1a = &store->extension_win8.Block1a;
         loader_pages_spanned = NULL;
         extblock1b = &store->extension_win8.Block1b;
+        extblock1c = &store->extension_win8.Block1c;
         extblock2b = &store->extension_win8.Block2b;
         extblock3 = &store->extension_win8.Block3;
         extblock4 = &store->extension_win8.Block4;
@@ -386,6 +392,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         extblock1a = &store->extension_win81.Block1a;
         loader_pages_spanned = NULL;
         extblock1b = &store->extension_win81.Block1b;
+        extblock1c = &store->extension_win81.Block1c;
         extblock2b = &store->extension_win81.Block2b;
         extblock3 = &store->extension_win81.Block3;
         extblock4 = &store->extension_win81.Block4;
@@ -470,6 +477,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         if (build >= WIN10_BUILD_1903) {
             extblock1a = &store->extension_win10_1903.Block1a;
             extblock1b = &store->extension_win10_1903.Block1b;
+            extblock1c = &store->extension_win10_1903.Block1c;
             extblock2b = &store->extension_win10_1903.Block2b;
             extblock3 = &store->extension_win10_1903.Block3;
             extblock4 = &store->extension_win10_1903.Block4;
@@ -486,6 +494,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         } else if (build == WIN10_BUILD_1809) {
             extblock1a = &store->extension_win10_1809.Block1a;
             extblock1b = &store->extension_win10_1809.Block1b;
+            extblock1c = &store->extension_win10_1809.Block1c;
             extblock2b = &store->extension_win10_1809.Block2b;
             extblock3 = &store->extension_win10_1809.Block3;
             extblock4 = &store->extension_win10_1809.Block4;
@@ -500,6 +509,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         } else if (build >= WIN10_BUILD_1703) {
             extblock1a = &store->extension_win10_1703.Block1a;
             extblock1b = &store->extension_win10_1703.Block1b;
+            extblock1c = &store->extension_win10_1703.Block1c;
             extblock2b = &store->extension_win10_1703.Block2b;
             extblock3 = &store->extension_win10_1703.Block3;
             extblock4 = &store->extension_win10_1703.Block4;
@@ -527,6 +537,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         } else if (build >= WIN10_BUILD_1607) {
             extblock1a = &store->extension_win10_1607.Block1a;
             extblock1b = &store->extension_win10_1607.Block1b;
+            extblock1c = &store->extension_win10_1607.Block1c;
             extblock2b = &store->extension_win10_1607.Block2b;
             extblock3 = &store->extension_win10_1607.Block3;
             extblock4 = &store->extension_win10_1607.Block4;
@@ -545,6 +556,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         } else {
             extblock1a = &store->extension_win10.Block1a;
             extblock1b = &store->extension_win10.Block1b;
+            extblock1c = &store->extension_win10.Block1c;
             extblock2b = &store->extension_win10.Block2b;
             extblock3 = &store->extension_win10.Block3;
             extblock4 = &store->extension_win10.Block4;
@@ -583,8 +595,8 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
 
     *va = (uint8_t*)*va + (STACK_SIZE * EFI_PAGE_SIZE);
 
-    InitializeListHead(&extblock1b->FirmwareDescriptorListHead);
-    extblock1b->AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
+    InitializeListHead(&extblock1c->FirmwareDescriptorListHead);
+    extblock1c->AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
 
     block2->Extension = &store->extension;
     block1c->NlsData = &store->nls;
@@ -781,7 +793,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
     LOADER_BLOCK1A* block1a;
     LOADER_BLOCK1C* block1c;
     LOADER_BLOCK2* block2;
-    LOADER_EXTENSION_BLOCK1B* extblock1b;
+    LOADER_EXTENSION_BLOCK1C* extblock1c;
     LOADER_EXTENSION_BLOCK2B* extblock2b;
     LOADER_EXTENSION_BLOCK3* extblock3;
     LOADER_EXTENSION_BLOCK4* extblock4;
@@ -791,7 +803,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         block1a = &store->loader_block_ws03.Block1a;
         block1c = &store->loader_block_ws03.Block1c;
         block2 = &store->loader_block_ws03.Block2;
-        extblock1b = &store->extension_ws03.Block1b;
+        extblock1c = &store->extension_ws03.Block1c;
         extblock2b = NULL;
         extblock3 = NULL;
         extblock4 = NULL;
@@ -800,7 +812,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         block1a = &store->loader_block_vista.Block1a;
         block1c = &store->loader_block_vista.Block1c;
         block2 = &store->loader_block_vista.Block2;
-        extblock1b = &store->extension_vista.Block1b;
+        extblock1c = &store->extension_vista.Block1c;
         extblock2b = &store->extension_vista.Block2b;
         extblock3 = NULL;
         extblock4 = NULL;
@@ -815,7 +827,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         block1a = &store->loader_block_win7.Block1a;
         block1c = &store->loader_block_win7.Block1c;
         block2 = &store->loader_block_win7.Block2;
-        extblock1b = &store->extension_win7.Block1b;
+        extblock1c = &store->extension_win7.Block1c;
         extblock2b = &store->extension_win7.Block2b;
         extblock3 = &store->extension_win7.Block3;
         extblock4 = NULL;
@@ -830,7 +842,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         block1a = &store->loader_block_win8.Block1a;
         block1c = &store->loader_block_win8.Block1c;
         block2 = &store->loader_block_win8.Block2;
-        extblock1b = &store->extension_win8.Block1b;
+        extblock1c = &store->extension_win8.Block1c;
         extblock2b = &store->extension_win8.Block2b;
         extblock3 = &store->extension_win8.Block3;
         extblock4 = &store->extension_win8.Block4;
@@ -851,7 +863,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         block1a = &store->loader_block_win81.Block1a;
         block1c = &store->loader_block_win81.Block1c;
         block2 = &store->loader_block_win81.Block2;
-        extblock1b = &store->extension_win81.Block1b;
+        extblock1c = &store->extension_win81.Block1c;
         extblock2b = &store->extension_win81.Block2b;
         extblock3 = &store->extension_win81.Block3;
         extblock4 = &store->extension_win81.Block4;
@@ -894,21 +906,21 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         fix_list_mapping(&store->loader_block_win10.FirmwareInformation.EfiInformation.FirmwareResourceList, mappings);
 
         if (build >= WIN10_BUILD_1903) {
-            extblock1b = &store->extension_win10_1903.Block1b;
+            extblock1c = &store->extension_win10_1903.Block1c;
             extblock2b = &store->extension_win10_1903.Block2b;
             extblock3 = &store->extension_win10_1903.Block3;
             extblock4 = &store->extension_win10_1903.Block4;
             extblock5a = &store->extension_win10_1903.Block5a;
             extblock6 = &store->extension_win10_1903.Block6;
         } else if (build == WIN10_BUILD_1809) {
-            extblock1b = &store->extension_win10_1809.Block1b;
+            extblock1c = &store->extension_win10_1809.Block1c;
             extblock2b = &store->extension_win10_1809.Block2b;
             extblock3 = &store->extension_win10_1809.Block3;
             extblock4 = &store->extension_win10_1809.Block4;
             extblock5a = &store->extension_win10_1809.Block5a;
             extblock6 = &store->extension_win10_1809.Block6;
         } else if (build >= WIN10_BUILD_1703) {
-            extblock1b = &store->extension_win10_1703.Block1b;
+            extblock1c = &store->extension_win10_1703.Block1c;
             extblock2b = &store->extension_win10_1703.Block2b;
             extblock3 = &store->extension_win10_1703.Block3;
             extblock4 = &store->extension_win10_1703.Block4;
@@ -918,7 +930,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             store->extension_win10_1703.LoaderPerformanceData =
                 find_virtual_address(store->extension_win10_1703.LoaderPerformanceData, mappings);
         } else if (build >= WIN10_BUILD_1607) {
-            extblock1b = &store->extension_win10_1607.Block1b;
+            extblock1c = &store->extension_win10_1607.Block1c;
             extblock2b = &store->extension_win10_1607.Block2b;
             extblock3 = &store->extension_win10_1607.Block3;
             extblock4 = &store->extension_win10_1607.Block4;
@@ -928,7 +940,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             store->extension_win10_1607.LoaderPerformanceData =
                 find_virtual_address(store->extension_win10_1607.LoaderPerformanceData, mappings);
         } else {
-            extblock1b = &store->extension_win10.Block1b;
+            extblock1c = &store->extension_win10.Block1c;
             extblock2b = &store->extension_win10.Block2b;
             extblock3 = &store->extension_win10.Block3;
             extblock4 = &store->extension_win10.Block4;
@@ -974,7 +986,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
     if (block1c->LoadOptions)
         block1c->LoadOptions = find_virtual_address(block1c->LoadOptions, mappings);
 
-    fix_list_mapping(&extblock1b->FirmwareDescriptorListHead, mappings);
+    fix_list_mapping(&extblock1c->FirmwareDescriptorListHead, mappings);
 
     if (extblock2b)
         fix_list_mapping(&extblock2b->BootApplicationPersistentData, mappings);
