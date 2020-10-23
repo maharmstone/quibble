@@ -61,6 +61,7 @@ typedef struct {
         LOADER_PARAMETER_EXTENSION_WIN10_1703 extension_win10_1703;
         LOADER_PARAMETER_EXTENSION_WIN10_1809 extension_win10_1809;
         LOADER_PARAMETER_EXTENSION_WIN10_1903 extension_win10_1903;
+        LOADER_PARAMETER_EXTENSION_WIN10_2004 extension_win10_2004;
     };
 
     char strings[1024];
@@ -474,7 +475,22 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         store->loader_block_win10.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
         InitializeListHead(&store->loader_block_win10.FirmwareInformation.EfiInformation.FirmwareResourceList);
 
-        if (build >= WIN10_BUILD_1903) {
+        if (build >= WIN10_BUILD_2004) {
+            extblock1a = &store->extension_win10_2004.Block1a;
+            extblock1b = &store->extension_win10_2004.Block1b;
+            extblock1c = &store->extension_win10_2004.Block1c;
+            extblock2b = &store->extension_win10_2004.Block2b;
+            extblock3 = &store->extension_win10_2004.Block3;
+            extblock4 = &store->extension_win10_2004.Block4;
+            extblock5a = &store->extension_win10_2004.Block5a;
+            extblock6 = &store->extension_win10_2004.Block6;
+            store->extension_win10_2004.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_2004);
+
+            store->extension_win10_2004.Profile.Status = 2;
+            store->extension_win10_2004.BootEntropyResult.maxEntropySources = 10;
+            store->extension_win10_2004.MajorRelease = NTDDI_WIN10_20H1;
+            store->extension_win10_2004.ProcessorCounterFrequency = cpu_frequency;
+        } else if (build >= WIN10_BUILD_1903) {
             extblock1a = &store->extension_win10_1903.Block1a;
             extblock1b = &store->extension_win10_1903.Block1b;
             extblock1c = &store->extension_win10_1903.Block1c;
@@ -905,7 +921,14 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
 
         fix_list_mapping(&store->loader_block_win10.FirmwareInformation.EfiInformation.FirmwareResourceList, mappings);
 
-        if (build >= WIN10_BUILD_1903) {
+        if (build >= WIN10_BUILD_2004) {
+            extblock1c = &store->extension_win10_2004.Block1c;
+            extblock2b = &store->extension_win10_2004.Block2b;
+            extblock3 = &store->extension_win10_2004.Block3;
+            extblock4 = &store->extension_win10_2004.Block4;
+            extblock5a = &store->extension_win10_2004.Block5a;
+            extblock6 = &store->extension_win10_2004.Block6;
+        } else if (build >= WIN10_BUILD_1903) {
             extblock1c = &store->extension_win10_1903.Block1c;
             extblock2b = &store->extension_win10_1903.Block2b;
             extblock3 = &store->extension_win10_1903.Block3;

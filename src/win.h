@@ -92,6 +92,7 @@
 #define WIN10_BUILD_1809            17763
 #define WIN10_BUILD_1903            18362
 #define WIN10_BUILD_1909            18363
+#define WIN10_BUILD_2004            19041
 
 #define NTDDI_WIN7                          0x06010000
 #define NTDDI_WIN8                          0x06020000
@@ -104,6 +105,7 @@
 #define NTDDI_WIN10_RS4                     0x0a000005 // 1803
 #define NTDDI_WIN10_RS5                     0x0a000006 // 1809
 #define NTDDI_WIN10_19H1                    0x0a000007 // 1903
+#define NTDDI_WIN10_20H1                    0x0a000008 // 2004
 
 #define STATUS_NOT_IMPLEMENTED 0xC0000002
 
