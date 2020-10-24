@@ -62,7 +62,7 @@
 #define APIC_BASE               0xfffe0000
 #define KI_USER_SHARED_DATA     0xffdf0000
 #define KIP0PCRADDRESS          0xffdff000
-#define PCR_PAGES               7 // good enough up to 1909, at least
+#define PCR_PAGES               7 // 0x6020 bytes as of 2004
 #elif defined(__x86_64__)
 #define SELFMAP                 0xfffff68000000000
 #define SELFMAP_PD              0xfffff6fb40000000
@@ -70,7 +70,7 @@
 #define SELFMAP_PML4            0xfffff6fb7dbed000
 #define APIC_BASE               0xfffffffffffe0000
 #define KI_USER_SHARED_DATA     0xfffff78000000000
-#define PCR_PAGES               0xa // good enough up to 1909, at least
+#define PCR_PAGES               0xc // 0xb080 bytes as of 2004
 #endif
 
 #define _WIN32_WINNT_NT4                    0x0400
