@@ -4011,6 +4011,27 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         va = (uint8_t*)va + (pages * EFI_PAGE_SIZE);
 
         tssphys->Rsp0 = (uintptr_t)va; // end of stack
+
+        // Some interrupts, such as 2 (NMI), have their own stacks. We allocate all 8 just in case,
+        // but Windows won't use all of them.
+
+        for (unsigned int i = 0; i < 8; i++) {
+            Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, pages, &addr);
+            if (EFI_ERROR(Status)) {
+                print_error(L"AllocatePages", Status);
+                goto end;
+            }
+
+            Status = add_mapping(bs, &mappings, va, (void*)(uintptr_t)addr, pages, LoaderStartupKernelStack);
+            if (EFI_ERROR(Status)) {
+                print_error(L"add_mapping", Status);
+                goto end;
+            }
+
+            va = (uint8_t*)va + (pages * EFI_PAGE_SIZE);
+
+            tssphys->Ist[i] = (uintptr_t)va; // end of stack
+        }
     }
 #endif
 
