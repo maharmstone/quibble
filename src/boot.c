@@ -69,9 +69,7 @@ typedef struct {
     ARC_DISK_INFORMATION arc_disk_information;
     LOADER_PERFORMANCE_DATA loader_performance_data;
     DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
-#if 0
     BOOT_GRAPHICS_CONTEXT bgc;
-#endif
 } loader_store;
 
 typedef struct _command_line {
@@ -3064,7 +3062,6 @@ static void parse_options(const char* options, command_line* cmdline) {
     }
 }
 
-#if 0
 static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, LIST_ENTRY* mappings, void** va,
                                     BOOT_GRAPHICS_CONTEXT* bgc, LOADER_EXTENSION_BLOCK3* extblock3) {
     EFI_GUID guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
@@ -3131,27 +3128,22 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
             goto end;
         }
 
-        // FIXME
-
-        bgc->Unknown2 = 0xc4000101; // ???
-        bgc->Height = 600; // FIXME
-        bgc->Width = 800; // FIXME
-        bgc->PixelsPerScanLine = 800; // FIXME
-        bgc->PixelFormat = 5; // pixel format?
-        bgc->Unknown3 = 0x20; // bits per pixel?
-        bgc->FrameBuffer = *va;
+        bgc->internal.unk1 = 1; // ?
+        bgc->internal.unk2 = 1; // ?
+        bgc->internal.unk3 = 0; // ?
+        bgc->internal.unk4 = 0xc4; // ? (0xf4 is BIOS graphics?)
+        bgc->internal.height = 600; // FIXME
+        bgc->internal.width = 800; // FIXME
+        bgc->internal.pixels_per_scan_line = 800; // FIXME
+        bgc->internal.format = 5; // ?
+#ifdef __x86_64__
+        bgc->internal.bits_per_pixel = 32;
+#endif
+        bgc->internal.framebuffer = *va;
 
         *va = (uint8_t*)*va + (PAGE_COUNT(gop->Mode->FrameBufferSize) * EFI_PAGE_SIZE);
 
         extblock3->BgContext = bgc;
-
-//         print(L"Device ");
-//         print_hex(i);
-//         print(L", type ");
-//         print_hex(devpath->Type);
-//         print(L", subtype ");
-//         print_hex(devpath->SubType);
-//         print(L"\r\n");
 
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
 
@@ -3166,7 +3158,6 @@ end:
 
     return Status;
 }
-#endif
 
 static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** va, DEBUG_DEVICE_DESCRIPTOR* ddd) {
     EFI_STATUS Status;
@@ -4049,7 +4040,6 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         va = (uint8_t*)va + (PAGE_COUNT(store->debug_device_descriptor.TransportData.HwContextSize) * EFI_PAGE_SIZE);
     }
 
-#if 0
     if (version >= _WIN32_WINNT_WIN8) {
         Status = set_graphics_mode(bs, image_handle, &mappings, &va, &store->bgc, extblock3);
         if (EFI_ERROR(Status)) {
@@ -4060,15 +4050,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         Status = EFI_NOT_FOUND;
 
     if (EFI_ERROR(Status)) {
-#endif
         Status = initialize_csm(image_handle, bs);
         if (EFI_ERROR(Status)) {
             print_error(L"initialize_csm", Status);
             goto end;
         }
-#if 0
     }
-#endif
 
     fix_store_mapping(store, store_va, &mappings, version, build);
 
