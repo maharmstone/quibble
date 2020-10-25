@@ -3128,6 +3128,7 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
             goto end;
         }
 
+        bgc->unk6 = 4; // 4 means initialized(?)
         bgc->internal.unk1 = 1; // ?
         bgc->internal.unk2 = 1; // ?
         bgc->internal.unk3 = 0; // ?
