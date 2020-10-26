@@ -3078,6 +3078,7 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
 
     for (unsigned int i = 0; i < count; i++) {
         EFI_GRAPHICS_OUTPUT_PROTOCOL* gop = NULL;
+        EFI_PHYSICAL_ADDRESS rp;
 
         Status = bs->OpenProtocol(handles[i], &guid, (void**)&gop, image_handle, NULL,
                                   EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
@@ -3143,6 +3144,29 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         bgc->internal.framebuffer = *va;
 
         *va = (uint8_t*)*va + (PAGE_COUNT(gop->Mode->FrameBufferSize) * EFI_PAGE_SIZE);
+
+        // allocate and map reserve pool (used as scratch space?)
+
+        bgc->reserve_pool_size = 0x4000;
+
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(bgc->reserve_pool_size), &rp);
+        if (EFI_ERROR(Status)) {
+            print_error(L"AllocatePages", Status);
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            goto end;
+        }
+
+        Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)rp,
+                             PAGE_COUNT(bgc->reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
+        if (EFI_ERROR(Status)) {
+            print_error(L"add_mapping", Status);
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            goto end;
+        }
+
+        bgc->reserve_pool = *va;
+
+        *va = (uint8_t*)*va + (PAGE_COUNT(bgc->reserve_pool_size) * EFI_PAGE_SIZE);
 
         extblock3->BgContext = bgc;
 
