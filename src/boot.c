@@ -3073,12 +3073,11 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
     if (EFI_ERROR(Status))
         return Status;
 
-    print_hex(count);
-    print(L" graphics devices found.\r\n");
-
     for (unsigned int i = 0; i < count; i++) {
         EFI_GRAPHICS_OUTPUT_PROTOCOL* gop = NULL;
         EFI_PHYSICAL_ADDRESS rp;
+        unsigned int mode = 0;
+        unsigned int pixels = 0;
 
         Status = bs->OpenProtocol(handles[i], &guid, (void**)&gop, image_handle, NULL,
                                   EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
@@ -3086,9 +3085,6 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
             print_error(L"OpenProtocol", Status);
             continue;
         }
-
-        print_hex(count);
-        print(L" modes.\r\n");
 
         for (unsigned int j = 0; j < gop->Mode->MaxMode; j++) {
             UINTN size;
@@ -3100,19 +3096,41 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
                 continue;
             }
 
+#if 0
             print(L"Mode ");
-            print_hex(j);
-            print(L": ");
+            print_dec(j);
+            print(L": PixelFormat = ");
+            print_dec(info->PixelFormat);
+            print(L", ");
             print_dec(info->HorizontalResolution);
             print(L"x");
             print_dec(info->VerticalResolution);
             print(L"\r\n");
-            // FIXME
+
+            if (info->PixelFormat == PixelBitMask) {
+                print(L"Bit mask: red = ");
+                print_hex(info->PixelInformation.RedMask);
+                print(L", green = ");
+                print_hex(info->PixelInformation.GreenMask);
+                print(L", blue = ");
+                print_hex(info->PixelInformation.BlueMask);
+                print(L"\r\n");
+            }
+#endif
+
+            // choose the best mode
+            // FIXME - allow user to override this
+
+            if (info->PixelFormat == PixelBlueGreenRedReserved8BitPerColor &&
+                info->HorizontalResolution * info->VerticalResolution > pixels) {
+                mode = j;
+                pixels = info->HorizontalResolution * info->VerticalResolution;
+            }
+
+            // FIXME - does Windows support anything other than BGR?
         }
 
-        // FIXME - choose best mode
-
-        Status = gop->SetMode(gop, 1);
+        Status = gop->SetMode(gop, mode);
         if (EFI_ERROR(Status)) {
             print_error(L"SetMode", Status);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
@@ -3134,9 +3152,9 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         bgc->internal.unk2 = 1; // ?
         bgc->internal.unk3 = 0; // ?
         bgc->internal.unk4 = 0xc4; // ? (0xf4 is BIOS graphics?)
-        bgc->internal.height = 600; // FIXME
-        bgc->internal.width = 800; // FIXME
-        bgc->internal.pixels_per_scan_line = 800; // FIXME
+        bgc->internal.height = gop->Mode->Info->VerticalResolution;
+        bgc->internal.width = gop->Mode->Info->HorizontalResolution;
+        bgc->internal.pixels_per_scan_line = gop->Mode->Info->PixelsPerScanLine;
         bgc->internal.format = 5; // ?
 #ifdef __x86_64__
         bgc->internal.bits_per_pixel = 32;
