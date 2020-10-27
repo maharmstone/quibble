@@ -1016,7 +1016,12 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         for (unsigned int j = 0; j < MAXIMUM_DEBUG_BARS; j++) {
             void* res;
 
-            if (!EFI_ERROR(io->GetBarAttributes(io, j, NULL, &res))) {
+            Status = io->GetBarAttributes(io, j, NULL, &res);
+
+            if (EFI_ERROR(Status)) {
+                if (Status != EFI_UNSUPPORTED) // index not valid for this controller
+                    print_error(L"GetBarAttributes", Status);
+            } else {
                 pci_bar_info* info = (pci_bar_info*)res;
 
                 if (info->space_descriptor != 0x8a) {
@@ -1043,6 +1048,8 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
                 bs->FreePool(res);
             }
         }
+
+        Status = EFI_SUCCESS;
 
         bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
