@@ -96,6 +96,8 @@ static DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
 image* kdstub = NULL;
 uint64_t cpu_frequency;
 void* apic = NULL;
+void* system_font = NULL;
+size_t system_font_size = 0;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -3186,6 +3188,23 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
 
         *va = (uint8_t*)*va + (PAGE_COUNT(bgc->reserve_pool_size) * EFI_PAGE_SIZE);
 
+        // map fonts
+
+        if (system_font) {
+            Status = add_mapping(bs, mappings, *va, system_font, PAGE_COUNT(system_font_size),
+                                 LoaderFirmwarePermanent); // FIXME - what should the memory type be?
+            if (EFI_ERROR(Status)) {
+                print_error(L"add_mapping", Status);
+                bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+                goto end;
+            }
+
+            bgc->system_font = *va;
+            bgc->system_font_size = system_font_size;
+
+            *va = (uint8_t*)*va + (PAGE_COUNT(system_font_size) * EFI_PAGE_SIZE);
+        }
+
         extblock3->BgContext = bgc;
 
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
@@ -3232,6 +3251,30 @@ static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappin
 //     }
 
     *va = va2;
+
+    return EFI_SUCCESS;
+}
+
+static EFI_STATUS load_fonts(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir) {
+    EFI_STATUS Status;
+    EFI_FILE_HANDLE fonts = NULL;
+
+    Status = open_file(windir, &fonts, L"Fonts");
+    if (EFI_ERROR(Status)) {
+        print(L"Could not open Fonts directory.\r\n");
+        print_error(L"open_file", Status);
+        return Status;
+    }
+
+    // FIXME - allow user to choose font?
+
+    // Windows 10 uses Segoe Light for system, Segoe Mono Boot for console
+
+    Status = read_file(bs, fonts, L"arial.ttf", &system_font, &system_font_size);
+    if (EFI_ERROR(Status)) {
+        print_error(L"read_file", Status);
+        return Status;
+    }
 
     return EFI_SUCCESS;
 }
@@ -3986,6 +4029,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     if (EFI_ERROR(Status)) {
         print_error(L"add_mapping", Status);
         goto end;
+    }
+
+    if (version >= _WIN32_WINNT_WIN8) {
+        Status = load_fonts(bs, windir);
+        if (EFI_ERROR(Status))
+            print_error(L"load_fonts", Status); // non-fatal
     }
 
     windir->Close(windir);
