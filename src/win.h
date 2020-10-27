@@ -3406,13 +3406,13 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding2;
 #endif
-    void* unk20;
-    void* unk21;
+    void* string_resources;
+    void* progress_resources;
     uint8_t edid[128];
+    uint32_t unk20;
+    uint32_t unk21;
     uint32_t unk22;
     uint32_t unk23;
-    uint32_t unk24;
-    uint32_t unk25;
 } BOOT_GRAPHICS_CONTEXT;
 
 #ifdef _X86_
@@ -3454,13 +3454,13 @@ static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk18) == 0xa8, "BOOT_GRAPHICS_CON
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk19) == 0xac, "BOOT_GRAPHICS_CONTEXT unk19");
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, reserve_pool) == 0xb0, "BOOT_GRAPHICS_CONTEXT reserve_pool");
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, reserve_pool_size) == 0xb4, "BOOT_GRAPHICS_CONTEXT reserve_pool_size");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk20) == 0xb8, "BOOT_GRAPHICS_CONTEXT unk20");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk21) == 0xbc, "BOOT_GRAPHICS_CONTEXT unk21");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, string_resources) == 0xb8, "BOOT_GRAPHICS_CONTEXT string_resources");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, progress_resources) == 0xbc, "BOOT_GRAPHICS_CONTEXT progress_resources");
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, edid) == 0xc0, "BOOT_GRAPHICS_CONTEXT edid");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk22) == 0x140, "BOOT_GRAPHICS_CONTEXT unk22");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk23) == 0x144, "BOOT_GRAPHICS_CONTEXT unk23");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk24) == 0x148, "BOOT_GRAPHICS_CONTEXT unk24");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk25) == 0x14c, "BOOT_GRAPHICS_CONTEXT unk25");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk20) == 0x140, "BOOT_GRAPHICS_CONTEXT unk20");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk21) == 0x144, "BOOT_GRAPHICS_CONTEXT unk21");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk22) == 0x148, "BOOT_GRAPHICS_CONTEXT unk22");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk23) == 0x14c, "BOOT_GRAPHICS_CONTEXT unk23");
 #elif defined(__x86_64__)
 static_assert(sizeof(BOOT_GRAPHICS_CONTEXT) == 0x1a0, "BOOT_GRAPHICS_CONTEXT has incorrect size.");
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk1) == 0x0, "BOOT_GRAPHICS_CONTEXT unk1");
@@ -3500,11 +3500,11 @@ static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk18) == 0xe4, "BOOT_GRAPHICS_CON
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk19) == 0xe8, "BOOT_GRAPHICS_CONTEXT unk19");
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, reserve_pool) == 0xf0, "BOOT_GRAPHICS_CONTEXT reserve_pool");
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, reserve_pool_size) == 0xf8, "BOOT_GRAPHICS_CONTEXT reserve_pool_size");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk20) == 0x100, "BOOT_GRAPHICS_CONTEXT unk20");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk21) == 0x108, "BOOT_GRAPHICS_CONTEXT unk21");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, string_resources) == 0x100, "BOOT_GRAPHICS_CONTEXT string_resources");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, progress_resources) == 0x108, "BOOT_GRAPHICS_CONTEXT progress_resources");
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, edid) == 0x110, "BOOT_GRAPHICS_CONTEXT edid");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk22) == 0x190, "BOOT_GRAPHICS_CONTEXT unk22");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk23) == 0x194, "BOOT_GRAPHICS_CONTEXT unk23");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk24) == 0x198, "BOOT_GRAPHICS_CONTEXT unk24");
-static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk25) == 0x19c, "BOOT_GRAPHICS_CONTEXT unk25");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk20) == 0x190, "BOOT_GRAPHICS_CONTEXT unk20");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk21) == 0x194, "BOOT_GRAPHICS_CONTEXT unk21");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk22) == 0x198, "BOOT_GRAPHICS_CONTEXT unk22");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk23) == 0x19c, "BOOT_GRAPHICS_CONTEXT unk23");
 #endif
