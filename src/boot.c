@@ -3246,7 +3246,7 @@ static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappin
         if (ddd->BaseAddress[i].Valid && ddd->BaseAddress[i].Type == CmResourceTypeMemory) {
             // FIXME - disable write-caching etc.
             Status = add_mapping(bs, mappings, va2, ddd->BaseAddress[i].TranslatedAddress,
-                                 ddd->BaseAddress[i].Length / EFI_PAGE_SIZE, LoaderFirmwarePermanent);
+                                 PAGE_COUNT(ddd->BaseAddress[i].Length), LoaderFirmwarePermanent);
             if (EFI_ERROR(Status)) {
                 print_error(L"add_mapping", Status);
                 return Status;
