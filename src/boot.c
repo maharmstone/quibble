@@ -98,6 +98,8 @@ uint64_t cpu_frequency;
 void* apic = NULL;
 void* system_font = NULL;
 size_t system_font_size = 0;
+void* console_font = NULL;
+size_t console_font_size = 0;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -3205,6 +3207,21 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
             *va = (uint8_t*)*va + (PAGE_COUNT(system_font_size) * EFI_PAGE_SIZE);
         }
 
+        if (console_font) {
+            Status = add_mapping(bs, mappings, *va, console_font, PAGE_COUNT(console_font_size),
+                                 LoaderFirmwarePermanent); // FIXME - what should the memory type be?
+            if (EFI_ERROR(Status)) {
+                print_error(L"add_mapping", Status);
+                bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+                goto end;
+            }
+
+            bgc->console_font = *va;
+            bgc->console_font_size = console_font_size;
+
+            *va = (uint8_t*)*va + (PAGE_COUNT(console_font_size) * EFI_PAGE_SIZE);
+        }
+
         extblock3->BgContext = bgc;
 
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
@@ -3266,11 +3283,17 @@ static EFI_STATUS load_fonts(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir) {
         return Status;
     }
 
-    // FIXME - allow user to choose font?
+    // FIXME - allow user to choose fonts?
 
     // Windows 10 uses Segoe Light for system, Segoe Mono Boot for console
 
     Status = read_file(bs, fonts, L"arial.ttf", &system_font, &system_font_size);
+    if (EFI_ERROR(Status)) {
+        print_error(L"read_file", Status);
+        return Status;
+    }
+
+    Status = read_file(bs, fonts, L"cour.ttf", &console_font, &console_font_size);
     if (EFI_ERROR(Status)) {
         print_error(L"read_file", Status);
         return Status;
