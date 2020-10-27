@@ -911,6 +911,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         EFI_DEVICE_PATH_PROTOCOL* device_path;
         ACPI_HID_DEVICE_PATH* acpi_dp;
         PCI_DEVICE_PATH* pci_dp;
+        unsigned int k;
 
         Status = bs->OpenProtocol(handles[i], &guid, (void**)&io, image_handle, NULL,
                                   EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
@@ -1010,6 +1011,8 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         ddd->NameSpace = KdNameSpacePCI;
         // FIXME - TransportType, TransportData
 
+        k = 0;
+
         for (unsigned int j = 0; j < MAXIMUM_DEBUG_BARS; j++) {
             void* res;
 
@@ -1026,13 +1029,15 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
                     print(L".\r\n");
                 } else {
                     if (info->resource_type == 0)
-                        ddd->BaseAddress[j].Type = CmResourceTypeMemory;
+                        ddd->BaseAddress[k].Type = CmResourceTypeMemory;
                     else
-                        ddd->BaseAddress[j].Type = CmResourceTypePort;
+                        ddd->BaseAddress[k].Type = CmResourceTypePort;
 
-                    ddd->BaseAddress[j].Valid = 1;
-                    ddd->BaseAddress[j].TranslatedAddress = (uint8_t*)(uintptr_t)info->address_minimum;
-                    ddd->BaseAddress[j].Length = info->address_length;
+                    ddd->BaseAddress[k].Valid = 1;
+                    ddd->BaseAddress[k].TranslatedAddress = (uint8_t*)(uintptr_t)info->address_minimum;
+                    ddd->BaseAddress[k].Length = info->address_length;
+
+                    k++;
                 }
 
                 bs->FreePool(res);
