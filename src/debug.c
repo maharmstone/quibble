@@ -76,7 +76,7 @@ typedef struct {
 
 typedef struct {
     GET_DEVICE_PCI_DATA_BY_OFFSET GetDevicePciDataByOffset;
-    void* unknown3;
+    void* SetDevicePciDataByOffset;
     GET_PHYSICAL_ADDRESS GetPhysicalAddress;
     STALL_EXECUTION_PROCESSOR KdStallExecutionProcessor;
     void* READ_REGISTER_UCHAR;
@@ -87,19 +87,20 @@ typedef struct {
     void* WRITE_REGISTER_USHORT;
     WRITE_REGISTER_ULONG WRITE_REGISTER_ULONG;
     void* WRITE_REGISTER_ULONG64;
-    void* unknown10;
-    void* unknown11;
-    void* unknown12;
-    void* unknown13;
+    void* READ_PORT_UCHAR;
+    void* READ_PORT_USHORT;
+    void* READ_PORT_ULONG;
+    void* unknown1; // READ_PORT_ULONG64?
     void* WRITE_PORT_UCHAR;
     void* WRITE_PORT_USHORT;
     WRITE_PORT_ULONG WRITE_PORT_ULONG;
-    void* unknown17;
-    void* unknown18;
-    void* unknown19;
-    void* unknown20;
-    void* unknown21;
+    void* unknown2; // WRITE_PORT_ULONG64?
+    void* PoSetHiberRange;
+    void* KeBugCheckEx;
+    void* MapPhysicalMemory;
+    void* UnmapVirtualAddress;
     void* KdReadCycleCounter;
+    void* KdNetPringDbgLog;
     void* KdNetErrorStatus;
     void* KdNetErrorString;
     void* KdNetHardwareId;
