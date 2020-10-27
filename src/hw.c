@@ -1016,9 +1016,11 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
             if (!EFI_ERROR(io->GetBarAttributes(io, i, NULL, &res))) {
                 pci_bar_info* info = (pci_bar_info*)res;
 
-                if (info->space_descriptor != 0x8a)
-                    print(L"First byte of pci_bar_info was not 8a.\r\n");
-                else if (info->resource_type != 0 && info->resource_type != 1) {
+                if (info->space_descriptor != 0x8a) {
+                    print(L"First byte of pci_bar_info was not 8a (");
+                    print_hex(info->space_descriptor);
+                    print(L").\r\n");
+                } else if (info->resource_type != 0 && info->resource_type != 1) {
                     print(L"Unsupported resource type ");
                     print_hex(info->resource_type);
                     print(L".\r\n");
