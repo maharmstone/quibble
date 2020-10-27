@@ -1010,10 +1010,10 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         ddd->NameSpace = KdNameSpacePCI;
         // FIXME - TransportType, TransportData
 
-        for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
+        for (unsigned int j = 0; j < MAXIMUM_DEBUG_BARS; j++) {
             void* res;
 
-            if (!EFI_ERROR(io->GetBarAttributes(io, i, NULL, &res))) {
+            if (!EFI_ERROR(io->GetBarAttributes(io, j, NULL, &res))) {
                 pci_bar_info* info = (pci_bar_info*)res;
 
                 if (info->space_descriptor != 0x8a) {
@@ -1026,13 +1026,13 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
                     print(L".\r\n");
                 } else {
                     if (info->resource_type == 0)
-                        ddd->BaseAddress[i].Type = CmResourceTypeMemory;
+                        ddd->BaseAddress[j].Type = CmResourceTypeMemory;
                     else
-                        ddd->BaseAddress[i].Type = CmResourceTypePort;
+                        ddd->BaseAddress[j].Type = CmResourceTypePort;
 
-                    ddd->BaseAddress[i].Valid = 1;
-                    ddd->BaseAddress[i].TranslatedAddress = (uint8_t*)(uintptr_t)info->address_minimum;
-                    ddd->BaseAddress[i].Length = info->address_length;
+                    ddd->BaseAddress[j].Valid = 1;
+                    ddd->BaseAddress[j].TranslatedAddress = (uint8_t*)(uintptr_t)info->address_minimum;
+                    ddd->BaseAddress[j].Length = info->address_length;
                 }
 
                 bs->FreePool(res);
