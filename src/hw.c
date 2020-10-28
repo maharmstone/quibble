@@ -1024,10 +1024,12 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
             } else {
                 pci_bar_info* info = (pci_bar_info*)res;
 
-                if (info->space_descriptor != 0x8a) {
-                    print(L"First byte of pci_bar_info was not 8a (");
-                    print_hex(info->space_descriptor);
-                    print(L").\r\n");
+                if (info->space_descriptor != 0x8a) { // QWORD address space descriptor
+                    if (info->space_descriptor != 0x79) { // end tag
+                        print(L"First byte of pci_bar_info was not 8a (");
+                        print_hex(info->space_descriptor);
+                        print(L").\r\n");
+                    }
                 } else if (info->resource_type != 0 && info->resource_type != 1) {
                     print(L"Unsupported resource type ");
                     print_hex(info->resource_type);
