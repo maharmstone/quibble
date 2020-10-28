@@ -4320,6 +4320,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     if (kdstub_export_loaded)
         kdstub_init(&store->debug_device_descriptor, build);
 
+    // FIXME - can we print net_error_string and net_error_status somehow if this fails?
+
 #ifdef __x86_64__
     // set syscall flag in EFER MSR
     __writemsr(0xc0000080, __readmsr(0xc0000080) | 1);
