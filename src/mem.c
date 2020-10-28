@@ -77,6 +77,8 @@ void* find_virtual_address(void* pa, LIST_ENTRY* mappings) {
 }
 
 static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintptr_t va, uintptr_t pa, unsigned int pages) {
+    uintptr_t pfn = pa >> EFI_PAGE_SHIFT;
+
 #ifdef _X86_
     UNUSED(mappings);
 
@@ -107,12 +109,12 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
             } else
                 page_table = (HARDWARE_PTE_PAE*)(dir[index].PageFrameNumber * EFI_PAGE_SIZE);
 
-            page_table[index2].PageFrameNumber = pa / EFI_PAGE_SIZE;
+            page_table[index2].PageFrameNumber = pfn;
             page_table[index2].Valid = 1;
             page_table[index2].Write = 1;
 
             va += EFI_PAGE_SIZE;
-            pa += EFI_PAGE_SIZE;
+            pfn++;
             pages--;
         } while (pages > 0);
     } else {
@@ -141,12 +143,12 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
             } else
                 page_table = (HARDWARE_PTE*)(page_directory[index].PageFrameNumber * EFI_PAGE_SIZE);
 
-            page_table[index2].PageFrameNumber = pa / EFI_PAGE_SIZE;
+            page_table[index2].PageFrameNumber = pfn;
             page_table[index2].Valid = 1;
             page_table[index2].Write = 1;
 
             va += EFI_PAGE_SIZE;
-            pa += EFI_PAGE_SIZE;
+            pfn++;
             pages--;
         } while (pages > 0);
     }
@@ -259,12 +261,12 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
             pt = (HARDWARE_PTE_PAE*)(uintptr_t)ptr;
         }
 
-        pt[index4].PageFrameNumber = pa / EFI_PAGE_SIZE;
+        pt[index4].PageFrameNumber = pfn;
         pt[index4].Valid = 1;
         pt[index4].Write = 1;
 
         va += EFI_PAGE_SIZE;
-        pa += EFI_PAGE_SIZE;
+        pfn++;
         pages--;
     } while (pages > 0);
 #endif
