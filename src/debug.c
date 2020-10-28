@@ -103,7 +103,7 @@ typedef struct {
     void* KdNetPringDbgLog;
     void* KdNetErrorStatus;
     void* KdNetErrorString;
-    void* KdNetHardwareId;
+    uint64_t* KdNetHardwareId;
 } kdnet_exports2;
 
 typedef struct {
@@ -128,6 +128,8 @@ typedef NTSTATUS (__stdcall *KD_INITIALIZE_LIBRARY) (
     void* param1,
     DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor
 );
+
+uint64_t net_hardware_id = 0; // FIXME - is this a uint32_t on x86?
 
 static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports,
                                          kd_funcs* funcs, uint16_t build);
@@ -360,6 +362,7 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exp
     exp2->WRITE_REGISTER_ULONG = write_register_ulong;
     exp2->WRITE_PORT_ULONG = write_port_ulong;
     exp2->GetPhysicalAddress = get_physical_address;
+    exp2->KdNetHardwareId = &net_hardware_id;
 
     return KdInitializeLibrary(exports, NULL, ddd);
 }
