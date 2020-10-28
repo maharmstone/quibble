@@ -1214,7 +1214,7 @@ static void draw_text_hex(uint64_t v, text_pos* p) {
     draw_text(t, p);
 }
 
-static void page_fault(uintptr_t error_code, uintptr_t rip, uintptr_t cs) {
+static void page_fault(uintptr_t error_code, uintptr_t rip, uintptr_t cs, uintptr_t* stack) {
     if (store2->bgc.internal.framebuffer) {
         text_pos p;
 
@@ -1236,6 +1236,12 @@ static void page_fault(uintptr_t error_code, uintptr_t rip, uintptr_t cs) {
         draw_text("cs: ", &p);
         draw_text_hex(cs, &p);
         draw_text("\n", &p);
+
+        draw_text("stack:\n", &p);
+        for (unsigned int i = 0; i < 16; i++) {
+            draw_text_hex(stack[i+3], &p);
+            draw_text("\n", &p);
+        }
     }
 
     halt();
@@ -1247,6 +1253,7 @@ static void page_fault_wrapper() {
         "pop rcx\n\t"
         "mov rdx, [rsp]\n\t"
         "mov r8, [rsp+8]\n\t"
+        "mov r9, rsp\n\t"
         "call %0\n\t"
         "iret\n\t"
         :
