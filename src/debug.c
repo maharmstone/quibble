@@ -37,8 +37,17 @@ typedef void (__stdcall *STALL_EXECUTION_PROCESSOR) (
     int microseconds
 );
 
+typedef uint8_t (__stdcall *READ_REGISTER_UCHAR) (
+    void* addr
+);
+
 typedef uint32_t (__stdcall *READ_REGISTER_ULONG) (
     void* addr
+);
+
+typedef NTSTATUS (__stdcall *WRITE_REGISTER_UCHAR) (
+    void* addr,
+    uint8_t value
 );
 
 typedef NTSTATUS (__stdcall *WRITE_REGISTER_ULONG) (
@@ -79,11 +88,11 @@ typedef struct {
     void* SetDevicePciDataByOffset;
     GET_PHYSICAL_ADDRESS GetPhysicalAddress;
     STALL_EXECUTION_PROCESSOR KdStallExecutionProcessor;
-    void* READ_REGISTER_UCHAR;
+    READ_REGISTER_UCHAR READ_REGISTER_UCHAR;
     void* READ_REGISTER_USHORT;
     READ_REGISTER_ULONG READ_REGISTER_ULONG;
     void* READ_REGISTER_ULONG64;
-    void* WRITE_REGISTER_UCHAR;
+    WRITE_REGISTER_UCHAR WRITE_REGISTER_UCHAR;
     void* WRITE_REGISTER_USHORT;
     WRITE_REGISTER_ULONG WRITE_REGISTER_ULONG;
     void* WRITE_REGISTER_ULONG64;
@@ -248,8 +257,18 @@ static NTSTATUS __stdcall get_device_pci_data_by_offset(uint32_t bus, uint32_t s
     return STATUS_SUCCESS;
 }
 
+static uint8_t __stdcall read_register_uchar(void* addr) {
+    return *(uint8_t*)addr;
+}
+
 static uint32_t __stdcall read_register_ulong(void* addr) {
     return *(uint32_t*)addr;
+}
+
+static NTSTATUS __stdcall write_register_uchar(void* addr, uint8_t value) {
+    *(uint8_t*)addr = value;
+
+    return STATUS_SUCCESS;
 }
 
 static NTSTATUS __stdcall write_register_ulong(void* addr, uint32_t value) {
@@ -360,7 +379,9 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exp
 
     exp2->GetDevicePciDataByOffset = get_device_pci_data_by_offset;
     exp2->KdStallExecutionProcessor = stall_cpu;
+    exp2->READ_REGISTER_UCHAR = read_register_uchar;
     exp2->READ_REGISTER_ULONG = read_register_ulong;
+    exp2->WRITE_REGISTER_UCHAR = write_register_uchar;
     exp2->WRITE_REGISTER_ULONG = write_register_ulong;
     exp2->WRITE_PORT_ULONG = write_port_ulong;
     exp2->GetPhysicalAddress = get_physical_address;
