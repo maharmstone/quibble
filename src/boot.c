@@ -27,6 +27,9 @@
 #include "x86.h"
 #include "tinymt32.h"
 #include "quibbleproto.h"
+#include "font8x8_basic.h"
+
+// #define DEBUG_EARLY_FAULTS
 
 typedef struct {
     LIST_ENTRY list_entry;
@@ -83,6 +86,11 @@ typedef struct _command_line {
 #endif
 } command_line;
 
+typedef struct {
+    unsigned int x;
+    unsigned int y;
+} text_pos;
+
 EFI_SYSTEM_TABLE* systable;
 NLS_DATA_BLOCK nls;
 size_t acp_size, oemcp_size, lang_size;
@@ -100,6 +108,7 @@ void* system_font = NULL;
 size_t system_font_size = 0;
 void* console_font = NULL;
 size_t console_font_size = 0;
+loader_store* store2;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -1146,6 +1155,106 @@ static void* initialize_gdt(EFI_BOOT_SERVICES* bs, KTSS* tss, KTSS* nmitss, KTSS
     return gdt;
 }
 
+#ifdef DEBUG_EARLY_FAULTS
+static void draw_text(const char* s, text_pos* p) {
+    unsigned int len = strlen(s);
+
+    for (unsigned int i = 0; i < len; i++) {
+        char* v = font8x8_basic[(unsigned int)s[i]];
+
+        if (s[i] == '\n') {
+            p->y++;
+            p->x = 0;
+            continue;
+        }
+
+        uint32_t* base = (uint32_t*)store2->bgc.internal.framebuffer + (store2->bgc.internal.pixels_per_scan_line * p->y * 8) + (p->x * 8);
+
+        for (unsigned int y = 0; y < 8; y++) {
+            uint8_t v2 = v[y];
+            uint32_t* buf = base + (store2->bgc.internal.pixels_per_scan_line * y);
+
+            for (unsigned int x = 0; x < 8; x++) {
+                if (v2 & 1)
+                    *buf = 0xffffffff;
+                else
+                    *buf = 0;
+
+                v2 >>= 1;
+                buf++;
+            }
+        }
+
+        p->x++;
+    }
+}
+
+static void draw_text_hex(uint64_t v, text_pos* p) {
+    char s[17], *t;
+
+    if (v == 0) {
+        draw_text("0", p);
+        return;
+    }
+
+    s[16] = 0;
+    t = &s[16];
+
+    while (v != 0) {
+        t = &t[-1];
+
+        if ((v & 0xf) >= 10)
+            *t = (v & 0xf) - 10 + 'a';
+        else
+            *t = (v & 0xf) + '0';
+
+        v >>= 4;
+    }
+
+    draw_text(t, p);
+}
+
+static void page_fault(uintptr_t error_code, uintptr_t rip, uintptr_t cs) {
+    if (store2->bgc.internal.framebuffer) {
+        text_pos p;
+
+        p.x = p.y = 0;
+        draw_text("Page fault!\n", &p);
+
+        draw_text("cr2: ", &p);
+        draw_text_hex(__readcr2(), &p);
+        draw_text("\n", &p);
+
+        draw_text("error code: ", &p);
+        draw_text_hex(error_code, &p);
+        draw_text("\n", &p);
+
+        draw_text("rip: ", &p);
+        draw_text_hex(rip, &p);
+        draw_text("\n", &p);
+
+        draw_text("cs: ", &p);
+        draw_text_hex(cs, &p);
+        draw_text("\n", &p);
+    }
+
+    halt();
+}
+
+__attribute__((naked))
+static void page_fault_wrapper() {
+    __asm__ __volatile__ (
+        "pop rcx\n\t"
+        "mov rdx, [rsp]\n\t"
+        "mov r8, [rsp+8]\n\t"
+        "call %0\n\t"
+        "iret\n\t"
+        :
+        : "a" (page_fault)
+    );
+}
+#endif
+
 static void* initialize_idt(EFI_BOOT_SERVICES* bs) {
     EFI_STATUS Status;
     idt_entry* idt;
@@ -1173,6 +1282,19 @@ static void* initialize_idt(EFI_BOOT_SERVICES* bs) {
 #endif
 
     memcpy(idt, (void*)(uintptr_t)old.Base, old.Limit + 1);
+
+#ifdef DEBUG_EARLY_FAULTS
+    uintptr_t func = (uintptr_t)(void*)page_fault_wrapper;
+
+    // page fault
+    idt[0xe].offset_1 = func & 0xffff;
+    idt[0xe].selector = KGDT_R0_CODE;
+    idt[0xe].ist = 0;
+    idt[0xe].type_attr = 0x8f;
+    idt[0xe].offset_2 = (func >> 16) & 0xffff;
+    idt[0xe].offset_3 = func >> 32;
+    idt[0xe].zero = 0;
+#endif
 
     return idt;
 }
@@ -4181,6 +4303,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     store = (loader_store*)store_va;
+    store2 = store;
 
     set_gdt(gdt);
     set_idt(idt);
