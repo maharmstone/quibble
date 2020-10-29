@@ -33,6 +33,14 @@ typedef NTSTATUS (__stdcall *GET_DEVICE_PCI_DATA_BY_OFFSET) (
     uint32_t length
 );
 
+typedef NTSTATUS (__stdcall *SET_DEVICE_PCI_DATA_BY_OFFSET) (
+    uint32_t bus,
+    uint32_t slot,
+    void* data,
+    uint32_t offset,
+    uint32_t length
+);
+
 typedef void (__stdcall *STALL_EXECUTION_PROCESSOR) (
     int microseconds
 );
@@ -94,7 +102,7 @@ typedef struct {
 
 typedef struct {
     GET_DEVICE_PCI_DATA_BY_OFFSET GetDevicePciDataByOffset;
-    void* SetDevicePciDataByOffset;
+    SET_DEVICE_PCI_DATA_BY_OFFSET SetDevicePciDataByOffset;
     GET_PHYSICAL_ADDRESS GetPhysicalAddress;
     STALL_EXECUTION_PROCESSOR KdStallExecutionProcessor;
     READ_REGISTER_UCHAR READ_REGISTER_UCHAR;
@@ -266,6 +274,49 @@ static NTSTATUS __stdcall get_device_pci_data_by_offset(uint32_t bus, uint32_t s
     return STATUS_SUCCESS;
 }
 
+static NTSTATUS __stdcall set_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
+    uint32_t address = 0x80000000 | ((bus & 0xff) << 16) | ((slot & 0x1f) << 11);
+
+    if (offset % sizeof(uint32_t) == 0 && length % sizeof(uint32_t) == 0) {
+        while (length > 0) {
+            address &= 0xffffff00;
+            address |= offset;
+
+            __outdword(0xcf8, address);
+            __outdword(0xcfc, *(uint32_t*)data);
+
+            data = (uint8_t*)data + sizeof(uint32_t);
+            offset += sizeof(uint32_t);
+            length -= sizeof(uint32_t);
+        }
+    } else if (offset % sizeof(uint16_t) == 0 && length % sizeof(uint16_t) == 0) {
+        while (length > 0) {
+            uint32_t val;
+
+            address &= 0xffffff00;
+            address |= offset & 0xfc;
+
+            __outdword(0xcf8, address);
+            val = __indword(0xcfc);
+
+            if (offset % sizeof(uint32_t) != 0)
+                val = (val & 0xff00) | *(uint16_t*)data;
+            else
+                val = (*(uint16_t*)data << 16) | (val & 0xff);
+
+            __outdword(0xcfc, val);
+
+            data = (uint8_t*)data + sizeof(uint16_t);
+            offset += sizeof(uint16_t);
+            length -= sizeof(uint16_t);
+        }
+    } else {
+        // FIXME
+    }
+
+    return STATUS_SUCCESS;
+}
+
 static uint8_t __stdcall read_register_uchar(void* addr) {
     return *(uint8_t*)addr;
 }
@@ -397,6 +448,7 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exp
         exp2 = &exports->exports_win81;
 
     exp2->GetDevicePciDataByOffset = get_device_pci_data_by_offset;
+    exp2->SetDevicePciDataByOffset = set_device_pci_data_by_offset;
     exp2->KdStallExecutionProcessor = stall_cpu;
     exp2->READ_REGISTER_UCHAR = read_register_uchar;
     exp2->READ_REGISTER_USHORT = read_register_ushort;
