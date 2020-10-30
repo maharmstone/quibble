@@ -40,10 +40,14 @@ extern void* apic;
 
 static TYPE_OF_MEMORY map_memory_type(UINTN memory_type) {
     switch (memory_type) {
+        case EfiReservedMemoryType:
         case EfiACPIReclaimMemory:
         case EfiACPIMemoryNVS:
         case EfiPalCode:
             return LoaderSpecialMemory;
+
+        case EfiUnusableMemory:
+            return LoaderBad;
 
         default:
             return LoaderFree;
@@ -446,6 +450,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
     UINT32 version;
     EFI_MEMORY_DESCRIPTOR* desc = NULL;
     uint8_t* va2 = *va;
+    bool map_video_ram = true;
 
     efi_map_size = 0;
 
@@ -493,6 +498,9 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
             }
 
             va2 += desc->NumberOfPages * EFI_PAGE_SIZE;
+
+            if (desc->PhysicalStart <= 0xa0000 && desc->PhysicalStart + (desc->NumberOfPages << EFI_PAGE_SHIFT) > 0xa0000)
+                map_video_ram = false;
         } else {
             Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)desc->PhysicalStart,
                                  desc->NumberOfPages, LoaderFree);
@@ -515,12 +523,13 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
         desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc + map_desc_size);
     }
 
-    // add video RAM and BIOS ROM, not reported by GetMemoryMap
-    // FIXME - is there really no way to get this from EFI??
-    Status = add_mapping(bs, mappings, NULL, (void*)0xa0000, 0x60, LoaderFirmwarePermanent);
-    if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
-        return Status;
+    // add video RAM and BIOS ROM, if not reported by GetMemoryMap
+    if (map_video_ram) {
+        Status = add_mapping(bs, mappings, NULL, (void*)0xa0000, 0x60, LoaderFirmwarePermanent);
+        if (EFI_ERROR(Status)) {
+            print_error(L"add_mapping", Status);
+            return Status;
+        }
     }
 
     *va = va2;
