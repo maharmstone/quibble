@@ -1045,7 +1045,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         }
     }
 
-    if (store->debug_device_descriptor.Memory.Length != 0)
+    if (store->debug_device_descriptor.Memory.VirtualAddress)
         store->debug_device_descriptor.Memory.VirtualAddress = find_virtual_address(store->debug_device_descriptor.Memory.VirtualAddress, mappings);
 }
 
