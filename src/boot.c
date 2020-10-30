@@ -1418,21 +1418,19 @@ static void* allocate_page(EFI_BOOT_SERVICES* bs) {
     return (void*)(uintptr_t)addr;
 }
 
-static EFI_STATUS map_apic(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings) {
+static void find_apic() {
     int cpu_info[4];
 
     __cpuid(cpu_info, 1);
 
     if (!(cpu_info[3] & 0x200)) {
         print(L"CPU does not have an onboard APIC.\r\n");
-        return EFI_SUCCESS;
+        return;
     }
 
     apic = (void*)(uintptr_t)__readmsr(0x1b);
 
     apic = (void*)((uintptr_t)apic & 0xfffff000);
-
-    return add_mapping(bs, mappings, (void*)APIC_BASE, apic, 1, LoaderFirmwarePermanent);
 }
 
 static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, WCHAR** pname, EFI_FILE_HANDLE* h) {
@@ -4151,11 +4149,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         va = (uint8_t*)va + (allocation * EFI_PAGE_SIZE);
     }
 
-    Status = map_apic(bs, &mappings);
-    if (EFI_ERROR(Status)) {
-        print_error(L"map_apic", Status);
-        goto end;
-    }
+    find_apic();
 
     Status = map_nls(bs, &store->nls, &va, &mappings);
     if (EFI_ERROR(Status)) {
