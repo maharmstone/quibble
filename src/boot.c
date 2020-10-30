@@ -3288,7 +3288,7 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         bgc->internal.height = gop->Mode->Info->VerticalResolution;
         bgc->internal.width = gop->Mode->Info->HorizontalResolution;
         bgc->internal.pixels_per_scan_line = gop->Mode->Info->PixelsPerScanLine;
-        bgc->internal.format = 5; // ?
+        bgc->internal.format = 5; // 4 = 24-bit colour, 5 = 32-bit colour (see BgpGetBitsPerPixel)
 #ifdef __x86_64__
         bgc->internal.bits_per_pixel = 32;
 #endif
