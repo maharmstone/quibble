@@ -3379,7 +3379,7 @@ static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappin
                 return Status;
             }
 
-            va2 = (uint8_t*)va2 + ddd->BaseAddress[i].Length;
+            va2 = (uint8_t*)va2 + (PAGE_COUNT(ddd->BaseAddress[i].Length) * EFI_PAGE_SIZE);
         }
     }
 
