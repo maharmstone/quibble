@@ -75,8 +75,8 @@ typedef struct {
 
     union {
         uint8_t bgc;
-        BOOT_GRAPHICS_CONTEXT_WIN8 bgc_win8;
-        BOOT_GRAPHICS_CONTEXT_WIN10 bgc_win10;
+        BOOT_GRAPHICS_CONTEXT_V1 bgc_v1;
+        BOOT_GRAPHICS_CONTEXT_V4 bgc_v4;
     };
 } loader_store;
 
@@ -3208,12 +3208,12 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
     bgblock2* block2;
 
     if (version == _WIN32_WINNT_WIN8) {
-        BOOT_GRAPHICS_CONTEXT_WIN8* bgc2 = (BOOT_GRAPHICS_CONTEXT_WIN8*)bgc;
+        BOOT_GRAPHICS_CONTEXT_V1* bgc2 = (BOOT_GRAPHICS_CONTEXT_V1*)bgc;
 
         block1 = &bgc2->block1;
         block2 = &bgc2->block2;
     } else {
-        BOOT_GRAPHICS_CONTEXT_WIN10* bgc2 = (BOOT_GRAPHICS_CONTEXT_WIN10*)bgc;
+        BOOT_GRAPHICS_CONTEXT_V4* bgc2 = (BOOT_GRAPHICS_CONTEXT_V4*)bgc;
 
         block1 = &bgc2->block1;
         block2 = &bgc2->block2;
