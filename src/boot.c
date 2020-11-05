@@ -72,7 +72,12 @@ typedef struct {
     ARC_DISK_INFORMATION arc_disk_information;
     LOADER_PERFORMANCE_DATA loader_performance_data;
     DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
-    BOOT_GRAPHICS_CONTEXT bgc;
+
+    union {
+        uint8_t bgc;
+        BOOT_GRAPHICS_CONTEXT_WIN8 bgc_win8;
+        BOOT_GRAPHICS_CONTEXT_WIN10 bgc_win10;
+    };
 } loader_store;
 
 typedef struct _command_line {
@@ -3194,11 +3199,25 @@ static void parse_options(const char* options, command_line* cmdline) {
 }
 
 static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, LIST_ENTRY* mappings, void** va,
-                                    BOOT_GRAPHICS_CONTEXT* bgc, LOADER_EXTENSION_BLOCK3* extblock3) {
+                                    uint16_t version, void* bgc, LOADER_EXTENSION_BLOCK3* extblock3) {
     EFI_GUID guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     EFI_HANDLE* handles = NULL;
     UINTN count;
     EFI_STATUS Status;
+    bgblock1* block1;
+    bgblock2* block2;
+
+    if (version == _WIN32_WINNT_WIN8) {
+        BOOT_GRAPHICS_CONTEXT_WIN8* bgc2 = (BOOT_GRAPHICS_CONTEXT_WIN8*)bgc;
+
+        block1 = &bgc2->block1;
+        block2 = &bgc2->block2;
+    } else {
+        BOOT_GRAPHICS_CONTEXT_WIN10* bgc2 = (BOOT_GRAPHICS_CONTEXT_WIN10*)bgc;
+
+        block1 = &bgc2->block1;
+        block2 = &bgc2->block2;
+    }
 
     Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
     if (EFI_ERROR(Status))
@@ -3278,27 +3297,31 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
             goto end;
         }
 
-        bgc->block1.unk6 = 4; // 4 means initialized(?)
-        bgc->block1.internal.unk1 = 1; // ?
-        bgc->block1.internal.unk2 = 1; // ?
-        bgc->block1.internal.unk3 = 0; // ?
-        bgc->block1.internal.unk4 = 0xc4; // ? (0xf4 is BIOS graphics?)
-        bgc->block1.internal.height = gop->Mode->Info->VerticalResolution;
-        bgc->block1.internal.width = gop->Mode->Info->HorizontalResolution;
-        bgc->block1.internal.pixels_per_scan_line = gop->Mode->Info->PixelsPerScanLine;
-        bgc->block1.internal.format = 5; // 4 = 24-bit colour, 5 = 32-bit colour (see BgpGetBitsPerPixel)
+        if (version == _WIN32_WINNT_WIN8)
+            block1->unk6 = 1; // version?
+        else
+            block1->unk6 = 4;
+
+        block1->internal.unk1 = 1; // ?
+        block1->internal.unk2 = 1; // ?
+        block1->internal.unk3 = 0; // ?
+        block1->internal.unk4 = 0xc4; // ? (0xf4 is BIOS graphics?)
+        block1->internal.height = gop->Mode->Info->VerticalResolution;
+        block1->internal.width = gop->Mode->Info->HorizontalResolution;
+        block1->internal.pixels_per_scan_line = gop->Mode->Info->PixelsPerScanLine;
+        block1->internal.format = 5; // 4 = 24-bit colour, 5 = 32-bit colour (see BgpGetBitsPerPixel)
 #ifdef __x86_64__
-        bgc->block1.internal.bits_per_pixel = 32;
+        block1->internal.bits_per_pixel = 32;
 #endif
-        bgc->block1.internal.framebuffer = *va;
+        block1->internal.framebuffer = *va;
 
         *va = (uint8_t*)*va + (PAGE_COUNT(gop->Mode->FrameBufferSize) * EFI_PAGE_SIZE);
 
         // allocate and map reserve pool (used as scratch space?)
 
-        bgc->block2.reserve_pool_size = 0x4000;
+        block2->reserve_pool_size = 0x4000;
 
-        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(bgc->block2.reserve_pool_size), &rp);
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(block2->reserve_pool_size), &rp);
         if (EFI_ERROR(Status)) {
             print_error(L"AllocatePages", Status);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
@@ -3306,16 +3329,16 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         }
 
         Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)rp,
-                             PAGE_COUNT(bgc->block2.reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
+                             PAGE_COUNT(block2->reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
         if (EFI_ERROR(Status)) {
             print_error(L"add_mapping", Status);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             goto end;
         }
 
-        bgc->block2.reserve_pool = *va;
+        block2->reserve_pool = *va;
 
-        *va = (uint8_t*)*va + (PAGE_COUNT(bgc->block2.reserve_pool_size) * EFI_PAGE_SIZE);
+        *va = (uint8_t*)*va + (PAGE_COUNT(block2->reserve_pool_size) * EFI_PAGE_SIZE);
 
         // map fonts
 
@@ -3328,8 +3351,8 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
                 goto end;
             }
 
-            bgc->block1.system_font = *va;
-            bgc->block1.system_font_size = system_font_size;
+            block1->system_font = *va;
+            block1->system_font_size = system_font_size;
 
             *va = (uint8_t*)*va + (PAGE_COUNT(system_font_size) * EFI_PAGE_SIZE);
         }
@@ -3343,8 +3366,8 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
                 goto end;
             }
 
-            bgc->block1.console_font = *va;
-            bgc->block1.console_font_size = console_font_size;
+            block1->console_font = *va;
+            block1->console_font_size = console_font_size;
 
             *va = (uint8_t*)*va + (PAGE_COUNT(console_font_size) * EFI_PAGE_SIZE);
         }
@@ -4279,7 +4302,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     if (version >= _WIN32_WINNT_WIN8) {
-        Status = set_graphics_mode(bs, image_handle, &mappings, &va, &store->bgc, extblock3);
+        Status = set_graphics_mode(bs, image_handle, &mappings, &va, version, &store->bgc, extblock3);
         if (EFI_ERROR(Status)) {
             print_error(L"set_graphics_mode", Status);
             print(L"GOP failed, falling back to CSM\r\n");
