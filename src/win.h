@@ -3519,55 +3519,44 @@ static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN10, unk23) == 0x19c, "BOOT_GRAPH
 
 typedef struct {
     bgblock1 block1;
+#ifdef _X86_
+    uint32_t unk1;
+    uint32_t unk2;
+#endif
     bgblock2 block2;
 } BOOT_GRAPHICS_CONTEXT_WIN8;
 
-#ifdef _X86_ // FIXME
-// static_assert(sizeof(BOOT_GRAPHICS_CONTEXT) == 0x150, "BOOT_GRAPHICS_CONTEXT has incorrect size.");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk1) == 0x0, "BOOT_GRAPHICS_CONTEXT unk1");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk2) == 0x4, "BOOT_GRAPHICS_CONTEXT unk2");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk3) == 0x8, "BOOT_GRAPHICS_CONTEXT unk3");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk4) == 0xc, "BOOT_GRAPHICS_CONTEXT unk4");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.internal) == 0x10, "BOOT_GRAPHICS_CONTEXT internal");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.system_font) == 0x2c, "BOOT_GRAPHICS_CONTEXT system_font");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.system_font_size) == 0x30, "BOOT_GRAPHICS_CONTEXT system_font_size");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk5) == 0x34, "BOOT_GRAPHICS_CONTEXT unk5");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.console_font) == 0x38, "BOOT_GRAPHICS_CONTEXT console_font");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.console_font_size) == 0x3c, "BOOT_GRAPHICS_CONTEXT console_font_size");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.boot_identifier) == 0x40, "BOOT_GRAPHICS_CONTEXT boot_identifier");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk6) == 0x50, "BOOT_GRAPHICS_CONTEXT unk6");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk7) == 0x54, "BOOT_GRAPHICS_CONTEXT unk7");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk8) == 0x58, "BOOT_GRAPHICS_CONTEXT unk8");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.mui) == 0x5c, "BOOT_GRAPHICS_CONTEXT mui");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.mui_size) == 0x60, "BOOT_GRAPHICS_CONTEXT mui_size");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.logo_bitmap) == 0x64, "BOOT_GRAPHICS_CONTEXT logo_bitmap");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk9) == 0x68, "BOOT_GRAPHICS_CONTEXT unk9");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.logo_bitmap_size) == 0x6c, "BOOT_GRAPHICS_CONTEXT logo_bitmap_size");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk10) == 0x70, "BOOT_GRAPHICS_CONTEXT unk10");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk11) == 0x74, "BOOT_GRAPHICS_CONTEXT unk11");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.logo_bitmap_width) == 0x78, "BOOT_GRAPHICS_CONTEXT logo_bitmap_width");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.logo_bitmap_height) == 0x7c, "BOOT_GRAPHICS_CONTEXT logo_bitmap_height");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block1.unk12) == 0x80, "BOOT_GRAPHICS_CONTEXT unk12");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, qr_code_bitmap) == 0x84, "BOOT_GRAPHICS_CONTEXT qr_code_bitmap");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, qr_code_bitmap_size) == 0x88, "BOOT_GRAPHICS_CONTEXT qr_code_bitmap_size");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, qr_code_bitmap_width) == 0x8c, "BOOT_GRAPHICS_CONTEXT qr_code_bitmap_width");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, qr_code_bitmap_height) == 0x90, "BOOT_GRAPHICS_CONTEXT qr_code_bitmap_height");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk13) == 0x94, "BOOT_GRAPHICS_CONTEXT unk13");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk14) == 0x98, "BOOT_GRAPHICS_CONTEXT unk14");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk15) == 0x9c, "BOOT_GRAPHICS_CONTEXT unk15");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk16) == 0xa0, "BOOT_GRAPHICS_CONTEXT unk16");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk17) == 0xa4, "BOOT_GRAPHICS_CONTEXT unk17");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk18) == 0xa8, "BOOT_GRAPHICS_CONTEXT unk18");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block2.unk19) == 0xac, "BOOT_GRAPHICS_CONTEXT unk19");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block2.reserve_pool) == 0xb0, "BOOT_GRAPHICS_CONTEXT reserve_pool");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block2.reserve_pool_size) == 0xb4, "BOOT_GRAPHICS_CONTEXT reserve_pool_size");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block2.string_resources) == 0xb8, "BOOT_GRAPHICS_CONTEXT string_resources");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, block2.progress_resources) == 0xbc, "BOOT_GRAPHICS_CONTEXT progress_resources");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, edid) == 0xc0, "BOOT_GRAPHICS_CONTEXT edid");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk20) == 0x140, "BOOT_GRAPHICS_CONTEXT unk20");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk21) == 0x144, "BOOT_GRAPHICS_CONTEXT unk21");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk22) == 0x148, "BOOT_GRAPHICS_CONTEXT unk22");
-// static_assert(offsetof(BOOT_GRAPHICS_CONTEXT, unk23) == 0x14c, "BOOT_GRAPHICS_CONTEXT unk23");
+#ifdef _X86_
+static_assert(sizeof(BOOT_GRAPHICS_CONTEXT_WIN8) == 0xa0, "BOOT_GRAPHICS_CONTEXT_WIN8 has incorrect size.");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk1) == 0x0, "BOOT_GRAPHICS_CONTEXT_WIN8 unk1");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk2) == 0x4, "BOOT_GRAPHICS_CONTEXT_WIN8 unk2");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk3) == 0x8, "BOOT_GRAPHICS_CONTEXT_WIN8 unk3");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk4) == 0xc, "BOOT_GRAPHICS_CONTEXT_WIN8 unk4");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.internal) == 0x10, "BOOT_GRAPHICS_CONTEXT_WIN8 internal");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.system_font) == 0x2c, "BOOT_GRAPHICS_CONTEXT_WIN8 system_font");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.system_font_size) == 0x30, "BOOT_GRAPHICS_CONTEXT_WIN8 system_font_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk5) == 0x34, "BOOT_GRAPHICS_CONTEXT_WIN8 unk5");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.console_font) == 0x38, "BOOT_GRAPHICS_CONTEXT_WIN8 console_font");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.console_font_size) == 0x3c, "BOOT_GRAPHICS_CONTEXT_WIN8 console_font_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.boot_identifier) == 0x40, "BOOT_GRAPHICS_CONTEXT_WIN8 boot_identifier");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk6) == 0x50, "BOOT_GRAPHICS_CONTEXT_WIN8 unk6");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk7) == 0x54, "BOOT_GRAPHICS_CONTEXT_WIN8 unk7");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk8) == 0x58, "BOOT_GRAPHICS_CONTEXT_WIN8 unk8");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.mui) == 0x5c, "BOOT_GRAPHICS_CONTEXT_WIN8 mui");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.mui_size) == 0x60, "BOOT_GRAPHICS_CONTEXT_WIN8 mui_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.logo_bitmap) == 0x64, "BOOT_GRAPHICS_CONTEXT_WIN8 logo_bitmap");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk9) == 0x68, "BOOT_GRAPHICS_CONTEXT_WIN8 unk9");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.logo_bitmap_size) == 0x6c, "BOOT_GRAPHICS_CONTEXT_WIN8 logo_bitmap_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk10) == 0x70, "BOOT_GRAPHICS_CONTEXT_WIN8 unk10");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk11) == 0x74, "BOOT_GRAPHICS_CONTEXT_WIN8 unk11");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.logo_bitmap_width) == 0x78, "BOOT_GRAPHICS_CONTEXT_WIN8 logo_bitmap_width");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.logo_bitmap_height) == 0x7c, "BOOT_GRAPHICS_CONTEXT_WIN8 logo_bitmap_height");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk12) == 0x80, "BOOT_GRAPHICS_CONTEXT_WIN8 unk12");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block2.unk19) == 0x8c, "BOOT_GRAPHICS_CONTEXT_WIN8 unk19");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block2.reserve_pool) == 0x90, "BOOT_GRAPHICS_CONTEXT_WIN8 reserve_pool");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block2.reserve_pool_size) == 0x94, "BOOT_GRAPHICS_CONTEXT_WIN8 reserve_pool_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block2.string_resources) == 0x98, "BOOT_GRAPHICS_CONTEXT_WIN8 string_resources");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block2.progress_resources) == 0x9c, "BOOT_GRAPHICS_CONTEXT_WIN8 progress_resources");
 #elif defined(__x86_64__)
 static_assert(sizeof(BOOT_GRAPHICS_CONTEXT_WIN8) == 0xe0, "BOOT_GRAPHICS_CONTEXT_WIN8 has incorrect size.");
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_WIN8, block1.unk1) == 0x0, "BOOT_GRAPHICS_CONTEXT_WIN8 unk1");
