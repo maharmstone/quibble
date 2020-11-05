@@ -3298,9 +3298,9 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         }
 
         if (version == _WIN32_WINNT_WIN8)
-            block1->unk6 = 1; // version?
+            block1->version = 1;
         else
-            block1->unk6 = 4;
+            block1->version = 4;
 
         block1->internal.unk1 = 1; // ?
         block1->internal.unk2 = 1; // ?
