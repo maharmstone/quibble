@@ -77,6 +77,7 @@ typedef struct {
         uint8_t bgc;
         BOOT_GRAPHICS_CONTEXT_V1 bgc_v1;
         BOOT_GRAPHICS_CONTEXT_V2 bgc_v2;
+        BOOT_GRAPHICS_CONTEXT_V3 bgc_v3;
         BOOT_GRAPHICS_CONTEXT_V4 bgc_v4;
     };
 } loader_store;
@@ -3209,24 +3210,30 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
     bgblock1* block1;
     bgblock2* block2;
 
-    if (version == _WIN32_WINNT_WIN8) {
-        BOOT_GRAPHICS_CONTEXT_V1* bgc2 = (BOOT_GRAPHICS_CONTEXT_V1*)bgc;
+    if (version < _WIN32_WINNT_WINBLUE) { // Win 8 (and 7?)
+        BOOT_GRAPHICS_CONTEXT_V1* bgc1 = (BOOT_GRAPHICS_CONTEXT_V1*)bgc;
 
         bg_version = 1;
-        block1 = &bgc2->block1;
-        block2 = &bgc2->block2;
-    } else if (version == _WIN32_WINNT_WINBLUE || build == WIN10_BUILD_1507) {
+        block1 = &bgc1->block1;
+        block2 = &bgc1->block2;
+    } else if (version == _WIN32_WINNT_WINBLUE || build < WIN10_BUILD_1703) { // 8.1, 1507, 1511, 1607
         BOOT_GRAPHICS_CONTEXT_V2* bgc2 = (BOOT_GRAPHICS_CONTEXT_V2*)bgc;
 
         bg_version = 2;
         block1 = &bgc2->block1;
         block2 = &bgc2->block2;
-    } else {
-        BOOT_GRAPHICS_CONTEXT_V4* bgc2 = (BOOT_GRAPHICS_CONTEXT_V4*)bgc;
+    } else if (build < WIN10_BUILD_1803) { // 1703 and 1709
+        BOOT_GRAPHICS_CONTEXT_V3* bgc3 = (BOOT_GRAPHICS_CONTEXT_V3*)bgc;
+
+        bg_version = 3;
+        block1 = &bgc3->block1;
+        block2 = &bgc3->block2;
+    } else { // 1803 on
+        BOOT_GRAPHICS_CONTEXT_V4* bgc4 = (BOOT_GRAPHICS_CONTEXT_V4*)bgc;
 
         bg_version = 4;
-        block1 = &bgc2->block1;
-        block2 = &bgc2->block2;
+        block1 = &bgc4->block1;
+        block2 = &bgc4->block2;
     }
 
     Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
