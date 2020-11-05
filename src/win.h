@@ -3589,3 +3589,79 @@ static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V1, block2.reserve_pool_size) == 0x
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V1, block2.string_resources) == 0xd0, "BOOT_GRAPHICS_CONTEXT_V1 string_resources");
 static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V1, block2.progress_resources) == 0xd8, "BOOT_GRAPHICS_CONTEXT_V1 progress_resources");
 #endif
+
+typedef struct {
+    bgblock1 block1;
+#ifdef _X86_
+    uint32_t unk1;
+    uint32_t unk2;
+#endif
+    bgblock2 block2;
+    uint8_t edid[128];
+} BOOT_GRAPHICS_CONTEXT_V2;
+
+#ifdef _X86_
+static_assert(sizeof(BOOT_GRAPHICS_CONTEXT_V2) == 0x120, "BOOT_GRAPHICS_CONTEXT_V2 has incorrect size.");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk1) == 0x0, "BOOT_GRAPHICS_CONTEXT_V2 unk1");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk2) == 0x4, "BOOT_GRAPHICS_CONTEXT_V2 unk2");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk3) == 0x8, "BOOT_GRAPHICS_CONTEXT_V2 unk3");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk4) == 0xc, "BOOT_GRAPHICS_CONTEXT_V2 unk4");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.internal) == 0x10, "BOOT_GRAPHICS_CONTEXT_V2 internal");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.system_font) == 0x2c, "BOOT_GRAPHICS_CONTEXT_V2 system_font");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.system_font_size) == 0x30, "BOOT_GRAPHICS_CONTEXT_V2 system_font_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk5) == 0x34, "BOOT_GRAPHICS_CONTEXT_V2 unk5");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.console_font) == 0x38, "BOOT_GRAPHICS_CONTEXT_V2 console_font");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.console_font_size) == 0x3c, "BOOT_GRAPHICS_CONTEXT_V2 console_font_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.boot_identifier) == 0x40, "BOOT_GRAPHICS_CONTEXT_V2 boot_identifier");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.version) == 0x50, "BOOT_GRAPHICS_CONTEXT_V2 version");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk6) == 0x54, "BOOT_GRAPHICS_CONTEXT_V2 unk6");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk7) == 0x58, "BOOT_GRAPHICS_CONTEXT_V2 unk7");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.mui) == 0x5c, "BOOT_GRAPHICS_CONTEXT_V2 mui");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.mui_size) == 0x60, "BOOT_GRAPHICS_CONTEXT_V2 mui_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.logo_bitmap) == 0x64, "BOOT_GRAPHICS_CONTEXT_V2 logo_bitmap");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk8) == 0x68, "BOOT_GRAPHICS_CONTEXT_V2 unk8");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.logo_bitmap_size) == 0x6c, "BOOT_GRAPHICS_CONTEXT_V2 logo_bitmap_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk9) == 0x70, "BOOT_GRAPHICS_CONTEXT_V2 unk9");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk10) == 0x74, "BOOT_GRAPHICS_CONTEXT_V2 unk10");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.logo_bitmap_width) == 0x78, "BOOT_GRAPHICS_CONTEXT_V2 logo_bitmap_width");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.logo_bitmap_height) == 0x7c, "BOOT_GRAPHICS_CONTEXT_V2 logo_bitmap_height");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk11) == 0x80, "BOOT_GRAPHICS_CONTEXT_V2 unk11");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.unk19) == 0x8c, "BOOT_GRAPHICS_CONTEXT_V2 unk19");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.reserve_pool) == 0x90, "BOOT_GRAPHICS_CONTEXT_V2 reserve_pool");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.reserve_pool_size) == 0x94, "BOOT_GRAPHICS_CONTEXT_V2 reserve_pool_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.string_resources) == 0x98, "BOOT_GRAPHICS_CONTEXT_V2 string_resources");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.progress_resources) == 0x9c, "BOOT_GRAPHICS_CONTEXT_V2 progress_resources");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, edid) == 0xa0, "BOOT_GRAPHICS_CONTEXT_V2 edid");
+#elif defined(__x86_64__)
+static_assert(sizeof(BOOT_GRAPHICS_CONTEXT_V2) == 0x160, "BOOT_GRAPHICS_CONTEXT_V2 has incorrect size.");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk1) == 0x0, "BOOT_GRAPHICS_CONTEXT_V2 unk1");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk2) == 0x8, "BOOT_GRAPHICS_CONTEXT_V2 unk2");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk3) == 0x10, "BOOT_GRAPHICS_CONTEXT_V2 unk3");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk4) == 0x18, "BOOT_GRAPHICS_CONTEXT_V2 unk4");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.internal) == 0x20, "BOOT_GRAPHICS_CONTEXT_V2 internal");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.system_font) == 0x48, "BOOT_GRAPHICS_CONTEXT_V2 system_font");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.system_font_size) == 0x50, "BOOT_GRAPHICS_CONTEXT_V2 system_font_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk5) == 0x54, "BOOT_GRAPHICS_CONTEXT_V2 unk5");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.console_font) == 0x58, "BOOT_GRAPHICS_CONTEXT_V2 console_font");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.console_font_size) == 0x60, "BOOT_GRAPHICS_CONTEXT_V2 console_font_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.boot_identifier) == 0x64, "BOOT_GRAPHICS_CONTEXT_V2 boot_identifier");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.version) == 0x74, "BOOT_GRAPHICS_CONTEXT_V2 version");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk6) == 0x78, "BOOT_GRAPHICS_CONTEXT_V2 unk6");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk7) == 0x7c, "BOOT_GRAPHICS_CONTEXT_V2 unk7");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.mui) == 0x80, "BOOT_GRAPHICS_CONTEXT_V2 mui");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.mui_size) == 0x88, "BOOT_GRAPHICS_CONTEXT_V2 mui_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.logo_bitmap) == 0x90, "BOOT_GRAPHICS_CONTEXT_V2 logo_bitmap");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk8) == 0x98, "BOOT_GRAPHICS_CONTEXT_V2 unk8");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.logo_bitmap_size) == 0xa0, "BOOT_GRAPHICS_CONTEXT_V2 logo_bitmap_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk9) == 0xa4, "BOOT_GRAPHICS_CONTEXT_V2 unk9");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk10) == 0xa8, "BOOT_GRAPHICS_CONTEXT_V2 unk10");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.logo_bitmap_width) == 0xac, "BOOT_GRAPHICS_CONTEXT_V2 logo_bitmap_width");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.logo_bitmap_height) == 0xb0, "BOOT_GRAPHICS_CONTEXT_V2 logo_bitmap_height");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block1.unk11) == 0xb4, "BOOT_GRAPHICS_CONTEXT_V2 unk11");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.unk19) == 0xb8, "BOOT_GRAPHICS_CONTEXT_V2 unk19");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.reserve_pool) == 0xc0, "BOOT_GRAPHICS_CONTEXT_V2 reserve_pool");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.reserve_pool_size) == 0xc8, "BOOT_GRAPHICS_CONTEXT_V2 reserve_pool_size");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.string_resources) == 0xd0, "BOOT_GRAPHICS_CONTEXT_V2 string_resources");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, block2.progress_resources) == 0xd8, "BOOT_GRAPHICS_CONTEXT_V2 progress_resources");
+static_assert(offsetof(BOOT_GRAPHICS_CONTEXT_V2, edid) == 0xe0, "BOOT_GRAPHICS_CONTEXT_V2 edid");
+#endif

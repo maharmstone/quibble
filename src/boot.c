@@ -76,6 +76,7 @@ typedef struct {
     union {
         uint8_t bgc;
         BOOT_GRAPHICS_CONTEXT_V1 bgc_v1;
+        BOOT_GRAPHICS_CONTEXT_V2 bgc_v2;
         BOOT_GRAPHICS_CONTEXT_V4 bgc_v4;
     };
 } loader_store;
@@ -3199,22 +3200,31 @@ static void parse_options(const char* options, command_line* cmdline) {
 }
 
 static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, LIST_ENTRY* mappings, void** va,
-                                    uint16_t version, void* bgc, LOADER_EXTENSION_BLOCK3* extblock3) {
+                                    uint16_t version, uint16_t build, void* bgc, LOADER_EXTENSION_BLOCK3* extblock3) {
     EFI_GUID guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     EFI_HANDLE* handles = NULL;
     UINTN count;
     EFI_STATUS Status;
+    unsigned int bg_version;
     bgblock1* block1;
     bgblock2* block2;
 
     if (version == _WIN32_WINNT_WIN8) {
         BOOT_GRAPHICS_CONTEXT_V1* bgc2 = (BOOT_GRAPHICS_CONTEXT_V1*)bgc;
 
+        bg_version = 1;
+        block1 = &bgc2->block1;
+        block2 = &bgc2->block2;
+    } else if (version == _WIN32_WINNT_WINBLUE || build == WIN10_BUILD_1507) {
+        BOOT_GRAPHICS_CONTEXT_V2* bgc2 = (BOOT_GRAPHICS_CONTEXT_V2*)bgc;
+
+        bg_version = 2;
         block1 = &bgc2->block1;
         block2 = &bgc2->block2;
     } else {
         BOOT_GRAPHICS_CONTEXT_V4* bgc2 = (BOOT_GRAPHICS_CONTEXT_V4*)bgc;
 
+        bg_version = 4;
         block1 = &bgc2->block1;
         block2 = &bgc2->block2;
     }
@@ -3297,11 +3307,7 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
             goto end;
         }
 
-        if (version == _WIN32_WINNT_WIN8)
-            block1->version = 1;
-        else
-            block1->version = 4;
-
+        block1->version = bg_version;
         block1->internal.unk1 = 1; // ?
         block1->internal.unk2 = 1; // ?
         block1->internal.unk3 = 0; // ?
@@ -4302,7 +4308,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     if (version >= _WIN32_WINNT_WIN8) {
-        Status = set_graphics_mode(bs, image_handle, &mappings, &va, version, &store->bgc, extblock3);
+        Status = set_graphics_mode(bs, image_handle, &mappings, &va, version, build, &store->bgc, extblock3);
         if (EFI_ERROR(Status)) {
             print_error(L"set_graphics_mode", Status);
             print(L"GOP failed, falling back to CSM\r\n");
