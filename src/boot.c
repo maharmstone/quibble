@@ -3278,27 +3278,27 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
             goto end;
         }
 
-        bgc->unk6 = 4; // 4 means initialized(?)
-        bgc->internal.unk1 = 1; // ?
-        bgc->internal.unk2 = 1; // ?
-        bgc->internal.unk3 = 0; // ?
-        bgc->internal.unk4 = 0xc4; // ? (0xf4 is BIOS graphics?)
-        bgc->internal.height = gop->Mode->Info->VerticalResolution;
-        bgc->internal.width = gop->Mode->Info->HorizontalResolution;
-        bgc->internal.pixels_per_scan_line = gop->Mode->Info->PixelsPerScanLine;
-        bgc->internal.format = 5; // 4 = 24-bit colour, 5 = 32-bit colour (see BgpGetBitsPerPixel)
+        bgc->block1.unk6 = 4; // 4 means initialized(?)
+        bgc->block1.internal.unk1 = 1; // ?
+        bgc->block1.internal.unk2 = 1; // ?
+        bgc->block1.internal.unk3 = 0; // ?
+        bgc->block1.internal.unk4 = 0xc4; // ? (0xf4 is BIOS graphics?)
+        bgc->block1.internal.height = gop->Mode->Info->VerticalResolution;
+        bgc->block1.internal.width = gop->Mode->Info->HorizontalResolution;
+        bgc->block1.internal.pixels_per_scan_line = gop->Mode->Info->PixelsPerScanLine;
+        bgc->block1.internal.format = 5; // 4 = 24-bit colour, 5 = 32-bit colour (see BgpGetBitsPerPixel)
 #ifdef __x86_64__
-        bgc->internal.bits_per_pixel = 32;
+        bgc->block1.internal.bits_per_pixel = 32;
 #endif
-        bgc->internal.framebuffer = *va;
+        bgc->block1.internal.framebuffer = *va;
 
         *va = (uint8_t*)*va + (PAGE_COUNT(gop->Mode->FrameBufferSize) * EFI_PAGE_SIZE);
 
         // allocate and map reserve pool (used as scratch space?)
 
-        bgc->reserve_pool_size = 0x4000;
+        bgc->block2.reserve_pool_size = 0x4000;
 
-        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(bgc->reserve_pool_size), &rp);
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(bgc->block2.reserve_pool_size), &rp);
         if (EFI_ERROR(Status)) {
             print_error(L"AllocatePages", Status);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
@@ -3306,16 +3306,16 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         }
 
         Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)rp,
-                             PAGE_COUNT(bgc->reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
+                             PAGE_COUNT(bgc->block2.reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
         if (EFI_ERROR(Status)) {
             print_error(L"add_mapping", Status);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             goto end;
         }
 
-        bgc->reserve_pool = *va;
+        bgc->block2.reserve_pool = *va;
 
-        *va = (uint8_t*)*va + (PAGE_COUNT(bgc->reserve_pool_size) * EFI_PAGE_SIZE);
+        *va = (uint8_t*)*va + (PAGE_COUNT(bgc->block2.reserve_pool_size) * EFI_PAGE_SIZE);
 
         // map fonts
 
@@ -3328,8 +3328,8 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
                 goto end;
             }
 
-            bgc->system_font = *va;
-            bgc->system_font_size = system_font_size;
+            bgc->block1.system_font = *va;
+            bgc->block1.system_font_size = system_font_size;
 
             *va = (uint8_t*)*va + (PAGE_COUNT(system_font_size) * EFI_PAGE_SIZE);
         }
@@ -3343,8 +3343,8 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
                 goto end;
             }
 
-            bgc->console_font = *va;
-            bgc->console_font_size = console_font_size;
+            bgc->block1.console_font = *va;
+            bgc->block1.console_font_size = console_font_size;
 
             *va = (uint8_t*)*va + (PAGE_COUNT(console_font_size) * EFI_PAGE_SIZE);
         }
