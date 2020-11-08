@@ -675,7 +675,9 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
         print((WCHAR*)timeout_message);
         print_dec(timer);
 
-        Status = systable->BootServices->CreateEvent(EVT_TIMER, TPL_APPLICATION, NULL, NULL, &evt);
+        /* The second parameter to CreateEvent was originally TPL_APPLICATION, but some old
+         * EFIs ignore the specs and return EFI_INVALID_PARAMETER if you do this. */
+        Status = systable->BootServices->CreateEvent(EVT_TIMER, TPL_CALLBACK, NULL, NULL, &evt);
         if (EFI_ERROR(Status)) {
             print_error(L"CreateEvent", Status);
             goto end;
