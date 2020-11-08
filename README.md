@@ -3,7 +3,7 @@ Quibble
 
 Quibble is the custom Windows bootloader - an open-source reimplementation of the
 files bootmgfw.efi and winload.efi, able to boot every version of Windows from XP
-to Windows 10 1909. Unlike the official bootloader, it is extensible, allowing you
+to Windows 10 2009. Unlike the official bootloader, it is extensible, allowing you
 to boot from other filesystems than just NTFS.
 
 This is only a proof of concept at this stage - don't use this for anything serious.
@@ -22,18 +22,21 @@ I'm doing this for kicks and giggles, but if you want to donate it'd be apprecia
 Installation
 ------------
 
-This has been tested with Qemu using the OVMF firmware, with Seabios included as a Compatibility
-Support Module (CSM). It may work on other VMs or hardware, it may not. You will need the CSM
-version of OVMF, which isn't the usual one bundled with Qemu. Precompiled version are available:
-[x86](https://github.com/maharmstone/quibble/blob/fw/OVMF_CODE.fd?raw=true) and [amd64](https://github.com/maharmstone/quibble/blob/fw/OVMF_CODE64.fd?raw=true).
+If you're booting Windows 7 or earlier in a VM, you will need the OVMF firmware with Seabios compiled
+in as the Compatibility Support Module (CSM), which isn't normally included. Precompiled version are
+available: [x86](https://github.com/maharmstone/quibble/blob/fw/OVMF_CODE.fd?raw=true) and [amd64](https://github.com/maharmstone/quibble/blob/fw/OVMF_CODE64.fd?raw=true).
 
-* Set up your VM, and install Windows on an NTFS volume.
+This has been tested successfully in Qemu v5.0 and on EFI version F50 of a Gigabyte motherboard. The quality of
+EFI implementations varies significantly, so if you're testing on real hardware it may or may not work
+for you.
+
+* Install Windows on an NTFS volume.
 
 * Install [WinBtrfs](https://github.com/maharmstone/btrfs) - you will need version 1.6 at least, but the later the better.
 
 * On modern versions of Windows, turn off Fast Startup in the Control Panel.
 
-* Shutdown your VM, and copy its hard disk to a Btrfs partition. The best way is to use [Ntfs2btrfs](https://github.com/maharmstone/ntfs2btrfs)
+* Shutdown your PC or VM, and copy its hard disk to a Btrfs partition. The best way is to use [Ntfs2btrfs](https://github.com/maharmstone/ntfs2btrfs)
 to do in-place conversion, which will also preserve your metadata.
 
 * Extract the Quibble package into your EFI System Partition. It's supposed to work in a subdirectory,
@@ -47,6 +50,13 @@ referring to the partition by UUID rather than number.
 
 Changelog
 ---------
+
+* 20201108
+  * Added support for Windows 10 2004 and 2009
+  * KDNET now works with Realtek devices
+  * Added support for booting Windows 8 and up without CSM
+  * Added workarounds for issues with real EFI implementations
+  * Fixed issues with multiple CPU cores
 
 * 20200405
   * Fixed bug involving case-insensitivity
@@ -63,7 +73,7 @@ Compiling
 
 On Linux:
 
-* Install a cross-compiler, either i686-w64-mingw32-gcc or x86_64-w64-mingw32-gcc, and cmake.
+* Install a cross-compiler, x86_64-w64-mingw32-gcc, and cmake.
 * Run the following:
   * `git clone https://github.com/maharmstone/quibble`
   * `cd quibble`
@@ -85,7 +95,7 @@ FAQs
 * Which versions of Windows does this work on?
 
 With the Btrfs driver, this should work on XP, Vista, Windows 7, Windows 8, Windows 8.1,
-and Windows 10 versions 1507 to 1909. XP and Vista work only in 32-bit mode for the time being.
+and Windows 10 versions 1507 to 2009. XP and Vista work only in 32-bit mode for the time being.
 Earlier versions _ought_ to work, as the boot structures were backwards-compatible at that
 point, but the Btrfs driver won't work.
 
@@ -110,27 +120,39 @@ Yes - add /SUBVOL=xxx to your Options in freeldr.ini. You can find the number to
 Properties page of your subvolume. On Linux you can use `btrfs subvol list`, but bear in mind
 that you will need to translate the number to hexadecimal.
 
+* Why can't I access any NTFS volumes in Windows?
+
+Because Windows only loads ntfs.sys when it's booting from NTFS. To start it as a one-off, run
+`sc start ntfs` from an elevated command prompt. To get it to start every time, open regedit and
+change HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ntfs\Start to 1.
+
+* Why don't I see the Windows logo on startup?
+
+The boot graphics code isn't completed yet - you won't see either the Windows logo or the progress
+indicator, just a few seconds of blackness.
+
+* Why does it hang on startup?
+
+There's a race condition in the latest version of WinBtrfs, which manifests itself on some hardware.
+Try adding /ONECPU to your boot options, to see if that makes a difference.
+
 Licence
 -------
 
 This is released under the LGPL. The Mersenne Twister code is by Mutsuo Saito and Makoto Matsumoto -
 see the header of tinymt32.c. The GNU-EFI headers are under the BSD licence.
 
-Known issues
-------------
-
-* Multiple cores can be a bit ropey
-* Real-life UEFI implementations can differ in their adherence to the specs - caveat usor.
+Thanks to Daniel Hepper for his [public-domain bitmap font](https://github.com/dhepper/font8x8).
 
 To-do list
 ----------
 
-* Booting on Windows 8+ without CSM
-* Get working with XP and Vista on amd64
+* Get working with XP and Vista on amd64 (done?)
+* Add Registry recovery
 * Add NTFS driver
 * Parse BCD files
-* Get working better on real hardware
-* Add Registry recovery
+* Get tested on more hardware
+* Slipstream into Windows ISO(?)
 * Add ARM and Aarch64 versions
 * Verification of signatures
 * Early-launch anti-malware
