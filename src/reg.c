@@ -718,7 +718,7 @@ static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive
 
     Status = bs->AllocatePool(EfiLoaderData, sizeof(hive), (void**)&h);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -733,14 +733,14 @@ static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive
 
             Status = bs->AllocatePool(EfiLoaderData, size, (void**)&file_info2);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePool", Status);
+                print_error("AllocatePool", Status);
                 bs->FreePool(h);
                 return Status;
             }
 
             Status = File->GetInfo(File, &guid, &size, file_info2);
             if (EFI_ERROR(Status)) {
-                print_error(L"File->GetInfo", Status);
+                print_error("File->GetInfo", Status);
                 bs->FreePool(file_info2);
                 bs->FreePool(h);
                 return Status;
@@ -750,7 +750,7 @@ static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive
 
             bs->FreePool(file_info2);
         } else if (EFI_ERROR(Status)) {
-            print_error(L"File->GetInfo", Status);
+            print_error("File->GetInfo", Status);
             bs->FreePool(h);
             return Status;
         } else
@@ -775,7 +775,7 @@ static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive
 
         Status = File->Read(File, &read_size, h->data);
         if (EFI_ERROR(Status)) {
-            print_error(L"File->Read", Status);
+            print_error("File->Read", Status);
             bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)h->data, h->pages);
             bs->FreePool(h);
             return Status;

@@ -134,7 +134,7 @@ EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const WCHAR* nam
 
     Status = bs->AllocatePool(EfiLoaderData, sizeof(image), (void**)&img);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -189,7 +189,7 @@ static void get_system_time(int64_t* time) {
 
     Status = systable->RuntimeServices->GetTime(&tm, NULL);
     if (EFI_ERROR(Status)) {
-        print_error(L"GetTime", Status);
+        print_error("GetTime", Status);
         return;
     }
 
@@ -253,7 +253,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, pages, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return NULL;
     }
 
@@ -678,7 +678,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
 
     Status = find_hardware(bs, block1c, va, mappings, image_handle, version);
     if (EFI_ERROR(Status)) {
-        print_error(L"find_hardware", Status);
+        print_error("find_hardware", Status);
         bs->FreePages(addr, pages);
         return NULL;
     }
@@ -686,7 +686,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
     Status = find_disks(bs, &block1c->ArcDiskInformation->DiskSignatureListHead, va, mappings, block1c->ConfigurationRoot,
                         version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
     if (EFI_ERROR(Status)) {
-        print_error(L"find_disks", Status);
+        print_error("find_disks", Status);
         bs->FreePages(addr, pages);
         return NULL;
     }
@@ -1101,7 +1101,7 @@ static void* initialize_gdt(EFI_BOOT_SERVICES* bs, KTSS* tss, KTSS* nmitss, KTSS
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, GDT_PAGES, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return NULL;
     }
 
@@ -1244,7 +1244,7 @@ static void* initialize_idt(EFI_BOOT_SERVICES* bs) {
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, IDT_PAGES, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return NULL;
     }
 
@@ -1368,7 +1368,7 @@ static KTSS* allocate_tss(EFI_BOOT_SERVICES* bs) {
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(sizeof(KTSS)), &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return NULL;
     }
 
@@ -1385,7 +1385,7 @@ static void* allocate_page(EFI_BOOT_SERVICES* bs) {
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, 1, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return NULL;
     }
 
@@ -1439,7 +1439,7 @@ static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, WCHAR** pname,
 
     Status = dir->SetPosition(dir, 0);
     if (EFI_ERROR(Status)) {
-        print_error(L"dir->SetPosition", Status);
+        print_error("dir->SetPosition", Status);
         return Status;
     }
 
@@ -1451,7 +1451,7 @@ static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, WCHAR** pname,
 
         Status = dir->Read(dir, &size, buf);
         if (EFI_ERROR(Status)) {
-            print_error(L"dir->Read", Status);
+            print_error("dir->Read", Status);
             return Status;
         }
 
@@ -1524,14 +1524,14 @@ EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const WCHAR* na
 
             Status = bs->AllocatePool(EfiLoaderData, size, (void**)&file_info2);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePool", Status);
+                print_error("AllocatePool", Status);
                 file->Close(file);
                 return Status;
             }
 
             Status = file->GetInfo(file, &guid, &size, file_info2);
             if (EFI_ERROR(Status)) {
-                print_error(L"file->GetInfo", Status);
+                print_error("file->GetInfo", Status);
                 bs->FreePool(file_info2);
                 file->Close(file);
                 return Status;
@@ -1541,7 +1541,7 @@ EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const WCHAR* na
 
             bs->FreePool(file_info2);
         } else if (EFI_ERROR(Status)) {
-            print_error(L"file->GetInfo", Status);
+            print_error("file->GetInfo", Status);
             file->Close(file);
             return Status;
         } else
@@ -1559,7 +1559,7 @@ EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const WCHAR* na
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, pages, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         file->Close(file);
         return Status;
     }
@@ -1572,7 +1572,7 @@ EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const WCHAR* na
 
         Status = file->Read(file, &read_size, *data);
         if (EFI_ERROR(Status)) {
-            print_error(L"file->Read", Status);
+            print_error("file->Read", Status);
             bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)*data, pages);
             file->Close(file);
             return Status;
@@ -1592,7 +1592,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
     Status = hive->FindKey(hive, ccs, L"Control\\Nls\\CodePage", &key);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->FindKey", Status);
+        print_error("hive->FindKey", Status);
         return Status;
     }
 
@@ -1602,7 +1602,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
     Status = hive->QueryValue(hive, key, L"ACP", s, &length, &type);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->QueryValue", Status);
+        print_error("hive->QueryValue", Status);
         return Status;
     }
 
@@ -1622,7 +1622,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
     Status = hive->QueryValue(hive, key, s, acp, &length, &type);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->QueryValue", Status);
+        print_error("hive->QueryValue", Status);
         return Status;
     }
 
@@ -1632,7 +1632,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
     Status = hive->QueryValue(hive, key, L"OEMCP", s, &length, &type);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->QueryValue", Status);
+        print_error("hive->QueryValue", Status);
         return Status;
     }
 
@@ -1652,7 +1652,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
     Status = hive->QueryValue(hive, key, s, oemcp, &length, &type);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->QueryValue", Status);
+        print_error("hive->QueryValue", Status);
         return Status;
     }
 
@@ -1663,7 +1663,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
         Status = hive->FindKey(hive, ccs, L"Control\\Nls\\Language", &key);
         if (EFI_ERROR(Status)) {
-            print_error(L"hive->FindKey", Status);
+            print_error("hive->FindKey", Status);
             return Status;
         }
 
@@ -1671,7 +1671,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
         Status = hive->QueryValue(hive, key, L"Default", s, &length, &type);
         if (EFI_ERROR(Status)) {
-            print_error(L"hive->QueryValue", Status);
+            print_error("hive->QueryValue", Status);
             return Status;
         }
 
@@ -1691,7 +1691,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
         Status = hive->QueryValue(hive, key, s, lang, &length, &type);
         if (EFI_ERROR(Status)) {
-            print_error(L"hive->QueryValue", Status);
+            print_error("hive->QueryValue", Status);
             return Status;
         }
     }
@@ -1712,7 +1712,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
     Status = read_file(bs, system32, acp, &nls.AnsiCodePageData, &acp_size);
     if (EFI_ERROR(Status)) {
-        print_error(L"read_file", Status);
+        print_error("read_file", Status);
         return Status;
     }
 
@@ -1728,7 +1728,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
     Status = read_file(bs, system32, oemcp, &nls.OemCodePageData, &oemcp_size);
     if (EFI_ERROR(Status)) {
-        print_error(L"read_file", Status);
+        print_error("read_file", Status);
         return Status;
     }
 
@@ -1744,7 +1744,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
     Status = read_file(bs, system32, lang, &nls.UnicodeCodePageData, &lang_size);
     if (EFI_ERROR(Status)) {
-        print_error(L"read_file", Status);
+        print_error("read_file", Status);
         return Status;
     }
 
@@ -1769,7 +1769,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
     Status = hive->FindKey(hive, ccs, L"Services", &services);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->FindKey", Status);
+        print_error("hive->FindKey", Status);
         return Status;
     }
 
@@ -1788,11 +1788,11 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
         if (Status == EFI_NOT_FOUND)
             break;
         else if (EFI_ERROR(Status))
-            print_error(L"hive->EnumKeys", Status);
+            print_error("hive->EnumKeys", Status);
 
         Status = hive->FindKey(hive, services, name, &key);
         if (EFI_ERROR(Status)) {
-            print_error(L"hive->FindKey", Status);
+            print_error("hive->FindKey", Status);
             return Status;
         }
 
@@ -1872,13 +1872,13 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
         Status = bs->AllocatePool(EfiLoaderData, sizeof(driver), (void**)&d);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            print_error("AllocatePool", Status);
             goto end;
         }
 
         Status = bs->AllocatePool(EfiLoaderData, (wcslen(name) + 1) * sizeof(WCHAR), (void**)&d->name);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            print_error("AllocatePool", Status);
             bs->FreePool(d);
             goto end;
         }
@@ -1887,7 +1887,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
         Status = bs->AllocatePool(EfiLoaderData, (wcslen(image_name) + 1) * sizeof(WCHAR), (void**)&d->file);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            print_error("AllocatePool", Status);
             bs->FreePool(d->name);
             bs->FreePool(d);
             goto end;
@@ -1897,7 +1897,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
         Status = bs->AllocatePool(EfiLoaderData, (wcslen(dir) + 1) * sizeof(WCHAR), (void**)&d->dir);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            print_error("AllocatePool", Status);
             bs->FreePool(d->file);
             bs->FreePool(d->name);
             bs->FreePool(d);
@@ -1917,7 +1917,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
             Status = bs->AllocatePool(EfiLoaderData, (wcslen(group) + 1) * sizeof(WCHAR), (void**)&d->group);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePool", Status);
+                print_error("AllocatePool", Status);
                 bs->FreePool(d->dir);
                 bs->FreePool(d->file);
                 bs->FreePool(d->name);
@@ -1946,7 +1946,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
     Status = hive->FindKey(hive, ccs, L"Control\\ServiceGroupOrder", &sgokey);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->FindKey", Status);
+        print_error("hive->FindKey", Status);
         goto end;
     }
 
@@ -1954,7 +1954,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
     Status = hive->QueryValueNoCopy(hive, sgokey, L"List", (void**)&sgo, &length, &reg_type);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->QueryValue", Status);
+        print_error("hive->QueryValue", Status);
         goto end;
     }
 
@@ -1978,7 +1978,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
         Status = hive->FindKey(hive, ccs, L"Control\\GroupOrderList", &golkey);
         if (EFI_ERROR(Status))
-            print_error(L"hive->FindKey", Status);
+            print_error("hive->FindKey", Status);
 
         InitializeListHead(&drivers2);
 
@@ -2089,7 +2089,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
         Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(boot_list_size), &addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePages", Status);
+            print_error("AllocatePages", Status);
             goto end;
         }
 
@@ -2147,7 +2147,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
                 print_string(s);
 
-                print_error(L"add_image", Status);
+                print_error("add_image", Status);
                 goto end;
             }
 
@@ -2158,7 +2158,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
         Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)addr, PAGE_COUNT(boot_list_size), LoaderSystemBlock);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             goto end;
         }
 
@@ -2202,7 +2202,7 @@ static EFI_STATUS load_errata_inf(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive
         Status = hive->FindKey(hive, ccs, L"Control\\BiosInfo", &key);
 
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->FindKey", Status);
+        print_error("hive->FindKey", Status);
         return Status;
     }
 
@@ -2212,7 +2212,7 @@ static EFI_STATUS load_errata_inf(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive
 
     Status = hive->QueryValue(hive, key, L"InfName", &name[(sizeof(infdir) / sizeof(WCHAR)) - 1], &length, &type);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->QueryValueNoCopy", Status);
+        print_error("hive->QueryValueNoCopy", Status);
         return Status;
     }
 
@@ -2246,7 +2246,7 @@ static EFI_STATUS load_errata_inf(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive
 
         print_string(s);
 
-        print_error(L"read_file", Status);
+        print_error("read_file", Status);
         return Status;
     }
 
@@ -2271,14 +2271,14 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
 
     Status = reg->OpenHive(file, &hive);
     if (EFI_ERROR(Status)) {
-        print_error(L"OpenHive", Status);
+        print_error("OpenHive", Status);
         file->Close(file);
         return Status;
     }
 
     Status = file->Close(file);
     if (EFI_ERROR(Status))
-        print_error(L"file close", Status);
+        print_error("file close", Status);
 
     // find where CurrentControlSet should point to
 
@@ -2286,13 +2286,13 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
 
     Status = hive->FindRoot(hive, &rootkey);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->FindRoot", Status);
+        print_error("hive->FindRoot", Status);
         goto end;
     }
 
     Status = hive->FindKey(hive, rootkey, L"Select", &key);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->FindKey", Status);
+        print_error("hive->FindKey", Status);
         goto end;
     }
 
@@ -2300,7 +2300,7 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
 
     Status = hive->QueryValue(hive, key, L"Default", &set, &length, &type);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->QueryValue", Status);
+        print_error("hive->QueryValue", Status);
         goto end;
     }
 
@@ -2330,14 +2330,14 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
 
         print_string(s);
 
-        print_error(L"hive->FindKey", Status);
+        print_error("hive->FindKey", Status);
         goto end;
     }
 
     if (version >= _WIN32_WINNT_WIN8) {
         Status = hive->FindKey(hive, rootkey, L"HardwareConfig", &key);
         if (EFI_ERROR(Status)) {
-            print_error(L"hive->FindKey", Status);
+            print_error("hive->FindKey", Status);
             goto end;
         }
 
@@ -2348,7 +2348,7 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
 
         Status = hive->QueryValue(hive, key, L"LastId", &hwconfig, &length, &type);
         if (EFI_ERROR(Status)) {
-            print_error(L"hive->QueryValue", Status);
+            print_error("hive->QueryValue", Status);
             goto end;
         }
 
@@ -2371,23 +2371,23 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
     Status = load_drivers(bs, hive, ccs, images, drivers, mappings, va, version >= _WIN32_WINNT_WIN8 ? core_drivers : NULL,
                           hwconfig, fs_driver);
     if (EFI_ERROR(Status)) {
-        print_error(L"load_drivers", Status);
+        print_error("load_drivers", Status);
         goto end;
     }
 
     Status = load_nls(bs, system32, hive, ccs, build);
     if (EFI_ERROR(Status)) {
-        print_error(L"load_nls", Status);
+        print_error("load_nls", Status);
         goto end;
     }
 
     Status = load_errata_inf(bs, hive, ccs, windir, version);
     if (EFI_ERROR(Status))
-        print_error(L"load_errata_inf", Status);
+        print_error("load_errata_inf", Status);
 
     Status = hive->StealData(hive, data, size);
     if (EFI_ERROR(Status)) {
-        print_error(L"hive->StealData", Status);
+        print_error("hive->StealData", Status);
         goto end;
     }
 
@@ -2396,7 +2396,7 @@ end:
         EFI_STATUS Status2 = hive->Close(hive);
 
         if (EFI_ERROR(Status2))
-            print_error(L"hive close", Status2);
+            print_error("hive close", Status2);
     }
 
     return Status;
@@ -2409,7 +2409,7 @@ static EFI_STATUS map_nls(EFI_BOOT_SERVICES* bs, NLS_DATA_BLOCK* nls, void** va,
     Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)nls->AnsiCodePageData,
                          PAGE_COUNT(acp_size), LoaderNlsData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -2419,7 +2419,7 @@ static EFI_STATUS map_nls(EFI_BOOT_SERVICES* bs, NLS_DATA_BLOCK* nls, void** va,
     Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)nls->OemCodePageData,
                          PAGE_COUNT(oemcp_size), LoaderNlsData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -2429,7 +2429,7 @@ static EFI_STATUS map_nls(EFI_BOOT_SERVICES* bs, NLS_DATA_BLOCK* nls, void** va,
     Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)nls->UnicodeCodePageData,
                          PAGE_COUNT(lang_size), LoaderNlsData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -2448,7 +2448,7 @@ static EFI_STATUS map_errata_inf(EFI_BOOT_SERVICES* bs, LOADER_EXTENSION_BLOCK1A
 
     Status = add_mapping(bs, mappings, va2, errata_inf, PAGE_COUNT(errata_inf_size), LoaderRegistryData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -2540,7 +2540,7 @@ static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(size), &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
@@ -2557,7 +2557,7 @@ static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images
 
     Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)addr, PAGE_COUNT(size), LoaderSystemBlock);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -2592,7 +2592,7 @@ static EFI_STATUS make_images_contiguous(EFI_BOOT_SERVICES* bs, LIST_ENTRY* imag
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, (size + 0x400000 - EFI_PAGE_SIZE) / EFI_PAGE_SIZE, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
@@ -2608,7 +2608,7 @@ static EFI_STATUS make_images_contiguous(EFI_BOOT_SERVICES* bs, LIST_ENTRY* imag
 
         Status = img->img->MoveAddress(img->img, addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"MovePages", Status);
+            print_error("MovePages", Status);
             return Status;
         }
 
@@ -2636,7 +2636,7 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
         return EFI_SUCCESS;
     } else if (EFI_ERROR(Status)) {
         print_string("Error when reading AppPatch\\drvmain.sdb.\n");
-        print_error(L"read_file", Status);
+        print_error("read_file", Status);
         return Status;
     }
 
@@ -2645,7 +2645,7 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
 
     Status = add_mapping(bs, mappings, *va, data, PAGE_COUNT(size), LoaderRegistryData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -2670,13 +2670,13 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
 
         Status = utf8_to_utf16(NULL, 0, &wlen, cmdline->debug_type, len);
         if (EFI_ERROR(Status)) {
-            print_error(L"utf8_to_utf16", Status);
+            print_error("utf8_to_utf16", Status);
             return Status;
         }
 
         Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + (7 * sizeof(WCHAR)), (void**)&newfile);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            print_error("AllocatePool", Status);
             return Status;
         }
 
@@ -2685,7 +2685,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
 
         Status = utf8_to_utf16(&newfile[2], wlen, &wlen, cmdline->debug_type, len);
         if (EFI_ERROR(Status)) {
-            print_error(L"utf8_to_utf16", Status);
+            print_error("utf8_to_utf16", Status);
             systable->BootServices->FreePool(newfile);
             return Status;
         }
@@ -2730,7 +2730,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
             if (Status == EFI_NOT_FOUND)
                 print_string("Could not find override, opening original file.\n");
             else if (EFI_ERROR(Status)) {
-                print_error(L"kdnet_init", Status);
+                print_error("kdnet_init", Status);
                 return Status;
             } else {
                 kdnet_loaded = true;
@@ -2805,7 +2805,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
 
             print_string(s);
 
-            print_error(L"file open", Status);
+            print_error("file open", Status);
         }
 
         return Status;
@@ -2815,7 +2815,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
 
     Status = pe->Load(file, !is_kdstub ? va : NULL, &img->img);
     if (EFI_ERROR(Status)) {
-        print_error(L"PE load", Status);
+        print_error("PE load", Status);
         file->Close(file);
         return Status;
     }
@@ -2834,20 +2834,20 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
 
     Status = file->Close(file);
     if (EFI_ERROR(Status))
-        print_error(L"file close", Status);
+        print_error("file close", Status);
 
     if (is_kdstub) {
         kdstub = img;
 
         Status = allocate_kdnet_hw_context(img->img, &debug_device_descriptor, build);
         if (EFI_ERROR(Status)) {
-            print_error(L"allocate_kdnet_hw_context", Status);
+            print_error("allocate_kdnet_hw_context", Status);
             return Status;
         }
 
         Status = img->img->Relocate(img->img, (uintptr_t)va);
         if (EFI_ERROR(Status))
-            print_error(L"Relocate", Status);
+            print_error("Relocate", Status);
     }
 
     return Status;
@@ -2983,13 +2983,13 @@ static EFI_STATUS initialize_csm(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs)
         Status = bs->OpenProtocol(handles[i], &guid, (void**)&csm, image_handle, NULL,
                                   EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
         if (EFI_ERROR(Status)) {
-            print_error(L"OpenProtocol", Status);
+            print_error("OpenProtocol", Status);
             continue;
         }
 
         Status = csm->ShadowAllLegacyOproms(csm);
         if (EFI_ERROR(Status)) {
-            print_error(L"csm->ShadowAllLegacyOproms", Status);
+            print_error("csm->ShadowAllLegacyOproms", Status);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             goto end;
         }
@@ -3034,7 +3034,7 @@ static EFI_STATUS load_kernel(image* img, EFI_PE_LOADER_PROTOCOL* pe, void* va, 
     if (!try_pae) {
         Status = load_image(img, L"ntoskrnl.exe", pe, va, system32, cmdline, 0);
         if (EFI_ERROR(Status)) {
-            print_error(L"load_image", Status);
+            print_error("load_image", Status);
             return Status;
         }
 
@@ -3061,7 +3061,7 @@ static EFI_STATUS load_kernel(image* img, EFI_PE_LOADER_PROTOCOL* pe, void* va, 
 #endif
 
     if (EFI_ERROR(Status)) {
-        print_error(L"load_image", Status);
+        print_error("load_image", Status);
         return Status;
     }
 
@@ -3106,7 +3106,7 @@ static void parse_option(const char* option, size_t len, command_line* cmdline) 
     if (len > sizeof(debugport) - 1 && !strnicmp(option, debugport, sizeof(debugport) - 1)) {
         Status = systable->BootServices->AllocatePool(EfiLoaderData, len - sizeof(debugport) + 1 + 1, (void**)&cmdline->debug_type);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            print_error("AllocatePool", Status);
             return;
         }
 
@@ -3126,19 +3126,19 @@ static void parse_option(const char* option, size_t len, command_line* cmdline) 
 
         Status = utf8_to_utf16(NULL, 0, &wlen, &option[sizeof(hal) - 1], len - sizeof(hal) + 1);
         if (EFI_ERROR(Status)) {
-            print_error(L"utf8_to_utf16", Status);
+            print_error("utf8_to_utf16", Status);
             return;
         }
 
         Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + sizeof(WCHAR), (void**)&cmdline->hal);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            print_error("AllocatePool", Status);
             return;
         }
 
         Status = utf8_to_utf16(cmdline->hal, wlen, &wlen, &option[sizeof(hal) - 1], len - sizeof(hal) + 1);
         if (EFI_ERROR(Status)) {
-            print_error(L"utf8_to_utf16", Status);
+            print_error("utf8_to_utf16", Status);
             systable->BootServices->FreePool(cmdline->hal);
             cmdline->hal = NULL;
             return;
@@ -3150,19 +3150,19 @@ static void parse_option(const char* option, size_t len, command_line* cmdline) 
 
         Status = utf8_to_utf16(NULL, 0, &wlen, &option[sizeof(kernel) - 1], len - sizeof(kernel) + 1);
         if (EFI_ERROR(Status)) {
-            print_error(L"utf8_to_utf16", Status);
+            print_error("utf8_to_utf16", Status);
             return;
         }
 
         Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + sizeof(WCHAR), (void**)&cmdline->kernel);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            print_error("AllocatePool", Status);
             return;
         }
 
         Status = utf8_to_utf16(cmdline->kernel, wlen, &wlen, &option[sizeof(kernel) - 1], len - sizeof(kernel) + 1);
         if (EFI_ERROR(Status)) {
-            print_error(L"utf8_to_utf16", Status);
+            print_error("utf8_to_utf16", Status);
             systable->BootServices->FreePool(cmdline->kernel);
             cmdline->kernel = NULL;
             return;
@@ -3226,7 +3226,7 @@ static EFI_STATUS allocate_pcr(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PCR_PAGES, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
@@ -3247,7 +3247,7 @@ static EFI_STATUS allocate_pcr(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void
 
     Status = add_mapping(bs, mappings, *pcrva, pcr, PCR_PAGES, LoaderStartupPcrPage);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -3297,7 +3297,7 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         Status = bs->OpenProtocol(handles[i], &guid, (void**)&gop, image_handle, NULL,
                                   EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
         if (EFI_ERROR(Status)) {
-            print_error(L"OpenProtocol", Status);
+            print_error("OpenProtocol", Status);
             continue;
         }
 
@@ -3307,7 +3307,7 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
 
             Status = gop->QueryMode(gop, j, &size, &info);
             if (EFI_ERROR(Status)) {
-                print_error(L"QueryMode", Status);
+                print_error("QueryMode", Status);
                 continue;
             }
 
@@ -3325,7 +3325,7 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
 
         Status = gop->SetMode(gop, mode);
         if (EFI_ERROR(Status)) {
-            print_error(L"SetMode", Status);
+            print_error("SetMode", Status);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             goto end;
         }
@@ -3386,7 +3386,7 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
 
     Status = add_mapping(bs, mappings, *va, framebuffer, PAGE_COUNT(framebuffer_size), LoaderFirmwarePermanent);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -3414,14 +3414,14 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(block2->reserve_pool_size), &rp);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
     Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)rp,
                             PAGE_COUNT(block2->reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -3435,7 +3435,7 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
         Status = add_mapping(bs, mappings, *va, system_font, PAGE_COUNT(system_font_size),
                                 LoaderFirmwarePermanent); // FIXME - what should the memory type be?
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             return Status;
         }
 
@@ -3449,7 +3449,7 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
         Status = add_mapping(bs, mappings, *va, console_font, PAGE_COUNT(console_font_size),
                                 LoaderFirmwarePermanent); // FIXME - what should the memory type be?
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             return Status;
         }
 
@@ -3474,7 +3474,7 @@ static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappin
             Status = add_mapping(bs, mappings, va2, ddd->BaseAddress[i].TranslatedAddress,
                                  PAGE_COUNT(ddd->BaseAddress[i].Length), LoaderFirmwarePermanent);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 return Status;
             }
 
@@ -3486,7 +3486,7 @@ static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappin
 //         Status = add_mapping(bs, mappings, va2, ddd->Memory.VirtualAddress,
 //                              ddd->Memory.Length / EFI_PAGE_SIZE, LoaderFirmwarePermanent);
 //         if (EFI_ERROR(Status)) {
-//             print_error(L"add_mapping", Status);
+//             print_error("add_mapping", Status);
 //             return Status;
 //         }
 //
@@ -3505,7 +3505,7 @@ static EFI_STATUS load_fonts(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir) {
     Status = open_file(windir, &fonts, L"Fonts");
     if (EFI_ERROR(Status)) {
         print_string("Could not open Fonts directory.\n");
-        print_error(L"open_file", Status);
+        print_error("open_file", Status);
         return Status;
     }
 
@@ -3515,13 +3515,13 @@ static EFI_STATUS load_fonts(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir) {
 
     Status = read_file(bs, fonts, L"arial.ttf", &system_font, &system_font_size);
     if (EFI_ERROR(Status)) {
-        print_error(L"read_file", Status);
+        print_error("read_file", Status);
         return Status;
     }
 
     Status = read_file(bs, fonts, L"cour.ttf", &console_font, &console_font_size);
     if (EFI_ERROR(Status)) {
-        print_error(L"read_file", Status);
+        print_error("read_file", Status);
         return Status;
     }
 
@@ -3580,19 +3580,19 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = utf8_to_utf16(NULL, 0, &pathwlen, path, pathlen);
     if (EFI_ERROR(Status)) {
-        print_error(L"utf8_to_utf16", Status);
+        print_error("utf8_to_utf16", Status);
         return Status;
     }
 
     Status = bs->AllocatePool(EfiLoaderData, pathwlen + sizeof(WCHAR), (void**)&pathw);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
     Status = utf8_to_utf16(pathw, pathwlen, &pathwlen, path, pathlen);
     if (EFI_ERROR(Status)) {
-        print_error(L"utf8_to_utf16", Status);
+        print_error("utf8_to_utf16", Status);
         return Status;
     }
 
@@ -3609,14 +3609,14 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         print_string(s);
 
-        print_error(L"Open", Status);
+        print_error("Open", Status);
         return Status;
     }
 
     Status = open_file(windir, &system32, L"system32");
     if (EFI_ERROR(Status)) {
         print_string("Could not open system32.\n");
-        print_error(L"open_file", Status);
+        print_error("open_file", Status);
         return Status;
     }
 
@@ -3625,13 +3625,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = add_image(bs, &images, L"ntoskrnl.exe", LoaderSystemCode, L"system32", false, NULL, 0, false);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_image", Status);
+        print_error("add_image", Status);
         goto end;
     }
 
     Status = add_image(bs, &images, L"hal.dll", LoaderHalCode, L"system32", true, NULL, 0, false);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_image", Status);
+        print_error("add_image", Status);
         goto end;
     }
 
@@ -3643,7 +3643,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = process_memory_map(bs, &va, &mappings);
     if (EFI_ERROR(Status)) {
-        print_error(L"process_memory_map", Status);
+        print_error("process_memory_map", Status);
         goto end;
     }
 
@@ -3661,13 +3661,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = load_kernel(_CR(images.Flink, image, list_entry), pe, va2, system32, cmdline);
     if (EFI_ERROR(Status)) {
-        print_error(L"load_kernel", Status);
+        print_error("load_kernel", Status);
         goto end;
     }
 
     Status = _CR(images.Flink, image, list_entry)->img->GetVersion(_CR(images.Flink, image, list_entry)->img, &version_ms, &version_ls);
     if (EFI_ERROR(Status)) {
-        print_error(L"GetVersion", Status);
+        print_error("GetVersion", Status);
         goto end;
     }
 
@@ -3703,14 +3703,14 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     Status = load_registry(bs, system32, reg, &registry, &reg_size, &images, &drivers, &mappings, &va, version, build,
                            windir, &core_drivers, fs_driver);
     if (EFI_ERROR(Status)) {
-        print_error(L"load_registry", Status);
+        print_error("load_registry", Status);
         goto end;
     }
 
 #if 0
     Status = set_video_mode(bs, image_handle);
     if (EFI_ERROR(Status)) {
-        print_error(L"set_video_mode", Status);
+        print_error("set_video_mode", Status);
         goto end;
     }
 #endif
@@ -3719,7 +3719,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     if (version >= _WIN32_WINNT_WIN8) {
         Status = load_api_set(bs, &images, pe, system32, &va, version, &mappings, cmdline);
         if (EFI_ERROR(Status)) {
-            print_error(L"load_api_set", Status);
+            print_error("load_api_set", Status);
             goto end;
         }
     }
@@ -3727,7 +3727,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     if (version >= _WIN32_WINNT_WINBLUE) {
         Status = add_image(bs, &images, L"crashdmp.sys", LoaderSystemCode, drivers_dir_path, false, NULL, 0, false);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_image", Status);
+            print_error("add_image", Status);
             goto end;
         }
     }
@@ -3787,7 +3787,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                     p = stpcpy(p, ".\n");
                     print_string(s);
 
-                    print_error(L"open_file", Status);
+                    print_error("open_file", Status);
                     goto end;
                 }
 
@@ -3800,7 +3800,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
             }
 
             if (EFI_ERROR(Status)) {
-                print_error(L"load_image", Status);
+                print_error("load_image", Status);
                 goto end;
             }
         }
@@ -3824,13 +3824,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
             if (Status == EFI_BUFFER_TOO_SMALL) {
                 Status = bs->AllocatePool(EfiLoaderData, size, (void**)&img->import_list);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePool", Status);
+                    print_error("AllocatePool", Status);
                     goto end;
                 }
 
                 Status = img->img->ListImports(img->img, img->import_list, &size);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"img->ListImports", Status);
+                    print_error("img->ListImports", Status);
                     goto end;
                 }
 
@@ -3901,12 +3901,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                         if (!found) {
                             Status = add_image(bs, &images, s, LoaderSystemCode, img->dir, true, NULL, img->order == 0 ? 0 : img->order - 1, no_reloc);
                             if (EFI_ERROR(Status))
-                                print_error(L"add_image", Status);
+                                print_error("add_image", Status);
                         }
                     }
                 }
             } else if (EFI_ERROR(Status)) {
-                print_error(L"img->ListImports", Status);
+                print_error("img->ListImports", Status);
                 goto end;
             }
         }
@@ -3976,7 +3976,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
                             print_string(t);
 
-                            print_error(L"ResolveImports", Status);
+                            print_error("ResolveImports", Status);
                             goto end;
                         }
                         break;
@@ -3992,7 +3992,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = make_images_contiguous(bs, &images);
     if (EFI_ERROR(Status)) {
-        print_error(L"make_images_contiguous", Status);
+        print_error("make_images_contiguous", Status);
         goto end;
     }
 
@@ -4005,13 +4005,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         Status = kernel->img->GetEntryPoint(kernel->img, (void**)&KiSystemStartup);
         if (EFI_ERROR(Status))
-            print_error(L"img->GetEntryPoint", Status);
+            print_error("img->GetEntryPoint", Status);
     }
 
     if (kdstub) {
         Status = find_kd_export(kdstub->img, build);
         if (EFI_ERROR(Status))
-            print_error(L"find_kd_export", Status);
+            print_error("find_kd_export", Status);
         else
             kdstub_export_loaded = true;
     }
@@ -4043,13 +4043,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
             Status = add_mapping(bs, &mappings, img->va, (void*)(uintptr_t)img->img->GetAddress(img->img),
                                  pages, img->memory_type);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 goto end;
             }
 
             Status = img->img->GetSections(img->img, &sections, &num_sections);
             if (EFI_ERROR(Status)) {
-                print_error(L"GetSections", Status);
+                print_error("GetSections", Status);
                 goto end;
             }
 
@@ -4080,7 +4080,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = add_mapping(bs, &mappings, va, store, store_pages, LoaderSystemBlock);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         goto end;
     }
 
@@ -4089,7 +4089,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = generate_images_list(bs, &images, block1a, &va, &mappings);
     if (EFI_ERROR(Status)) {
-        print_error(L"generate_images_list", Status);
+        print_error("generate_images_list", Status);
         goto end;
     }
 
@@ -4102,7 +4102,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = add_mapping(bs, &mappings, va, tssphys, PAGE_COUNT(sizeof(KTSS)), LoaderMemoryData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         goto end;
     }
 
@@ -4114,7 +4114,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 #endif
         Status = allocate_pcr(bs, &mappings, &va, build, (void**)&pcrva);
         if (EFI_ERROR(Status)) {
-            print_error(L"allocate_pcr", Status);
+            print_error("allocate_pcr", Status);
             goto end;
         }
 #ifndef _X86_
@@ -4135,7 +4135,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = add_mapping(bs, &mappings, (void*)KI_USER_SHARED_DATA, usd, 1, LoaderStartupPcrPage);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         goto end;
     }
 
@@ -4156,7 +4156,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         Status = add_mapping(bs, &mappings, va, nmitsspa, 1, LoaderMemoryData);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             goto end;
         }
 
@@ -4174,7 +4174,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         Status = add_mapping(bs, &mappings, va, dftsspa, 1, LoaderMemoryData);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             goto end;
         }
 
@@ -4192,7 +4192,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         Status = add_mapping(bs, &mappings, va, mctsspa, 1, LoaderMemoryData);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             goto end;
         }
 
@@ -4210,7 +4210,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = add_mapping(bs, &mappings, va, gdt, GDT_PAGES, LoaderMemoryData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         goto end;
     }
 
@@ -4226,7 +4226,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = add_mapping(bs, &mappings, va, idt, IDT_PAGES, LoaderMemoryData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         goto end;
     }
 
@@ -4259,13 +4259,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, allocation, &addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePages", Status);
+            print_error("AllocatePages", Status);
             goto end;
         }
 
         Status = add_mapping(bs, &mappings, va, (void*)(uintptr_t)addr, allocation, LoaderStartupKernelStack);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             goto end;
         }
 
@@ -4278,34 +4278,34 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = map_nls(bs, &store->nls, &va, &mappings);
     if (EFI_ERROR(Status)) {
-        print_error(L"map_nls", Status);
+        print_error("map_nls", Status);
         goto end;
     }
 
     Status = load_drvdb(bs, windir, &va, &mappings, extblock1b);
     if (EFI_ERROR(Status)) {
-        print_error(L"load_drvdb", Status);
+        print_error("load_drvdb", Status);
         goto end;
     }
 
     if (errata_inf) {
         Status = map_errata_inf(bs, extblock1a, &va, &mappings);
         if (EFI_ERROR(Status)) {
-            print_error(L"map_errata_inf", Status);
+            print_error("map_errata_inf", Status);
             goto end;
         }
     }
 
     Status = add_mapping(bs, &mappings, va, registry, PAGE_COUNT(reg_size), LoaderRegistryData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         goto end;
     }
 
     if (version >= _WIN32_WINNT_WIN8) {
         Status = load_fonts(bs, windir);
         if (EFI_ERROR(Status))
-            print_error(L"load_fonts", Status); // non-fatal
+            print_error("load_fonts", Status); // non-fatal
     }
 
     windir->Close(windir);
@@ -4321,7 +4321,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = map_efi_runtime(bs, &mappings, &va, version);
     if (EFI_ERROR(Status)) {
-        print_error(L"map_efi_runtime", Status);
+        print_error("map_efi_runtime", Status);
         return Status;
     }
 
@@ -4337,7 +4337,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = map_debug_descriptor(bs, &mappings, &va, &store->debug_device_descriptor);
     if (EFI_ERROR(Status)) {
-        print_error(L"map_debug_descriptor", Status);
+        print_error("map_debug_descriptor", Status);
         return Status;
     }
 
@@ -4352,13 +4352,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, pages, &addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePages", Status);
+            print_error("AllocatePages", Status);
             goto end;
         }
 
         Status = add_mapping(bs, &mappings, va, (void*)(uintptr_t)addr, pages, LoaderStartupKernelStack);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             goto end;
         }
 
@@ -4372,13 +4372,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         for (unsigned int i = 0; i < 8; i++) {
             Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, pages, &addr);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePages", Status);
+                print_error("AllocatePages", Status);
                 goto end;
             }
 
             Status = add_mapping(bs, &mappings, va, (void*)(uintptr_t)addr, pages, LoaderStartupKernelStack);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 goto end;
             }
 
@@ -4395,7 +4395,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         Status = add_mapping(bs, &mappings, va, kdnet_scratch,
                              PAGE_COUNT(store->debug_device_descriptor.TransportData.HwContextSize), LoaderFirmwarePermanent);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             goto end;
         }
 
@@ -4409,7 +4409,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         else {
             Status = set_graphics_mode(bs, image_handle);
             if (EFI_ERROR(Status)) {
-                print_error(L"set_graphics_mode", Status);
+                print_error("set_graphics_mode", Status);
                 print_string("GOP failed, falling back to CSM\n");
             }
         }
@@ -4419,13 +4419,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     if (!EFI_ERROR(Status)) {
         Status = init_bgcontext(bs, &mappings, &va, version, build, &store->bgc, extblock3);
         if (EFI_ERROR(Status)) {
-            print_error(L"init_bgcontext", Status);
+            print_error("init_bgcontext", Status);
             goto end;
         }
     } else {
         Status = initialize_csm(image_handle, bs);
         if (EFI_ERROR(Status)) {
-            print_error(L"initialize_csm", Status);
+            print_error("initialize_csm", Status);
             goto end;
         }
     }
@@ -4434,7 +4434,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     Status = enable_paging(image_handle, bs, &mappings, block1a, va, loader_pages_spanned);
     if (EFI_ERROR(Status)) {
-        print_error(L"enable_paging", Status);
+        print_error("enable_paging", Status);
         goto end;
     }
 
@@ -4486,7 +4486,7 @@ end:
     if (windir) {
         EFI_STATUS Status2 = windir->Close(windir);
         if (EFI_ERROR(Status2))
-            print_error(L"windir close", Status2);
+            print_error("windir close", Status2);
     }
 
     while (!IsListEmpty(&images)) {
@@ -4495,7 +4495,7 @@ end:
         if (img->img) {
             EFI_STATUS Status2 = img->img->Free(img->img);
             if (EFI_ERROR(Status2))
-                print_error(L"img->Free", Status2);
+                print_error("img->Free", Status2);
         }
 
         if (img->import_list)
@@ -4525,7 +4525,7 @@ static EFI_STATUS load_reg_proto(EFI_BOOT_SERVICES* bs, EFI_HANDLE ImageHandle, 
 
     Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
     if (EFI_ERROR(Status)) {
-        print_error(L"bs->LocateHandleBuffer", Status);
+        print_error("bs->LocateHandleBuffer", Status);
         return Status;
     }
 
@@ -4557,7 +4557,7 @@ static EFI_STATUS load_pe_proto(EFI_BOOT_SERVICES* bs, EFI_HANDLE ImageHandle, E
 
     Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
     if (EFI_ERROR(Status)) {
-        print_error(L"bs->LocateHandleBuffer", Status);
+        print_error("bs->LocateHandleBuffer", Status);
         return Status;
     }
 
@@ -4638,7 +4638,7 @@ static EFI_STATUS change_stack(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, c
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, STACK_SIZE, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
@@ -4683,7 +4683,7 @@ static EFI_STATUS create_file_device_path(EFI_BOOT_SERVICES* bs, EFI_DEVICE_PATH
 
     Status = bs->AllocatePool(EfiLoaderData, fslen + fplen + sizeof(EFI_DEVICE_PATH_PROTOCOL), (void**)&dp);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -4735,7 +4735,7 @@ EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, FILEPATH_DEVICE_PATH* dp, 
 
     Status = systable->BootServices->AllocatePool(EfiLoaderData, (len + 1) * sizeof(WCHAR), (void**)&name);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -4744,7 +4744,7 @@ EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, FILEPATH_DEVICE_PATH* dp, 
 
     Status = fs->OpenVolume(fs, &root);
     if (EFI_ERROR(Status)) {
-        print_error(L"OpenVolume", Status);
+        print_error("OpenVolume", Status);
         systable->BootServices->FreePool(name);
         return Status;
     }
@@ -4774,7 +4774,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
     Status = bs->OpenProtocol(image_handle, &guid, (void**)&image, image_handle, NULL,
                               EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
     if (EFI_ERROR(Status)) {
-        print_error(L"OpenProtocol", Status);
+        print_error("OpenProtocol", Status);
         return Status;
     }
 
@@ -4784,19 +4784,19 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
     Status = bs->OpenProtocol(image->DeviceHandle, &guid2, (void**)&fs, image_handle, NULL,
                               EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
     if (EFI_ERROR(Status)) {
-        print_error(L"OpenProtocol", Status);
+        print_error("OpenProtocol", Status);
         goto end2;
     }
 
     Status = open_parent_dir(fs, (FILEPATH_DEVICE_PATH*)image->FilePath, &dir);
     if (EFI_ERROR(Status)) {
-        print_error(L"open_parent_dir", Status);
+        print_error("open_parent_dir", Status);
         goto end;
     }
 
     Status = bs->HandleProtocol(image->DeviceHandle, &guid3, (void**)&device_path);
     if (EFI_ERROR(Status)) {
-        print_error(L"HandleProtocol", Status);
+        print_error("HandleProtocol", Status);
         goto end;
     }
 
@@ -4810,7 +4810,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
         goto end;
     } else if (EFI_ERROR(Status)) {
         print_string("Error opening \"drivers\" directory.\n");
-        print_error(L"Open", Status);
+        print_error("Open", Status);
         goto end;
     }
 
@@ -4826,7 +4826,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
 
         Status = drivers->Read(drivers, &size, buf);
         if (EFI_ERROR(Status)) {
-            print_error(L"Read", Status);
+            print_error("Read", Status);
             drivers->Close(drivers);
             goto end;
         }
@@ -4901,7 +4901,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
 
         Status = bs->LocateHandleBuffer(AllHandles, NULL, NULL, &count, &handles);
         if (EFI_ERROR(Status)) {
-            print_error(L"LocateHandleBuffer", Status);
+            print_error("LocateHandleBuffer", Status);
             goto end;
         }
 
@@ -5024,14 +5024,14 @@ static EFI_STATUS parse_arc_name(EFI_BOOT_SERVICES* bs, char* system_path, EFI_F
         Status = bs->LocateDevicePath(&guid, &bd->device_path, fs_handle);
         if (EFI_ERROR(Status)) {
             print_string("Could not open filesystem protocol for device path. Is filesystem driver installed?\n");
-            print_error(L"LocateDevicePath", Status);
+            print_error("LocateDevicePath", Status);
             return Status;
         }
 
         Status = bs->OpenProtocol(*fs_handle, &guid, (void**)fs, image_handle, NULL,
                                   EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
         if (EFI_ERROR(Status)) {
-            print_error(L"OpenProtocol", Status);
+            print_error("OpenProtocol", Status);
             return Status;
         }
     } else {
@@ -5055,7 +5055,7 @@ static EFI_STATUS parse_arc_name(EFI_BOOT_SERVICES* bs, char* system_path, EFI_F
             Status = bs->OpenProtocol(handles[i], &quibble_guid, (void**)&quib, image_handle, NULL,
                                       EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
             if (EFI_ERROR(Status)) {
-                print_error(L"OpenProtocol", Status);
+                print_error("OpenProtocol", Status);
                 continue;
             }
 
@@ -5064,7 +5064,7 @@ static EFI_STATUS parse_arc_name(EFI_BOOT_SERVICES* bs, char* system_path, EFI_F
             if (Status == EFI_BUFFER_TOO_SMALL) {
                 Status = bs->AllocatePool(EfiLoaderData, len, (void**)&buf);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePool", Status);
+                    print_error("AllocatePool", Status);
                     continue;
                 }
 
@@ -5079,7 +5079,7 @@ static EFI_STATUS parse_arc_name(EFI_BOOT_SERVICES* bs, char* system_path, EFI_F
                     Status = bs->OpenProtocol(handles[i], &guid, (void**)fs, image_handle, NULL,
                                               EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
                     if (EFI_ERROR(Status)) {
-                        print_error(L"OpenProtocol", Status);
+                        print_error("OpenProtocol", Status);
                         return Status;
                     }
 
@@ -5106,7 +5106,7 @@ static EFI_STATUS parse_arc_name(EFI_BOOT_SERVICES* bs, char* system_path, EFI_F
 
     Status = bs->AllocatePool(EfiLoaderData, *path - system_path + 1, (void**)arc_name);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -5140,7 +5140,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
     if (Status == EFI_ABORTED)
         return;
     else if (EFI_ERROR(Status)) {
-        print_error(L"show_menu", Status);
+        print_error("show_menu", Status);
         return;
     }
 
@@ -5170,7 +5170,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
 
     Status = load_reg_proto(bs, image_handle, &reg);
     if (EFI_ERROR(Status)) {
-        print_error(L"load_reg_proto", Status);
+        print_error("load_reg_proto", Status);
         bs->FreePool(arc_name);
         bs->CloseProtocol(fs_handle, &guid, image_handle, NULL);
         bs->WaitForEvent(1, &systable->ConIn->WaitForKey, &Event);
@@ -5179,7 +5179,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
 
     Status = load_pe_proto(bs, image_handle, &pe);
     if (EFI_ERROR(Status)) {
-        print_error(L"load_pe_proto", Status);
+        print_error("load_pe_proto", Status);
         bs->FreePool(arc_name);
         bs->CloseProtocol(fs_handle, &guid, image_handle, NULL);
         bs->WaitForEvent(1, &systable->ConIn->WaitForKey, &Event);
@@ -5199,7 +5199,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
 
             Status = bs->AllocatePool(EfiLoaderData, len + 1, (void**)&arc_name);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePool", Status);
+                print_error("AllocatePool", Status);
                 bs->CloseProtocol(fs_handle, &quibble_guid, image_handle, NULL);
                 bs->WaitForEvent(1, &systable->ConIn->WaitForKey, &Event);
                 return;
@@ -5209,7 +5209,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
         }
 
         if (EFI_ERROR(Status) && Status != EFI_UNSUPPORTED) {
-            print_error(L"GetArcName", Status);
+            print_error("GetArcName", Status);
             bs->FreePool(arc_name);
             bs->CloseProtocol(fs_handle, &quibble_guid, image_handle, NULL);
             bs->WaitForEvent(1, &systable->ConIn->WaitForKey, &Event);
@@ -5235,7 +5235,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
         if (Status == EFI_BUFFER_TOO_SMALL) {
             Status = bs->AllocatePool(EfiLoaderData, len, (void**)&fs_driver);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePool", Status);
+                print_error("AllocatePool", Status);
                 bs->CloseProtocol(fs_handle, &quibble_guid, image_handle, NULL);
                 bs->WaitForEvent(1, &systable->ConIn->WaitForKey, &Event);
                 return;
@@ -5245,7 +5245,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
         }
 
         if (EFI_ERROR(Status) && Status != EFI_UNSUPPORTED) {
-            print_error(L"GetWindowsDriverName", Status);
+            print_error("GetWindowsDriverName", Status);
             bs->FreePool(arc_name);
             bs->FreePool(fs_driver);
             bs->CloseProtocol(fs_handle, &quibble_guid, image_handle, NULL);
@@ -5268,18 +5268,18 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
 
         if (EFI_ERROR(Status)) {
             print_string("Could not open EFI_OPEN_SUBVOL_PROTOCOL on filesystem driver.\n");
-            print_error(L"OpenProtocol", Status);
+            print_error("OpenProtocol", Status);
         } else {
             Status = open_subvol->OpenSubvol(open_subvol, cmdline.subvol, &root);
             if (EFI_ERROR(Status))
-                print_error(L"OpenSubvol", Status);
+                print_error("OpenSubvol", Status);
         }
     }
 
     if (!root) {
         Status = fs->OpenVolume(fs, &root);
         if (EFI_ERROR(Status)) {
-            print_error(L"OpenVolume", Status);
+            print_error("OpenVolume", Status);
             bs->FreePool(arc_name);
             bs->CloseProtocol(fs_handle, &quibble_guid, image_handle, NULL);
             bs->WaitForEvent(1, &systable->ConIn->WaitForKey, &Event);
@@ -5291,7 +5291,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
 
     // shouldn't return
 
-    print_error(L"boot", Status);
+    print_error("boot", Status);
 
     bs->FreePool(arc_name);
     bs->CloseProtocol(fs_handle, &guid, image_handle, NULL);
@@ -5308,7 +5308,7 @@ static uint32_t get_random_seed() {
 
     Status = systable->RuntimeServices->GetTime(&tm, NULL);
     if (EFI_ERROR(Status)) {
-        print_error(L"GetTime", Status);
+        print_error("GetTime", Status);
         return 0;
     }
 
@@ -5353,7 +5353,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     if (!have_csm) {
         Status = set_graphics_mode(systable->BootServices, ImageHandle);
         if (EFI_ERROR(Status)) {
-            print_error(L"set_graphics_mode", Status);
+            print_error("set_graphics_mode", Status);
             goto end;
         }
 
@@ -5362,7 +5362,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
 
     Status = info_register(systable->BootServices);
     if (EFI_ERROR(Status)) {
-        print_error(L"info_register", Status);
+        print_error("info_register", Status);
         print_string("Error registering info protocol.\n");
         goto end2;
     }
@@ -5381,19 +5381,19 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
 
     Status = load_efi_drivers(systable->BootServices, ImageHandle);
     if (EFI_ERROR(Status)) {
-        print_error(L"load_efi_drivers", Status);
+        print_error("load_efi_drivers", Status);
         goto end;
     }
 
     Status = look_for_block_devices(systable->BootServices);
     if (EFI_ERROR(Status)) {
-        print_error(L"look_for_block_devices", Status);
+        print_error("look_for_block_devices", Status);
         goto end;
     }
 
     Status = change_stack(systable->BootServices, ImageHandle, stack_changed);
     if (EFI_ERROR(Status)) {
-        print_error(L"change_stack", Status);
+        print_error("change_stack", Status);
         goto end;
     }
 

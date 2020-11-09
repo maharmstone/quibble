@@ -106,7 +106,7 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
 
                 Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePages", Status);
+                    print_error("AllocatePages", Status);
                     return Status;
                 }
 
@@ -140,7 +140,7 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
 
                 Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePages", Status);
+                    print_error("AllocatePages", Status);
                     return Status;
                 }
 
@@ -179,13 +179,13 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
 
             Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePages", Status);
+                print_error("AllocatePages", Status);
                 return Status;
             }
 
             Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)addr, 1, LoaderMemoryData);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 return Status;
             }
 
@@ -214,13 +214,13 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
 
             Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePages", Status);
+                print_error("AllocatePages", Status);
                 return Status;
             }
 
             Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)addr, 1, LoaderMemoryData);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 return Status;
             }
 
@@ -246,13 +246,13 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
 
             Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePages", Status);
+                print_error("AllocatePages", Status);
                 return Status;
             }
 
             Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)addr, 1, LoaderMemoryData);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 return Status;
             }
 
@@ -294,7 +294,7 @@ EFI_STATUS add_mapping(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, vo
 
     Status = bs->AllocatePool(EfiLoaderData, sizeof(mapping), (void**)&m);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -323,7 +323,7 @@ EFI_STATUS add_mapping(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, vo
             if (pages2 > 0) {
                 Status = bs->AllocatePool(EfiLoaderData, sizeof(mapping), (void**)&m3);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePool", Status);
+                    print_error("AllocatePool", Status);
                     return Status;
                 }
 
@@ -355,7 +355,7 @@ EFI_STATUS add_mapping(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, vo
             if (pages2 > 0) {
                 Status = bs->AllocatePool(EfiLoaderData, sizeof(mapping), (void**)&m3);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePool", Status);
+                    print_error("AllocatePool", Status);
                     return Status;
                 }
 
@@ -420,7 +420,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
         if (!EFI_ERROR(Status))
             break;
         else if (Status != EFI_BUFFER_TOO_SMALL) {
-            print_error(L"GetMemoryMap", Status);
+            print_error("GetMemoryMap", Status);
 
             if (desc)
                 bs->FreePool(desc);
@@ -433,7 +433,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
 
         Status2 = bs->AllocatePool(EfiLoaderData, efi_map_size, (void**)&desc);
         if (EFI_ERROR(Status2)) {
-            print_error(L"AllocatePool", Status2);
+            print_error("AllocatePool", Status2);
             return Status2;
         }
     } while (Status == EFI_BUFFER_TOO_SMALL);
@@ -451,7 +451,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
             Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)desc->PhysicalStart,
                                  desc->NumberOfPages, memory_type);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 return Status;
             }
 
@@ -463,7 +463,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
             Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)desc->PhysicalStart,
                                  desc->NumberOfPages, LoaderFree);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 return Status;
             }
         }
@@ -473,7 +473,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
             Status = add_mapping(bs, mappings, (void*)(uintptr_t)desc->PhysicalStart, (void*)(uintptr_t)desc->PhysicalStart,
                                  desc->NumberOfPages, LoaderFirmwareTemporary);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 return Status;
             }
         }
@@ -485,7 +485,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
     if (map_video_ram) {
         Status = add_mapping(bs, mappings, NULL, (void*)0xa0000, 0x60, LoaderFirmwarePermanent);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             return Status;
         }
     }
@@ -589,13 +589,13 @@ static EFI_STATUS allocate_mdl(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, pages, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
     Status = add_mapping(bs, mappings, va, (void*)(uintptr_t)addr, pages, LoaderMemoryData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -624,7 +624,7 @@ static EFI_STATUS find_cr3(EFI_BOOT_SERVICES* bs, void* va, EFI_PHYSICAL_ADDRESS
         if (!EFI_ERROR(Status))
             break;
         else if (Status != EFI_BUFFER_TOO_SMALL) {
-            print_error(L"GetMemoryMap", Status);
+            print_error("GetMemoryMap", Status);
 
             if (desc)
                 bs->FreePool(desc);
@@ -637,7 +637,7 @@ static EFI_STATUS find_cr3(EFI_BOOT_SERVICES* bs, void* va, EFI_PHYSICAL_ADDRESS
 
         Status2 = bs->AllocatePool(EfiLoaderData, size, (void**)&desc);
         if (EFI_ERROR(Status2)) {
-            print_error(L"AllocatePool", Status2);
+            print_error("AllocatePool", Status2);
             return Status2;
         }
     } while (Status == EFI_BUFFER_TOO_SMALL);
@@ -658,7 +658,7 @@ static EFI_STATUS find_cr3(EFI_BOOT_SERVICES* bs, void* va, EFI_PHYSICAL_ADDRESS
 
                 Status = bs->AllocatePages(AllocateAddress, EfiBootServicesData, 1, addr);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePages", Status);
+                    print_error("AllocatePages", Status);
                     return Status;
                 }
 
@@ -687,13 +687,13 @@ static EFI_STATUS add_hal_mappings(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings) 
 
         Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePages", Status);
+            print_error("AllocatePages", Status);
             return Status;
         }
 
         Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)addr, 1, LoaderMemoryData);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             return Status;
         }
 
@@ -719,13 +719,13 @@ static EFI_STATUS add_hal_mappings(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings) 
 
         Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePages", Status);
+            print_error("AllocatePages", Status);
             return Status;
         }
 
         Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)addr, 1, LoaderMemoryData);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             return Status;
         }
 
@@ -752,13 +752,13 @@ static EFI_STATUS add_hal_mappings(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings) 
 
             Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePages", Status);
+                print_error("AllocatePages", Status);
                 return Status;
             }
 
             Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)addr, 1, LoaderMemoryData);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 return Status;
             }
 
@@ -802,7 +802,7 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, PAGE_COUNT(efi_runtime_map_size), &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
@@ -825,7 +825,7 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
             Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)desc->PhysicalStart,
                                 desc->NumberOfPages, LoaderFirmwarePermanent);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
+                print_error("add_mapping", Status);
                 return Status;
             }
 
@@ -841,7 +841,7 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
         Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)efi_runtime_map,
                              PAGE_COUNT(efi_runtime_map_size), LoaderFirmwarePermanent);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             return Status;
         }
 
@@ -871,14 +871,14 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     // mark first page as LoaderFirmwarePermanent
     Status = add_mapping(bs, mappings, 0, 0, 1, LoaderFirmwarePermanent);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
     // identity map our stack
     Status = add_mapping(bs, mappings, stack, stack, STACK_SIZE, LoaderOsloaderStack);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -888,7 +888,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
         Status = find_cr3(bs, va, &cr3addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"find_cr3", Status);
+            print_error("find_cr3", Status);
             return Status;
         }
 
@@ -899,7 +899,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
         Status = bs->AllocatePages(AllocateMaxAddress, EfiBootServicesData, 4, &addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePages", Status);
+            print_error("AllocatePages", Status);
             return Status;
         }
 
@@ -917,7 +917,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     } else {
         Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePages", Status);
+            print_error("AllocatePages", Status);
             return Status;
         }
 
@@ -927,7 +927,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 #elif defined(__x86_64__)
     Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, 1, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
@@ -937,7 +937,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
     Status = add_mapping(bs, mappings, NULL, pml4, 1, LoaderMemoryData);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 #endif
@@ -952,7 +952,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
     Status = bs->AllocatePool(EfiLoaderData, num_entries * sizeof(EFI_MEMORY_DESCRIPTOR), (void**)&mapdesc);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -1009,7 +1009,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
                 Status = map_memory(bs, mappings, (uintptr_t)m->va, (uintptr_t)m->pa, m->pages);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"map_memory", Status);
+                    print_error("map_memory", Status);
                     return Status;
                 }
             }
@@ -1021,7 +1021,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     // map first page (doesn't get mapped above because VA is 0)
     Status = map_memory(bs, mappings, 0, 0, 1);
     if (EFI_ERROR(Status)) {
-        print_error(L"map_memory", Status);
+        print_error("map_memory", Status);
         return Status;
     }
 
@@ -1029,7 +1029,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     if (pae) { // map cr3
         Status = map_memory(bs, mappings, ((uintptr_t)pdpt + MM_KSEG0_BASE), (uintptr_t)pdpt, 1);
         if (EFI_ERROR(Status)) {
-            print_error(L"map_memory", Status);
+            print_error("map_memory", Status);
             return Status;
         }
     }
@@ -1043,7 +1043,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
                     Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)(dir[j].PageFrameNumber * EFI_PAGE_SIZE),
                                          1, LoaderMemoryData);
                     if (EFI_ERROR(Status)) {
-                        print_error(L"add_mapping", Status);
+                        print_error("add_mapping", Status);
                         return Status;
                     }
                 }
@@ -1052,7 +1052,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
         Status = add_mapping(bs, mappings, NULL, pdpt, 1, LoaderMemoryData);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
+            print_error("add_mapping", Status);
             return Status;
         }
     } else {
@@ -1061,7 +1061,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
                 Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)(page_directory[i].PageFrameNumber * EFI_PAGE_SIZE),
                                      1, LoaderMemoryData);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"add_mapping", Status);
+                    print_error("add_mapping", Status);
                     return Status;
                 }
             }
@@ -1070,7 +1070,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 #elif defined(__x86_64__)
     Status = add_hal_mappings(bs, mappings);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_hal_mappings", Status);
+        print_error("add_hal_mappings", Status);
         return Status;
     }
 #endif
@@ -1078,26 +1078,26 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     if (apic) {
         Status = map_memory(bs, mappings, APIC_BASE, (uintptr_t)apic, 1);
         if (EFI_ERROR(Status)) {
-            print_error(L"map_memory", Status);
+            print_error("map_memory", Status);
             return Status;
         }
     }
 
     Status = allocate_mdl(bs, mappings, va, &mdl_pa, &mdl_pages);
     if (EFI_ERROR(Status)) {
-        print_error(L"allocate_mdl", Status);
+        print_error("allocate_mdl", Status);
         return Status;
     }
 
     Status = map_memory(bs, mappings, (uintptr_t)va, (uintptr_t)mdl_pa, mdl_pages);
     if (EFI_ERROR(Status)) {
-        print_error(L"map_memory", Status);
+        print_error("map_memory", Status);
         return Status;
     }
 
     Status = setup_memory_descriptor_list(mappings, block1, mdl_pa, va);
     if (EFI_ERROR(Status)) {
-        print_error(L"setup_memory_descriptor_list", Status);
+        print_error("setup_memory_descriptor_list", Status);
         return Status;
     }
 
@@ -1106,7 +1106,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     // get new key
     Status = bs->GetMemoryMap(&size, NULL, &key, &descsize, &version);
     if (EFI_ERROR(Status) && Status != EFI_BUFFER_TOO_SMALL) {
-        print_error(L"GetMemoryMap", Status);
+        print_error("GetMemoryMap", Status);
         return Status;
     }
 
@@ -1114,26 +1114,26 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
     Status = bs->AllocatePool(EfiLoaderData, size, (void**)&mapdesc);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
     Status = bs->GetMemoryMap(&size, mapdesc, &key, &descsize, &version);
     if (EFI_ERROR(Status)) {
-        print_error(L"GetMemoryMap", Status);
+        print_error("GetMemoryMap", Status);
         return Status;
     }
 
     Status = bs->ExitBootServices(image_handle, key);
     if (EFI_ERROR(Status)) {
-        print_error(L"ExitBootServices", Status);
+        print_error("ExitBootServices", Status);
         return Status;
     }
 
     Status = systable->RuntimeServices->SetVirtualAddressMap(efi_runtime_map_size, map_desc_size,
                                                              EFI_MEMORY_DESCRIPTOR_VERSION, efi_runtime_map);
     if (EFI_ERROR(Status)) {
-        print_error(L"SetVirtualAddressMap", Status);
+        print_error("SetVirtualAddressMap", Status);
         return Status;
     }
 

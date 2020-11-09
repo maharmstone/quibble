@@ -820,7 +820,7 @@ static EFI_STATUS get_version2(pe_image* img, void* res, uint32_t ressize, uint3
 
         if (Status != EFI_NOT_FOUND) {
             if (EFI_ERROR(Status))
-                print_error(L"get_version3", Status);
+                print_error("get_version3", Status);
 
             return Status;
         }
@@ -896,7 +896,7 @@ static EFI_STATUS EFIAPI get_version(EFI_PE_IMAGE* This, UINT32* VersionMS, UINT
 
             if (Status != EFI_NOT_FOUND) {
                 if (EFI_ERROR(Status))
-                    print_error(L"get_version2", Status);
+                    print_error("get_version2", Status);
 
                 return Status;
             }
@@ -1050,7 +1050,7 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
 
     Status = bs->AllocatePool(EfiLoaderData, sizeof(pe_image), (void**)&img);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -1067,14 +1067,14 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
 
             Status = bs->AllocatePool(EfiLoaderData, size, (void**)&file_info2);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePool", Status);
+                print_error("AllocatePool", Status);
                 bs->FreePool(img);
                 return Status;
             }
 
             Status = File->GetInfo(File, &guid, &size, file_info2);
             if (EFI_ERROR(Status)) {
-                print_error(L"File->GetInfo", Status);
+                print_error("File->GetInfo", Status);
                 bs->FreePool(file_info2);
                 bs->FreePool(img);
                 return Status;
@@ -1084,7 +1084,7 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
 
             bs->FreePool(file_info2);
         } else if (EFI_ERROR(Status)) {
-            print_error(L"File->GetInfo", Status);
+            print_error("File->GetInfo", Status);
             bs->FreePool(img);
             return Status;
         } else
@@ -1102,7 +1102,7 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, pages, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         bs->FreePool(img);
         return Status;
     }
@@ -1114,7 +1114,7 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
 
         Status = File->Read(File, &read_size, data);
         if (EFI_ERROR(Status)) {
-            print_error(L"File->Read", Status);
+            print_error("File->Read", Status);
             bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)data, pages);
             bs->FreePool(img);
             return Status;
@@ -1146,7 +1146,7 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, img->pages, &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)data, pages);
         bs->FreePool(img);
         return Status;

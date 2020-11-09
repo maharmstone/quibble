@@ -175,7 +175,7 @@ EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub, uint16_t build) {
     Status = kdstub->FindExport(kdstub, "KdInitializeLibrary", &addr, NULL);
 
     if (EFI_ERROR(Status)) {
-        print_error(L"FindExport", Status);
+        print_error("FindExport", Status);
         return Status;
     }
 
@@ -185,7 +185,7 @@ EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub, uint16_t build) {
         Status = kdstub->FindExport(kdstub, "KdInitializeController", &addr, NULL);
 
         if (EFI_ERROR(Status)) {
-            print_error(L"FindExport", Status);
+            print_error("FindExport", Status);
             return Status;
         }
 
@@ -204,7 +204,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
 
     Status = find_kd_export(kdstub, build);
     if (EFI_ERROR(Status)) {
-        print_error(L"find_kd_export", Status);
+        print_error("find_kd_export", Status);
         return Status;
     }
 
@@ -229,7 +229,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
     if (ddd->TransportData.HwContextSize != 0) {
         Status = systable->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(ddd->TransportData.HwContextSize), &addr);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePages", Status);
+            print_error("AllocatePages", Status);
             return Status;
         }
 

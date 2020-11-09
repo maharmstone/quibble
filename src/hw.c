@@ -73,7 +73,7 @@ static EFI_STATUS add_ccd(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* p
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(size), &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
@@ -112,7 +112,7 @@ static EFI_STATUS add_ccd(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* p
 
     Status = add_mapping(bs, mappings, *va, ccd, PAGE_COUNT(size), LoaderSystemBlock);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -190,7 +190,7 @@ static EFI_STATUS add_acpi_config_data(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMP
 
     Status = bs->AllocatePool(EfiLoaderData, sizeof(CM_PARTIAL_RESOURCE_LIST) + table_size, (void**)&prl);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -254,7 +254,7 @@ static EFI_STATUS create_system_key(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONE
 
     Status = bs->AllocatePool(EfiLoaderData, size, (void**)&prl);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -281,7 +281,7 @@ static EFI_STATUS create_system_key(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONE
     Status = add_ccd(bs, NULL, SystemClass, MaximumType, 0, 0, 0xffffffff, NULL, prl, size,
                      va, mappings, system_key);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_ccd", Status);
+        print_error("add_ccd", Status);
         goto end;
     }
 
@@ -336,7 +336,7 @@ static EFI_STATUS add_pci_config(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_
     Status = add_ccd(bs, parent, AdapterClass, MultiFunctionAdapter, 0, 0, 0xffffffff, "PCI", &reslist.prl,
                      sizeof(reslist), va, mappings, NULL);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_ccd", Status);
+        print_error("add_ccd", Status);
         return Status;
     }
 
@@ -353,13 +353,13 @@ EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_BLOCK1C* block1, void** v
 
     Status = create_system_key(bs, &system_key, va, mappings, image_handle);
     if (EFI_ERROR(Status)) {
-        print_error(L"create_system_key", Status);
+        print_error("create_system_key", Status);
         return Status;
     }
 
     Status = add_acpi_config_data(bs, system_key, va, mappings);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_acpi_config_data", Status);
+        print_error("add_acpi_config_data", Status);
         return Status;
     }
 
@@ -367,7 +367,7 @@ EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_BLOCK1C* block1, void** v
     if (version < _WIN32_WINNT_WIN8) {
         Status = add_pci_config(bs, system_key, va, mappings);
         if (EFI_ERROR(Status)) {
-            print_error(L"add_pci_config", Status);
+            print_error("add_pci_config", Status);
             return Status;
         }
     }
@@ -390,19 +390,19 @@ static EFI_STATUS found_block_device(EFI_BOOT_SERVICES* bs, EFI_BLOCK_IO* io, un
 
     Status = bs->AllocatePool(EfiLoaderData, mbr_size, (void**)&mbr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return Status;
     }
 
     Status = io->ReadBlocks(io, io->Media->MediaId, 0, mbr_size, mbr);
     if (EFI_ERROR(Status)) {
-        print_error(L"io->ReadBlocks", Status);
+        print_error("io->ReadBlocks", Status);
         goto end;
     }
 
     Status = bs->AllocatePool(EfiLoaderData, sizeof(block_device), (void**)&bd);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         goto end;
     }
 
@@ -435,13 +435,13 @@ static EFI_STATUS found_block_device(EFI_BOOT_SERVICES* bs, EFI_BLOCK_IO* io, un
 
                 Status = bs->AllocatePool(EfiLoaderData, gpt_size, (void**)&gpt);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePool", Status);
+                    print_error("AllocatePool", Status);
                     return Status;
                 }
 
                 Status = io->ReadBlocks(io, io->Media->MediaId, PRIMARY_PART_HEADER_LBA, gpt_size, gpt);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"io->ReadBlocks", Status);
+                    print_error("io->ReadBlocks", Status);
                     bs->FreePool(gpt);
                     goto end;
                 }
@@ -538,13 +538,13 @@ EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** v
 
     Status = add_isa_key(bs, system_key, va, mappings, &isakey);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_isa_key", Status);
+        print_error("add_isa_key", Status);
         return Status;
     }
 
     Status = add_disk_controller(bs, isakey, va, mappings, &diskcon);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_disk_controller", Status);
+        print_error("add_disk_controller", Status);
         return Status;
     }
 
@@ -571,7 +571,7 @@ EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** v
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(disk_list_size), &addr);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePages", Status);
+        print_error("AllocatePages", Status);
         return Status;
     }
 
@@ -640,7 +640,7 @@ EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** v
 
     Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)addr, PAGE_COUNT(disk_list_size), LoaderSystemBlock);
     if (EFI_ERROR(Status)) {
-        print_error(L"add_mapping", Status);
+        print_error("add_mapping", Status);
         return Status;
     }
 
@@ -694,7 +694,7 @@ EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** v
             Status = add_ccd(bs, diskcon, PeripheralClass, DiskPeripheral, IdentifierFlag_Input | IdentifierFlag_Output,
                             0, 0xffffffff, identifier, NULL, 0, va, mappings, NULL);
             if (EFI_ERROR(Status)) {
-                print_error(L"add_ccd", Status);
+                print_error("add_ccd", Status);
                 return Status;
             }
         }
@@ -749,7 +749,7 @@ static EFI_DEVICE_PATH_PROTOCOL* duplicate_device_path(EFI_DEVICE_PATH_PROTOCOL*
 
     Status = systable->BootServices->AllocatePool(EfiLoaderData, len, (void**)&dp);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        print_error("AllocatePool", Status);
         return NULL;
     }
 
@@ -791,7 +791,7 @@ EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs) {
         Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
 
         if (EFI_ERROR(Status)) {
-            print_error(L"LocateHandleBuffer", Status);
+            print_error("LocateHandleBuffer", Status);
             return Status;
         }
 
@@ -813,7 +813,7 @@ EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs) {
 
             Status = bs->HandleProtocol(handles[i], &guid2, (void**)&device_path);
             if (EFI_ERROR(Status)) {
-                print_error(L"HandleProtocol", Status);
+                print_error("HandleProtocol", Status);
                 bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
                 continue;
             }
@@ -875,7 +875,7 @@ EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs) {
             Status = found_block_device(bs, io, disk_num, part_num, duplicate_device_path(device_path));
 
             if (EFI_ERROR(Status))
-                print_error(L"found_block_device", Status);
+                print_error("found_block_device", Status);
 
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
@@ -911,7 +911,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
     Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
 
     if (EFI_ERROR(Status)) {
-        print_error(L"LocateHandleBuffer", Status);
+        print_error("LocateHandleBuffer", Status);
         return Status;
     }
 
@@ -933,7 +933,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         Status = io->Pci.Read(io, EfiPciIoWidthUint32, 0, sizeof(pci) / sizeof(UINT32), &pci);
 
         if (EFI_ERROR(Status)) {
-            print_error(L"Pci.Read", Status);
+            print_error("Pci.Read", Status);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             continue;
         }
@@ -957,7 +957,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
 
         Status = bs->HandleProtocol(handles[i], &guid2, (void**)&device_path);
         if (EFI_ERROR(Status)) {
-            print_error(L"HandleProtocol", Status);
+            print_error("HandleProtocol", Status);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             continue;
         }
@@ -1001,7 +1001,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
 
         if (EFI_ERROR(Status)) {
             if (Status != EFI_NOT_FOUND) {
-                print_error(L"open_file", Status);
+                print_error("open_file", Status);
                 bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
                 bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
                 goto end;
@@ -1044,7 +1044,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
 
             if (EFI_ERROR(Status)) {
                 if (Status != EFI_UNSUPPORTED) // index not valid for this controller
-                    print_error(L"GetBarAttributes", Status);
+                    print_error("GetBarAttributes", Status);
             } else {
                 pci_bar_info* info = (pci_bar_info*)res;
 
