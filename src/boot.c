@@ -116,6 +116,9 @@ size_t system_font_size = 0;
 void* console_font = NULL;
 size_t console_font_size = 0;
 loader_store* store2;
+EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
+void* framebuffer;
+size_t framebuffer_size;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -3200,15 +3203,82 @@ static void parse_options(const char* options, command_line* cmdline) {
     }
 }
 
-static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, LIST_ENTRY* mappings, void** va,
-                                    uint16_t version, uint16_t build, void* bgc, LOADER_EXTENSION_BLOCK3* extblock3) {
+static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle) {
     EFI_GUID guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     EFI_HANDLE* handles = NULL;
     UINTN count;
     EFI_STATUS Status;
+
+    Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
+    if (EFI_ERROR(Status))
+        return Status;
+
+    for (unsigned int i = 0; i < count; i++) {
+        EFI_GRAPHICS_OUTPUT_PROTOCOL* gop = NULL;
+        unsigned int mode = 0;
+        unsigned int pixels = 0;
+
+        Status = bs->OpenProtocol(handles[i], &guid, (void**)&gop, image_handle, NULL,
+                                  EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+        if (EFI_ERROR(Status)) {
+            print_error(L"OpenProtocol", Status);
+            continue;
+        }
+
+        for (unsigned int j = 0; j < gop->Mode->MaxMode; j++) {
+            UINTN size;
+            EFI_GRAPHICS_OUTPUT_MODE_INFORMATION* info;
+
+            Status = gop->QueryMode(gop, j, &size, &info);
+            if (EFI_ERROR(Status)) {
+                print_error(L"QueryMode", Status);
+                continue;
+            }
+
+            // choose the best mode
+            // FIXME - allow user to override this
+
+            if (info->PixelFormat == PixelBlueGreenRedReserved8BitPerColor &&
+                info->HorizontalResolution * info->VerticalResolution > pixels) {
+                mode = j;
+                pixels = info->HorizontalResolution * info->VerticalResolution;
+            }
+
+            // FIXME - does Windows support anything other than BGR?
+        }
+
+        Status = gop->SetMode(gop, mode);
+        if (EFI_ERROR(Status)) {
+            print_error(L"SetMode", Status);
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            goto end;
+        }
+
+        memcpy(&gop_info, gop->Mode->Info, sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION));
+        framebuffer = (void*)gop->Mode->FrameBufferBase;
+        framebuffer_size = gop->Mode->FrameBufferSize;
+
+        bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+
+        Status = EFI_SUCCESS;
+        goto end;
+    }
+
+    Status = EFI_NOT_FOUND;
+
+end:
+    bs->FreePool(handles);
+
+    return Status;
+}
+
+static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** va,
+                                 uint16_t version, uint16_t build, void* bgc, LOADER_EXTENSION_BLOCK3* extblock3) {
+    EFI_STATUS Status;
     unsigned int bg_version;
     bgblock1* block1;
     bgblock2* block2;
+    EFI_PHYSICAL_ADDRESS rp;
 
     if (version < _WIN32_WINNT_WINBLUE) { // Win 8 (and 7?)
         BOOT_GRAPHICS_CONTEXT_V1* bgc1 = (BOOT_GRAPHICS_CONTEXT_V1*)bgc;
@@ -3236,167 +3306,82 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         block2 = &bgc4->block2;
     }
 
-    Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
-    if (EFI_ERROR(Status))
+    // map framebuffer
+
+    Status = add_mapping(bs, mappings, *va, framebuffer, PAGE_COUNT(framebuffer_size), LoaderFirmwarePermanent);
+    if (EFI_ERROR(Status)) {
+        print_error(L"add_mapping", Status);
         return Status;
-
-    for (unsigned int i = 0; i < count; i++) {
-        EFI_GRAPHICS_OUTPUT_PROTOCOL* gop = NULL;
-        EFI_PHYSICAL_ADDRESS rp;
-        unsigned int mode = 0;
-        unsigned int pixels = 0;
-
-        Status = bs->OpenProtocol(handles[i], &guid, (void**)&gop, image_handle, NULL,
-                                  EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
-        if (EFI_ERROR(Status)) {
-            print_error(L"OpenProtocol", Status);
-            continue;
-        }
-
-        for (unsigned int j = 0; j < gop->Mode->MaxMode; j++) {
-            UINTN size;
-            EFI_GRAPHICS_OUTPUT_MODE_INFORMATION* info;
-
-            Status = gop->QueryMode(gop, j, &size, &info);
-            if (EFI_ERROR(Status)) {
-                print_error(L"QueryMode", Status);
-                continue;
-            }
-
-#if 0
-            print(L"Mode ");
-            print_dec(j);
-            print(L": PixelFormat = ");
-            print_dec(info->PixelFormat);
-            print(L", ");
-            print_dec(info->HorizontalResolution);
-            print(L"x");
-            print_dec(info->VerticalResolution);
-            print(L"\r\n");
-
-            if (info->PixelFormat == PixelBitMask) {
-                print(L"Bit mask: red = ");
-                print_hex(info->PixelInformation.RedMask);
-                print(L", green = ");
-                print_hex(info->PixelInformation.GreenMask);
-                print(L", blue = ");
-                print_hex(info->PixelInformation.BlueMask);
-                print(L"\r\n");
-            }
-#endif
-
-            // choose the best mode
-            // FIXME - allow user to override this
-
-            if (info->PixelFormat == PixelBlueGreenRedReserved8BitPerColor &&
-                info->HorizontalResolution * info->VerticalResolution > pixels) {
-                mode = j;
-                pixels = info->HorizontalResolution * info->VerticalResolution;
-            }
-
-            // FIXME - does Windows support anything other than BGR?
-        }
-
-        Status = gop->SetMode(gop, mode);
-        if (EFI_ERROR(Status)) {
-            print_error(L"SetMode", Status);
-            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
-            goto end;
-        }
-
-        // map framebuffer
-
-        Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)gop->Mode->FrameBufferBase,
-                             PAGE_COUNT(gop->Mode->FrameBufferSize), LoaderFirmwarePermanent);
-        if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
-            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
-            goto end;
-        }
-
-        block1->version = bg_version;
-        block1->internal.unk1 = 1; // ?
-        block1->internal.unk2 = 1; // ?
-        block1->internal.unk3 = 0; // ?
-        block1->internal.unk4 = 0xc4; // ? (0xf4 is BIOS graphics?)
-        block1->internal.height = gop->Mode->Info->VerticalResolution;
-        block1->internal.width = gop->Mode->Info->HorizontalResolution;
-        block1->internal.pixels_per_scan_line = gop->Mode->Info->PixelsPerScanLine;
-        block1->internal.format = 5; // 4 = 24-bit colour, 5 = 32-bit colour (see BgpGetBitsPerPixel)
-#ifdef __x86_64__
-        block1->internal.bits_per_pixel = 32;
-#endif
-        block1->internal.framebuffer = *va;
-
-        *va = (uint8_t*)*va + (PAGE_COUNT(gop->Mode->FrameBufferSize) * EFI_PAGE_SIZE);
-
-        // allocate and map reserve pool (used as scratch space?)
-
-        block2->reserve_pool_size = 0x4000;
-
-        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(block2->reserve_pool_size), &rp);
-        if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePages", Status);
-            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
-            goto end;
-        }
-
-        Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)rp,
-                             PAGE_COUNT(block2->reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
-        if (EFI_ERROR(Status)) {
-            print_error(L"add_mapping", Status);
-            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
-            goto end;
-        }
-
-        block2->reserve_pool = *va;
-
-        *va = (uint8_t*)*va + (PAGE_COUNT(block2->reserve_pool_size) * EFI_PAGE_SIZE);
-
-        // map fonts
-
-        if (system_font) {
-            Status = add_mapping(bs, mappings, *va, system_font, PAGE_COUNT(system_font_size),
-                                 LoaderFirmwarePermanent); // FIXME - what should the memory type be?
-            if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
-                bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
-                goto end;
-            }
-
-            block1->system_font = *va;
-            block1->system_font_size = system_font_size;
-
-            *va = (uint8_t*)*va + (PAGE_COUNT(system_font_size) * EFI_PAGE_SIZE);
-        }
-
-        if (console_font) {
-            Status = add_mapping(bs, mappings, *va, console_font, PAGE_COUNT(console_font_size),
-                                 LoaderFirmwarePermanent); // FIXME - what should the memory type be?
-            if (EFI_ERROR(Status)) {
-                print_error(L"add_mapping", Status);
-                bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
-                goto end;
-            }
-
-            block1->console_font = *va;
-            block1->console_font_size = console_font_size;
-
-            *va = (uint8_t*)*va + (PAGE_COUNT(console_font_size) * EFI_PAGE_SIZE);
-        }
-
-        extblock3->BgContext = bgc;
-
-        bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
-
-        Status = EFI_SUCCESS;
-        goto end;
     }
 
-    Status = EFI_NOT_FOUND;
+    block1->version = bg_version;
+    block1->internal.unk1 = 1; // ?
+    block1->internal.unk2 = 1; // ?
+    block1->internal.unk3 = 0; // ?
+    block1->internal.unk4 = 0xc4; // ? (0xf4 is BIOS graphics?)
+    block1->internal.height = gop_info.VerticalResolution;
+    block1->internal.width = gop_info.HorizontalResolution;
+    block1->internal.pixels_per_scan_line = gop_info.PixelsPerScanLine;
+    block1->internal.format = 5; // 4 = 24-bit colour, 5 = 32-bit colour (see nt!BgpGetBitsPerPixel)
+#ifdef __x86_64__
+    block1->internal.bits_per_pixel = 32;
+#endif
+    block1->internal.framebuffer = *va;
 
-end:
-    bs->FreePool(handles);
+    *va = (uint8_t*)*va + (PAGE_COUNT(framebuffer_size) * EFI_PAGE_SIZE);
+
+    // allocate and map reserve pool (used as scratch space?)
+
+    block2->reserve_pool_size = 0x4000;
+
+    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(block2->reserve_pool_size), &rp);
+    if (EFI_ERROR(Status)) {
+        print_error(L"AllocatePages", Status);
+        return Status;
+    }
+
+    Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)rp,
+                            PAGE_COUNT(block2->reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
+    if (EFI_ERROR(Status)) {
+        print_error(L"add_mapping", Status);
+        return Status;
+    }
+
+    block2->reserve_pool = *va;
+
+    *va = (uint8_t*)*va + (PAGE_COUNT(block2->reserve_pool_size) * EFI_PAGE_SIZE);
+
+    // map fonts
+
+    if (system_font) {
+        Status = add_mapping(bs, mappings, *va, system_font, PAGE_COUNT(system_font_size),
+                                LoaderFirmwarePermanent); // FIXME - what should the memory type be?
+        if (EFI_ERROR(Status)) {
+            print_error(L"add_mapping", Status);
+            return Status;
+        }
+
+        block1->system_font = *va;
+        block1->system_font_size = system_font_size;
+
+        *va = (uint8_t*)*va + (PAGE_COUNT(system_font_size) * EFI_PAGE_SIZE);
+    }
+
+    if (console_font) {
+        Status = add_mapping(bs, mappings, *va, console_font, PAGE_COUNT(console_font_size),
+                                LoaderFirmwarePermanent); // FIXME - what should the memory type be?
+        if (EFI_ERROR(Status)) {
+            print_error(L"add_mapping", Status);
+            return Status;
+        }
+
+        block1->console_font = *va;
+        block1->console_font_size = console_font_size;
+
+        *va = (uint8_t*)*va + (PAGE_COUNT(console_font_size) * EFI_PAGE_SIZE);
+    }
+
+    extblock3->BgContext = bgc;
 
     return Status;
 }
@@ -4315,7 +4300,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     if (version >= _WIN32_WINNT_WIN8) {
-        Status = set_graphics_mode(bs, image_handle, &mappings, &va, version, build, &store->bgc, extblock3);
+        Status = set_graphics_mode(bs, image_handle);
         if (EFI_ERROR(Status)) {
             print_error(L"set_graphics_mode", Status);
             print(L"GOP failed, falling back to CSM\r\n");
@@ -4323,7 +4308,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     } else
         Status = EFI_NOT_FOUND;
 
-    if (EFI_ERROR(Status)) {
+    if (!EFI_ERROR(Status)) {
+        Status = init_bgcontext(bs, &mappings, &va, version, build, &store->bgc, extblock3);
+        if (EFI_ERROR(Status)) {
+            print_error(L"init_bgcontext", Status);
+            goto end;
+        }
+    } else {
         Status = initialize_csm(image_handle, bs);
         if (EFI_ERROR(Status)) {
             print_error(L"initialize_csm", Status);
