@@ -20,10 +20,6 @@ EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     return bs->InstallProtocolInterface(&info_handle, &info_guid, EFI_NATIVE_INTERFACE, &info_proto);
 }
 
-void print(const WCHAR* s) {
-    systable->ConOut->OutputString(systable->ConOut, (CHAR16*)s);
-}
-
 void draw_text(const char* s, text_pos* p) {
     unsigned int len = strlen(s);
 
@@ -77,7 +73,7 @@ void print_string(const char* s) {
 
     *t = 0;
 
-    print(w);
+    systable->ConOut->OutputString(systable->ConOut, (CHAR16*)w);
 }
 
 static WCHAR* error_string_utf16(EFI_STATUS Status) {
@@ -194,49 +190,3 @@ void print_error(const WCHAR* func, EFI_STATUS Status) {
     systable->ConOut->OutputString(systable->ConOut, s);
 }
 
-void print_hex(uint64_t v) {
-    WCHAR s[17], *p;
-
-    if (v == 0) {
-        print(L"0");
-        return;
-    }
-
-    s[16] = 0;
-    p = &s[16];
-
-    while (v != 0) {
-        p = &p[-1];
-
-        if ((v & 0xf) >= 10)
-            *p = (v & 0xf) - 10 + 'a';
-        else
-            *p = (v & 0xf) + '0';
-
-        v >>= 4;
-    }
-
-    print(p);
-}
-
-void print_dec(uint32_t v) {
-    WCHAR s[12], *p;
-
-    if (v == 0) {
-        print(L"0");
-        return;
-    }
-
-    s[11] = 0;
-    p = &s[11];
-
-    while (v != 0) {
-        p = &p[-1];
-
-        *p = (v % 10) + '0';
-
-        v /= 10;
-    }
-
-    print(p);
-}

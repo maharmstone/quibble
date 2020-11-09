@@ -385,7 +385,7 @@ static EFI_STATUS load_ini_file(unsigned int* timeout) {
     dir->Close(dir);
 
     if (EFI_ERROR(Status)) {
-        print(L"Error opening freeldr.ini.\r\n");
+        print_string("Error opening freeldr.ini.\n");
         print_error(L"read_file", Status);
         goto end;
     }
@@ -590,6 +590,32 @@ static EFI_STATUS print_spaces(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int n
     return EFI_SUCCESS;
 }
 
+static void print(const WCHAR* s) {
+    systable->ConOut->OutputString(systable->ConOut, (CHAR16*)s);
+}
+
+static void print_dec(uint32_t v) {
+    WCHAR s[12], *p;
+
+    if (v == 0) {
+        print(L"0");
+        return;
+    }
+
+    s[11] = 0;
+    p = &s[11];
+
+    while (v != 0) {
+        p = &p[-1];
+
+        *p = (v % 10) + '0';
+
+        v /= 10;
+    }
+
+    print(p);
+}
+
 EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
     EFI_STATUS Status;
     UINTN cols, rows;
@@ -647,7 +673,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
     }
 
     if (num_options == 0) {
-        print(L"No options found in INI file.\r\n");
+        print_string("No options found in INI file.\n");
         return EFI_ABORTED;
     }
 

@@ -56,39 +56,39 @@ static bool check_header(hive* h) {
     uint32_t csum;
 
     if (base_block->Signature != HV_HBLOCK_SIGNATURE) {
-        print(L"Invalid signature.\r\n");
+        print_string("Invalid signature.\n");
         return false;
     }
 
     if (base_block->Major != HSYS_MAJOR) {
-        print(L"Invalid major value.\r\n");
+        print_string("Invalid major value.\n");
         return false;
     }
 
     if (base_block->Minor < HSYS_MINOR) {
-        print(L"Invalid minor value.\r\n");
+        print_string("Invalid minor value.\n");
         return false;
     }
 
     if (base_block->Type != HFILE_TYPE_PRIMARY) {
-        print(L"Type was not HFILE_TYPE_PRIMARY.\r\n");
+        print_string("Type was not HFILE_TYPE_PRIMARY.\n");
         return false;
     }
 
     if (base_block->Format != HBASE_FORMAT_MEMORY) {
-        print(L"Format was not HBASE_FORMAT_MEMORY.\r\n");
+        print_string("Format was not HBASE_FORMAT_MEMORY.\n");
         return false;
     }
 
     if (base_block->Cluster != 1) {
-        print(L"Cluster was not 1.\r\n");
+        print_string("Cluster was not 1.\n");
         return false;
     }
 
     // FIXME - should apply LOG file if sequences don't match
 
     if (base_block->Sequence1 != base_block->Sequence2) {
-        print(L"Sequence1 did not match Sequence2.\r\n");
+        print_string("Sequence1 did not match Sequence2.\n");
         return false;
     }
 
@@ -106,7 +106,7 @@ static bool check_header(hive* h) {
         csum = 1;
 
     if (csum != base_block->CheckSum) {
-        print(L"Invalid checksum.\r\n");
+        print_string("Invalid checksum.\n");
         return false;
     }
 
@@ -700,9 +700,13 @@ static void clear_volatile(hive* h, HKEY key) {
             clear_volatile(h, 0x1000 + ri->List[i]);
         }
     } else {
-        print(L"Unhandled registry signature ");
-        print_hex(sig);
-        print(L".\r\n");
+        char s[255], *p;
+
+        p = stpcpy(s, "Unhandled registry signature ");
+        p = hex_to_str(p, sig);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
     }
 }
 
@@ -779,7 +783,7 @@ static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive
     }
 
     if (!check_header(h)) {
-        print(L"Header check failed.\r\n");
+        print_string("Header check failed.\n");
         bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)h->data, h->pages);
         bs->FreePool(h);
         return EFI_INVALID_PARAMETER;

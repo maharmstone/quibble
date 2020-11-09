@@ -74,9 +74,15 @@ void* find_virtual_address(void* pa, LIST_ENTRY* mappings) {
         le = le->Flink;
     }
 
-    print(L"Could not find virtual address for physical address ");
-    print_hex((uintptr_t)pa);
-    print(L".\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy(s, "Could not find virtual address for physical address ");
+        p = hex_to_str(p, (uintptr_t)pa);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+    }
 
     return NULL;
 }
@@ -279,55 +285,6 @@ static EFI_STATUS map_memory(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, uintpt
     return EFI_SUCCESS;
 }
 
-#if 0
-static void check_mappings(LIST_ENTRY* mappings) {
-    LIST_ENTRY *le, *prevle;
-
-    prevle = mappings;
-    le = mappings->Flink;
-    while (le != mappings) {
-        mapping* m = _CR(le, mapping, list_entry);
-        mapping* m2 = _CR(le->Flink, mapping, list_entry);
-
-        if (le->Flink == mappings)
-            return;
-
-        if (m2->pa < m->pa || (uint8_t*)m->pa + (m->pages * EFI_PAGE_SIZE) > m2->pa || le->Blink != prevle) {
-            int i = 0;
-
-            print(L"ERROR\r\n");
-
-            le = mappings->Flink;
-            while (le != mappings) {
-                mapping* m = _CR(le, mapping, list_entry);
-
-                print_hex((uintptr_t)m->pa);
-                print(L", ");
-                print_hex(m->pages);
-                print(L", ");
-                print_hex(m->type);
-
-                if (i % 3 == 2)
-                    print(L"\r\n");
-                else
-                    print(L"\t");
-
-                if (le == NULL)
-                    break;
-
-                le = le->Flink;
-                i++;
-            }
-
-            halt();
-        }
-
-        prevle = le;
-        le = le->Flink;
-    }
-}
-#endif
-
 EFI_STATUS add_mapping(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, void* pa, unsigned int pages,
                        TYPE_OF_MEMORY type) {
     EFI_STATUS Status;
@@ -356,7 +313,7 @@ EFI_STATUS add_mapping(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, vo
             size_t pages2;
 
             if (m2->type != LoaderFree) {
-                print(L"error - cutting into non-free mapping\r\n");
+                print_string("error - cutting into non-free mapping\n");
                 halt();
                 return EFI_INVALID_PARAMETER;
             }
@@ -388,7 +345,7 @@ EFI_STATUS add_mapping(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, vo
             size_t pages2;
 
             if (m2->type != LoaderFree) {
-                print(L"error - cutting into non-free mapping\r\n");
+                print_string("error - cutting into non-free mapping\n");
                 halt();
                 return EFI_INVALID_PARAMETER;
             }
@@ -419,7 +376,7 @@ EFI_STATUS add_mapping(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, vo
             LIST_ENTRY* le2 = le->Flink;
 
             if (m2->type != LoaderFree) {
-                print(L"error - cutting into non-free mapping\r\n");
+                print_string("error - cutting into non-free mapping\n");
                 halt();
                 return EFI_INVALID_PARAMETER;
             }
@@ -581,31 +538,6 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LOADER_BLOC
         le = le->Flink;
     }
 
-#if 0
-    {
-        unsigned int i = 0;
-
-        le = block1->MemoryDescriptorListHead.Flink;
-        while (le != &block1->MemoryDescriptorListHead) {
-            MEMORY_ALLOCATION_DESCRIPTOR* mad = _CR(le, MEMORY_ALLOCATION_DESCRIPTOR, ListEntry);
-
-            print_hex(mad->BasePage);
-            print(L", ");
-            print_hex(mad->PageCount);
-            print(L", ");
-            print_hex(mad->MemoryType);
-
-            if (i % 3 == 2)
-                print(L"\r\n");
-            else
-                print(L"\t");
-
-            le = le->Flink;
-            i++;
-        }
-    }
-#endif
-
     // change to virtual addresses
 
     le = block1->MemoryDescriptorListHead.Flink;
@@ -737,7 +669,7 @@ static EFI_STATUS find_cr3(EFI_BOOT_SERVICES* bs, void* va, EFI_PHYSICAL_ADDRESS
         desc2 = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc2 + descsize);
     }
 
-    print(L"Unable to find address for CR3.\r\n");
+    print_string("Unable to find address for CR3.\n");
 
     return EFI_NOT_FOUND;
 }

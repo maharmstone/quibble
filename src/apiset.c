@@ -64,7 +64,7 @@ EFI_STATUS load_api_set(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, EFI_PE_LOADER
 
         Status = open_file(dir, &file, L"ApiSetSchema.dll");
         if (EFI_ERROR(Status)) {
-            print(L"Loading of ApiSetSchema.dll failed.\r\n");
+            print_string("Loading of ApiSetSchema.dll failed.\n");
             print_error(L"file open", Status);
             return Status;
         }
@@ -90,7 +90,7 @@ EFI_STATUS load_api_set(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, EFI_PE_LOADER
     for (unsigned int i = 0; i < num_sections; i++) {
         if (!strcmp(sections[i].Name, ".apiset")) {
             if (sections[i].VirtualSize == 0) {
-                print(L".apiset section size was 0.\r\n");
+                print_string(".apiset section size was 0.\n");
                 return EFI_INVALID_PARAMETER;
             }
 
@@ -102,7 +102,7 @@ EFI_STATUS load_api_set(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, EFI_PE_LOADER
     }
 
     if (!apiset) {
-        print(L"Could not find .apiset section in ApiSetSchema.dll.\r\n");
+        print_string("Could not find .apiset section in ApiSetSchema.dll.\n");
         return EFI_NOT_FOUND;
     }
 
@@ -200,8 +200,14 @@ static bool search_api_set_80(WCHAR* dll, WCHAR* newname) {
         return false;
     }
 
-    print(dll);
-    print(L" not found in API set array.\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy_utf16(s, dll);
+        p = stpcpy(p, " not found in API set array.\n");
+
+        print_string(s);
+    }
 
     return false;
 }
@@ -268,8 +274,14 @@ static bool search_api_set_81(WCHAR* dll, WCHAR* newname) {
         return false;
     }
 
-    print(dll);
-    print(L" not found in API set array.\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy_utf16(s, dll);
+        p = stpcpy(p, " not found in API set array.\n");
+
+        print_string(s);
+    }
 
     return false;
 }
@@ -337,8 +349,14 @@ static bool search_api_set_10(WCHAR* dll, WCHAR* newname) {
         return false;
     }
 
-    print(dll);
-    print(L" not found in API set array.\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy_utf16(s, dll);
+        p = stpcpy(p, " not found in API set array.\n");
+
+        print_string(s);
+    }
 
     return false;
 }

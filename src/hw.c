@@ -159,15 +159,26 @@ static EFI_STATUS add_acpi_config_data(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMP
     else if (rsdp->revision == 2) // ACPI 2.0
         addr = rsdp->xsdt_physical_address;
     else {
-        print(L"Unrecognized ACPI revision ");
-        print_hex(rsdp->revision);
-        print(L"\r\n");
+        char s[255], *p;
+
+        p = stpcpy(s, "Unrecognized ACPI revision ");
+        p = hex_to_str(p, rsdp->revision);
+        p = stpcpy(p, "\n");
+
+        print_string(s);
+
         return EFI_SUCCESS;
     }
 
-    print(L"ACPI table at ");
-    print_hex(addr);
-    print(L"\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy(s, "ACPI table at ");
+        p = hex_to_str(p, addr);
+        p = stpcpy(p, "\n");
+
+        print_string(s);
+    }
 
     // FIXME - do we need to add table to memory descriptor list?
 
@@ -301,7 +312,7 @@ static EFI_STATUS add_pci_config(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_
     bs->FreePool(handles);
 
     if (count == 0) {
-        print(L"No PCI buses found (is this right?)\r\n");
+        print_string("No PCI buses found (is this right?)\n");
         return EFI_SUCCESS;
     }
 
@@ -436,7 +447,7 @@ static EFI_STATUS found_block_device(EFI_BOOT_SERVICES* bs, EFI_BLOCK_IO* io, un
                 }
 
                 if (memcmp(&gpt->Header.Signature, EFI_PTAB_HEADER_ID, sizeof(EFI_PTAB_HEADER_ID) - 1)) {
-                    print(L"GPT has invalid signature (expected \"EFI PART\")\n");
+                    print_string("GPT has invalid signature (expected \"EFI PART\")\n");
                     bs->FreePool(gpt);
                     Status = EFI_INVALID_PARAMETER;
                     goto end;
@@ -836,7 +847,7 @@ EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs) {
                     }
 
                     if (!found) {
-                        print(L"error - partition found without disk\r\n");
+                        print_string("error - partition found without disk\n");
 
                         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
                         bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
@@ -847,7 +858,7 @@ EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs) {
                     part_num = get_partition_number(device_path);
 
                     if (part_num == 0) {
-                        print(L"Could not get partition number.\r\n");
+                        print_string("Could not get partition number.\n");
 
                         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
                         bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
@@ -932,11 +943,17 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
             continue;
         }
 
-        print(L"Found Ethernet card ");
-        print_hex(pci.Hdr.VendorId);
-        print(L":");
-        print_hex(pci.Hdr.DeviceId);
-        print(L".\r\n");
+        {
+            char s[255], *p;
+
+            p = stpcpy(s, "Found Ethernet card ");
+            p = hex_to_str(p, pci.Hdr.VendorId);
+            p = stpcpy(p, ":");
+            p = hex_to_str(p, pci.Hdr.DeviceId);
+            p = stpcpy(p, ".\n");
+
+            print_string(s);
+        }
 
         Status = bs->HandleProtocol(handles[i], &guid2, (void**)&device_path);
         if (EFI_ERROR(Status)) {
@@ -948,7 +965,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         acpi_dp = (ACPI_HID_DEVICE_PATH*)device_path;
 
         if (acpi_dp->Header.Type != ACPI_DEVICE_PATH || acpi_dp->Header.SubType != ACPI_DP || (acpi_dp->HID & PNP_EISA_ID_MASK) != PNP_EISA_ID_CONST) {
-            print(L"Top of device path was not PciRoot().\r\n");
+            print_string("Top of device path was not PciRoot().\n");
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
             continue;
@@ -957,7 +974,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         pci_dp = (PCI_DEVICE_PATH*)((uint8_t*)device_path + *(uint16_t*)acpi_dp->Header.Length);
 
         if (pci_dp->Header.Type != HARDWARE_DEVICE_PATH || pci_dp->Header.SubType != HW_PCI_DP) {
-            print(L"Device path does not refer to PCI device.\r\n");
+            print_string("Device path does not refer to PCI device.\n");
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
             bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
             continue;
@@ -970,9 +987,15 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
         *ptr = hex_digit((pci.Hdr.VendorId >> 4) & 0xf); ptr++;
         *ptr = hex_digit(pci.Hdr.VendorId & 0xf); ptr++;
 
-        print(L"Opening ");
-        print(dll);
-        print(L" instead of kdstub.dll.\r\n");
+        {
+            char s[255], *p;
+
+            p = stpcpy(s, "Opening ");
+            p = stpcpy_utf16(p, dll);
+            p = stpcpy(p, " instead of kdstub.dll.\n");
+
+            print_string(s);
+        }
 
         Status = open_file(dir, file, dll);
 
@@ -984,7 +1007,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
                 goto end;
             }
 
-            print(L"Not found, continuing.\r\n");
+            print_string("Not found, continuing.\n");
 
             bs->CloseProtocol(handles[i], &guid2, image_handle, NULL);
             bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
@@ -1027,14 +1050,22 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
 
                 if (info->space_descriptor != 0x8a) { // QWORD address space descriptor
                     if (info->space_descriptor != 0x79) { // end tag
-                        print(L"First byte of pci_bar_info was not 8a (");
-                        print_hex(info->space_descriptor);
-                        print(L").\r\n");
+                        char s[255], *p;
+
+                        p = stpcpy(s, "First byte of pci_bar_info was not 8a (");
+                        p = hex_to_str(p, info->space_descriptor);
+                        p = stpcpy(p, ").\n");
+
+                        print_string(s);
                     }
                 } else if (info->resource_type != 0 && info->resource_type != 1) {
-                    print(L"Unsupported resource type ");
-                    print_hex(info->resource_type);
-                    print(L".\r\n");
+                    char s[255], *p;
+
+                    p = stpcpy(s, "Unsupported resource type ");
+                    p = hex_to_str(p, info->resource_type);
+                    p = stpcpy(p, ".\n");
+
+                    print_string(s);
                 } else {
                     if (info->resource_type == 0)
                         ddd->BaseAddress[k].Type = CmResourceTypeMemory;

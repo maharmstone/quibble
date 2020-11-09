@@ -58,20 +58,6 @@ size_t wcslen(const WCHAR* s) {
     return i;
 }
 
-#ifdef DEBUG_TO_VAR
-#define EFI_QUIBBLE_DEBUG_GUID { 0x94C55CBE, 0xD4B9, 0x43B1, { 0xB0, 0xBE, 0xA0, 0x25, 0x4B, 0xAF, 0x7B, 0x09 } }
-
-void print(const WCHAR* s) {
-    EFI_GUID guid = EFI_QUIBBLE_DEBUG_GUID;
-
-    systable->ConOut->OutputString(systable->ConOut, (CHAR16*)s);
-
-    systable->RuntimeServices->SetVariable(L"debug", &guid,
-                                           EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_APPEND_WRITE,
-                                           wcslen(s) * sizeof(CHAR16), (WCHAR*)s);
-}
-#endif
-
 size_t strlen(const char* s) {
     size_t i = 0;
 
@@ -721,4 +707,62 @@ const char* error_string(EFI_STATUS Status) {
         default:
             return "(unknown error)";
     }
+}
+
+char* stpcpy_utf16(char* dest, const WCHAR* src) {
+    while (*src) {
+        uint32_t cp = *src;
+
+        if ((cp & 0xfc00) == 0xd800) {
+            if (src[1] == 0 || (src[1] & 0xfc00) != 0xdc00)
+                cp = 0xfffd;
+            else {
+                cp = (cp & 0x3ff) << 10;
+                cp |= src[1] & 0x3ff;
+                cp += 0x10000;
+
+                src++;
+            }
+        } else if ((cp & 0xfc00) == 0xdc00)
+            cp = 0xfffd;
+
+        if (cp > 0x10ffff)
+            cp = 0xfffd;
+
+        if (cp < 0x80) {
+            *dest = (uint8_t)cp;
+            dest++;
+        } else if (cp < 0x800) {
+            *dest = 0xc0 | ((cp & 0x7c0) >> 6);
+            dest++;
+
+            *dest = 0x80 | (cp & 0x3f);
+            dest++;
+        } else if (cp < 0x10000) {
+            *dest = 0xe0 | ((cp & 0xf000) >> 12);
+            dest++;
+
+            *dest = 0x80 | ((cp & 0xfc0) >> 6);
+            dest++;
+
+            *dest = 0x80 | (cp & 0x3f);
+            dest++;
+        } else {
+            *dest = 0xf0 | ((cp & 0x1c0000) >> 18);
+            dest++;
+
+            *dest = 0x80 | ((cp & 0x3f000) >> 12);
+            dest++;
+
+            *dest = 0x80 | ((cp & 0xfc0) >> 6);
+            dest++;
+
+            *dest = 0x80 | (cp & 0x3f);
+            dest++;
+        }
+
+        src++;
+    }
+
+    return dest;
 }

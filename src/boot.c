@@ -615,7 +615,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
             extblock6->KdDebugDevice = &store->debug_device_descriptor;
         }
     } else {
-        print(L"Unsupported Windows version.\r\n");
+        print_string("Unsupported Windows version.\n");
         return NULL;
     }
 
@@ -995,7 +995,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         if (extblock6->KdDebugDevice)
             extblock6->KdDebugDevice = find_virtual_address(extblock6->KdDebugDevice, mappings);
     } else {
-        print(L"Unsupported Windows version.\r\n");
+        print_string("Unsupported Windows version.\n");
         return;
     }
 
@@ -1398,7 +1398,7 @@ static void find_apic() {
     __cpuid(cpu_info, 1);
 
     if (!(cpu_info[3] & 0x200)) {
-        print(L"CPU does not have an onboard APIC.\r\n");
+        print_string("CPU does not have an onboard APIC.\n");
         return;
     }
 
@@ -1607,9 +1607,14 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
     }
 
     if (type != REG_SZ && type != REG_EXPAND_SZ) {
-        print(L"Type of Control\\Nls\\CodePage\\ACP value was ");
-        print_hex(type);
-        print(L", expected REG_SZ.\r\n");
+        char s[255], *p;
+
+        p = stpcpy(s, "Type of Control\\Nls\\CodePage\\ACP value was ");
+        p = hex_to_str(p, type);
+        p = stpcpy(p, ", expected REG_SZ.\n");
+
+        print_string(s);
+
         return EFI_INVALID_PARAMETER;
     }
 
@@ -1632,9 +1637,14 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
     }
 
     if (type != REG_SZ && type != REG_EXPAND_SZ) {
-        print(L"Type of Control\\Nls\\CodePage\\OEMCP value was ");
-        print_hex(type);
-        print(L", expected REG_SZ.\r\n");
+        char s[255], *p;
+
+        p = stpcpy(s, "Type of Control\\Nls\\CodePage\\OEMCP value was ");
+        p = hex_to_str(p, type);
+        p = stpcpy(p, ", expected REG_SZ.\n");
+
+        print_string(s);
+
         return EFI_INVALID_PARAMETER;
     }
 
@@ -1666,9 +1676,14 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
         }
 
         if (type != REG_SZ && type != REG_EXPAND_SZ) {
-            print(L"Type of Control\\Nls\\Language\\Default value was ");
-            print_hex(type);
-            print(L", expected REG_SZ.\r\n");
+            char s[255], *p;
+
+            p = stpcpy(s, "Type of Control\\Nls\\Language\\Default value was ");
+            p = hex_to_str(p, type);
+            p = stpcpy(p, ", expected REG_SZ.\n");
+
+            print_string(s);
+
             return EFI_INVALID_PARAMETER;
         }
 
@@ -1685,9 +1700,15 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 
     memset(&nls, 0, sizeof(nls));
 
-    print(L"Loading NLS file ");
-    print(acp);
-    print(L".\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy(s, "Loading NLS file ");
+        p = stpcpy_utf16(p, acp);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+    }
 
     Status = read_file(bs, system32, acp, &nls.AnsiCodePageData, &acp_size);
     if (EFI_ERROR(Status)) {
@@ -1695,9 +1716,15 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
         return Status;
     }
 
-    print(L"Loading NLS file ");
-    print(oemcp);
-    print(L".\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy(s, "Loading NLS file ");
+        p = stpcpy_utf16(p, oemcp);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+    }
 
     Status = read_file(bs, system32, oemcp, &nls.OemCodePageData, &oemcp_size);
     if (EFI_ERROR(Status)) {
@@ -1705,9 +1732,15 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
         return Status;
     }
 
-    print(L"Loading NLS file ");
-    print(lang);
-    print(L".\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy(s, "Loading NLS file ");
+        p = stpcpy_utf16(p, lang);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+    }
 
     Status = read_file(bs, system32, lang, &nls.UnicodeCodePageData, &lang_size);
     if (EFI_ERROR(Status)) {
@@ -1926,9 +1959,14 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
     }
 
     if (reg_type != REG_MULTI_SZ) {
-        print(L"Control\\ServiceGroupOrder\\List was ");
-        print_hex(reg_type);
-        print(L", expected REG_MULTI_SZ.\r\n");
+        char s[255], *p;
+
+        p = stpcpy(s, "Control\\ServiceGroupOrder\\List was ");
+        p = hex_to_str(p, reg_type);
+        p = stpcpy(p, ", expected REG_MULTI_SZ.\n");
+
+        print_string(s);
+
         Status = EFI_INVALID_PARAMETER;
         goto end;
     }
@@ -2101,9 +2139,14 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
             Status = add_image(bs, images, d->file, LoaderSystemCode, d->dir, false, bdle, imgnum, false);
             if (EFI_ERROR(Status)) {
-                print(L"Error while loading ");
-                print(d->file);
-                print(L".\r\n");
+                char s[255], *p;
+
+                p = stpcpy(s, "Error while loading ");
+                p = stpcpy_utf16(p, d->file);
+                p = stpcpy(p, ".\n");
+
+                print_string(s);
+
                 print_error(L"add_image", Status);
                 goto end;
             }
@@ -2173,20 +2216,36 @@ static EFI_STATUS load_errata_inf(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive
         return Status;
     }
 
-    print(L"Loading ");
-    print(name);
-    print(L".\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy(s, "Loading ");
+        p = stpcpy_utf16(p, name);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+    }
 
     Status = read_file(bs, windir, name, &errata_inf, &errata_inf_size);
 
     if (Status == EFI_NOT_FOUND) {
-        print(name);
-        print(L" not found\r\n");
+        char s[255], *p;
+
+        p = stpcpy_utf16(s, name);
+        p = stpcpy(p, "not found.\n");
+
+        print_string(s);
+
         return EFI_SUCCESS;
     } else if (EFI_ERROR(Status)) {
-        print(L"Error when reading ");
-        print(name);
-        print(L".\r\n");
+        char s[255], *p;
+
+        p = stpcpy(s, "Error when reading ");
+        p = stpcpy_utf16(p, name);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+
         print_error(L"read_file", Status);
         return Status;
     }
@@ -2246,9 +2305,13 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
     }
 
     if (type != REG_DWORD) {
-        print(L"Select\\Default value type was ");
-        print_hex(type);
-        print(L", expected DWORD.\r\n");
+        char s[255], *p;
+
+        p = stpcpy(s, "Select\\Default value type was ");
+        p = hex_to_str(p, type);
+        p = stpcpy(p, ", expected DWORD.\n");
+
+        print_string(s);
 
         Status = EFI_INVALID_PARAMETER;
         goto end;
@@ -2259,9 +2322,13 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
 
     Status = hive->FindKey(hive, rootkey, ccs_name, &ccs);
     if (EFI_ERROR(Status)) {
-        print(L"Could not find ");
-        print(ccs_name);
-        print(L"\r\n.");
+        char s[255], *p;
+
+        p = stpcpy(s, "Could not find ");
+        p = stpcpy_utf16(p, ccs_name);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
 
         print_error(L"hive->FindKey", Status);
         goto end;
@@ -2286,9 +2353,13 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
         }
 
         if (type != REG_DWORD) {
-            print(L"HardwareConfig\\LastId value type was ");
-            print_hex(type);
-            print(L", expected DWORD.\r\n");
+            char s[255], *p;
+
+            p = stpcpy(s, "HardwareConfig\\LastId value type was ");
+            p = hex_to_str(p, type);
+            p = stpcpy(p, ", expected DWORD.\n");
+
+            print_string(s);
 
             Status = EFI_INVALID_PARAMETER;
             goto end;
@@ -2561,10 +2632,10 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
     Status = read_file(bs, windir, L"AppPatch\\drvmain.sdb", &data, &size);
 
     if (Status == EFI_NOT_FOUND) {
-        print(L"drvmain.sdb not found\r\n");
+        print_string("drvmain.sdb not found\n");
         return EFI_SUCCESS;
     } else if (EFI_ERROR(Status)) {
-        print(L"Error when reading AppPatch\\drvmain.sdb.\r\n");
+        print_string("Error when reading AppPatch\\drvmain.sdb.\n");
         print_error(L"read_file", Status);
         return Status;
     }
@@ -2625,15 +2696,26 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
         newfile[(wlen / sizeof(WCHAR)) + 5] = 'l';
         newfile[(wlen / sizeof(WCHAR)) + 6] = 0;
 
-        print(L"Opening ");
-        print(newfile);
-        print(L" instead.\r\n");
+        {
+            char s[255], *p;
+
+            p = stpcpy(s, "Opening ");
+            p = stpcpy_utf16(p, newfile);
+            p = stpcpy(p, " instead.\n");
+
+            print_string(s);
+        }
+
         Status = open_file(dir, &file, newfile);
 
         if (Status == EFI_NOT_FOUND) {
-            print(L"Could not find ");
-            print(newfile);
-            print(L", opening original file.\r\n");
+            char s[255], *p;
+
+            p = stpcpy(s, "Could not find ");
+            p = stpcpy_utf16(p, newfile);
+            p = stpcpy(p, ", opening original file.\n");
+
+            print_string(s);
 
             Status = open_file(dir, &file, name);
         }
@@ -2646,7 +2728,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
             Status = kdnet_init(systable->BootServices, dir, &file, &debug_device_descriptor);
 
             if (Status == EFI_NOT_FOUND)
-                print(L"Could not find override, opening original file.\r\n");
+                print_string("Could not find override, opening original file.\n");
             else if (EFI_ERROR(Status)) {
                 print_error(L"kdnet_init", Status);
                 return Status;
@@ -2659,34 +2741,54 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
         if (Status == EFI_NOT_FOUND)
             Status = open_file(dir, &file, name);
     } else if (!wcsicmp(name, L"hal.dll") && cmdline->hal) {
-        print(L"Opening ");
-        print(cmdline->hal);
-        print(L" as ");
-        print(name);
-        print(L".\r\n");
+        {
+            char s[255], *p;
+
+            p = stpcpy(s, "Opening ");
+            p = stpcpy_utf16(p, cmdline->hal);
+            p = stpcpy(p, " as ");
+            p = stpcpy_utf16(p, name);
+            p = stpcpy(p, ".\n");
+
+            print_string(s);
+        }
 
         Status = open_file(dir, &file, cmdline->hal);
 
         if (Status == EFI_NOT_FOUND) {
-            print(L"Could not find ");
-            print(cmdline->hal);
-            print(L", opening original file.\r\n");
+            char s[255], *p;
+
+            p = stpcpy(s, "Could not find ");
+            p = stpcpy_utf16(p, cmdline->hal);
+            p = stpcpy(p, ", opening original file.\n");
+
+            print_string(s);
 
             Status = open_file(dir, &file, name);
         }
     } else if (!wcsicmp(name, L"ntoskrnl.exe") && cmdline->kernel) {
-        print(L"Opening ");
-        print(cmdline->kernel);
-        print(L" as ");
-        print(name);
-        print(L".\r\n");
+        {
+            char s[255], *p;
+
+            p = stpcpy(s, "Opening ");
+            p = stpcpy_utf16(p, cmdline->kernel);
+            p = stpcpy(p, " as ");
+            p = stpcpy_utf16(p, name);
+            p = stpcpy(p, ".\n");
+
+            print_string(s);
+        }
 
         Status = open_file(dir, &file, cmdline->kernel);
 
         if (Status == EFI_NOT_FOUND) {
-            print(L"Could not find ");
-            print(cmdline->kernel);
-            print(L", opening original file.\r\n");
+            char s[255], *p;
+
+            p = stpcpy(s, "Could not find ");
+            p = stpcpy_utf16(p, cmdline->kernel);
+            p = stpcpy(p, ", opening original file.\n");
+
+            print_string(s);
 
             Status = open_file(dir, &file, name);
         }
@@ -2695,9 +2797,13 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
 
     if (EFI_ERROR(Status)) {
         if (Status != EFI_NOT_FOUND) {
-            print(L"Loading of ");
-            print(name);
-            print(L" failed.\r\n");
+            char s[255], *p;
+
+            p = stpcpy(s, "Loading of ");
+            p = stpcpy_utf16(p, name);
+            p = stpcpy(p, " failed.\n");
+
+            print_string(s);
 
             print_error(L"file open", Status);
         }
@@ -2714,11 +2820,17 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
         return Status;
     }
 
-    print(L"Loaded ");
-    print(img->name);
-    print(L" at ");
-    print_hex((uintptr_t)va);
-    print(L".\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy(s, "Loaded ");
+        p = stpcpy_utf16(p, img->name);
+        p = stpcpy(p, " at ");
+        p = hex_to_str(p, (uintptr_t)va);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+    }
 
     Status = file->Close(file);
     if (EFI_ERROR(Status))
@@ -2927,7 +3039,7 @@ static EFI_STATUS load_kernel(image* img, EFI_PE_LOADER_PROTOCOL* pe, void* va, 
         }
 
         if (img->img->GetCharacteristics(img->img) & IMAGE_FILE_LARGE_ADDRESS_AWARE) {
-            print(L"Error - kernel has PAE flag set\r\n");
+            print_string("Error - kernel has PAE flag set\n");
             return EFI_INVALID_PARAMETER;
         }
 
@@ -3073,7 +3185,7 @@ static void parse_option(const char* option, size_t len, command_line* cmdline) 
             else if (*s >= 'A' && *s <= 'F')
                 sn |= *s - 'A' + 0xa;
             else {
-                print(L"Malformed SUBVOL value.\r\n");
+                print_string("Malformed SUBVOL value.\n");
                 return;
             }
 
@@ -3392,7 +3504,7 @@ static EFI_STATUS load_fonts(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir) {
 
     Status = open_file(windir, &fonts, L"Fonts");
     if (EFI_ERROR(Status)) {
-        print(L"Could not open Fonts directory.\r\n");
+        print_string("Could not open Fonts directory.\n");
         print_error(L"open_file", Status);
         return Status;
     }
@@ -3489,16 +3601,21 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     // check if \\Windows exists
     Status = open_file(root, &windir, pathw);
     if (EFI_ERROR(Status)) {
-        print(L"Could not open ");
-        print(pathw);
-        print(L" on volume.\r\n");
+        char s[255], *p;
+
+        p = stpcpy(s, "Could not open ");
+        p = stpcpy_utf16(p, pathw);
+        p = stpcpy(p, " on volume.\n");
+
+        print_string(s);
+
         print_error(L"Open", Status);
         return Status;
     }
 
     Status = open_file(windir, &system32, L"system32");
     if (EFI_ERROR(Status)) {
-        print(L"Could not open system32.\r\n");
+        print_string("Could not open system32.\n");
         print_error(L"open_file", Status);
         return Status;
     }
@@ -3566,15 +3683,22 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     else if (version == 0x0700)
         version = _WIN32_WINNT_WIN7;
 
-    print(L"Booting NT version ");
-    print_dec(version >> 8);
-    print(L".");
-    print_dec(version & 0xff);
-    print(L".");
-    print_dec(build);
-    print(L".");
-    print_dec(revision);
-    print(L".\r\n");
+    {
+        char s[255], *p;
+
+        p = stpcpy(s, "Booting NT version ");
+        p = dec_to_str(p, version >> 8);
+        p = stpcpy(p, ".");
+        p = dec_to_str(p, version & 0xff);
+        p = stpcpy(p, ".");
+        p = dec_to_str(p, build);
+        p = stpcpy(p, ".");
+        p = dec_to_str(p, revision);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+    }
+
 
     Status = load_registry(bs, system32, reg, &registry, &reg_size, &images, &drivers, &mappings, &va, version, build,
                            windir, &core_drivers, fs_driver);
@@ -3656,9 +3780,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
                 Status = open_file(windir, &dir, img->dir);
                 if (EFI_ERROR(Status)) {
-                    print(L"Could not open ");
-                    print(img->dir);
-                    print(L".\r\n");
+                    char s[255], *p;
+
+                    p = stpcpy(s, "Could not open ");
+                    p = stpcpy_utf16(p, img->dir);
+                    p = stpcpy(p, ".\n");
+                    print_string(s);
+
                     print_error(L"open_file", Status);
                     goto end;
                 }
@@ -3729,11 +3857,17 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                         if (!search_api_set(s, newname, version))
                             continue;
 
-                        print(L"Using ");
-                        print(newname);
-                        print(L" instead of ");
-                        print(s);
-                        print(L".\r\n");
+                        {
+                            char t[255], *p;
+
+                            p = stpcpy(t, "Using ");
+                            p = stpcpy_utf16(p, newname);
+                            p = stpcpy(p, " instead of ");
+                            p = stpcpy_utf16(p, s);
+                            p = stpcpy(p, ".\n");
+
+                            print_string(t);
+                        }
 
                         wcsncpy(s, newname, sizeof(s) / sizeof(WCHAR));
                     }
@@ -3784,7 +3918,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         drivers_dir->Close(drivers_dir);
 
     if (IsListEmpty(&images)) {
-        print(L"Error - no images loaded.\r\n");
+        print_string("Error - no images loaded.\n");
         Status = EFI_INVALID_PARAMETER;
         goto end;
     }
@@ -3832,11 +3966,15 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                     if (!wcsicmp(s, img2->name)) {
                         Status = img->img->ResolveImports(img->img, name, img2->img, resolve_forward);
                         if (EFI_ERROR(Status)) {
-                            print(L"Error when resolving imports for ");
-                            print(img->name);
-                            print(L" and ");
-                            print(s);
-                            print(L".\r\n");
+                            char t[255], *p;
+
+                            p = stpcpy(t, "Error when resolving imports for ");
+                            p = stpcpy_utf16(p, img->name);
+                            p = stpcpy(p, " and ");
+                            p = stpcpy_utf16(p, s);
+                            p = stpcpy(p, ".\n");
+
+                            print_string(t);
 
                             print_error(L"ResolveImports", Status);
                             goto end;
@@ -3882,7 +4020,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                                     revision, &block1a, &block1b, &registry_base, &registry_length, &block2, &extblock1a, &extblock1b,
                                     &extblock3, &loader_pages_spanned, &core_drivers);
     if (!store) {
-        print(L"out of memory\r\n");
+        print_string("out of memory\n");
         Status = EFI_OUT_OF_RESOURCES;
         goto end;
     }
@@ -3957,7 +4095,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     tssphys = allocate_tss(bs);
     if (!tssphys) {
-        print(L"out of memory\r\n");
+        print_string("out of memory\n");
         Status = EFI_OUT_OF_RESOURCES;
         goto end;
     }
@@ -3988,7 +4126,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     usd = allocate_page(bs);
     if (!usd) {
-        print(L"out of memory\r\n");
+        print_string("out of memory\n");
         Status = EFI_OUT_OF_RESOURCES;
         goto end;
     }
@@ -4009,7 +4147,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         nmitsspa = allocate_page(bs);
         if (!nmitsspa) {
-            print(L"out of memory\r\n");
+            print_string("out of memory\n");
             Status = EFI_OUT_OF_RESOURCES;
             goto end;
         }
@@ -4027,7 +4165,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         dftsspa = allocate_page(bs);
         if (!dftsspa) {
-            print(L"out of memory\r\n");
+            print_string("out of memory\n");
             Status = EFI_OUT_OF_RESOURCES;
             goto end;
         }
@@ -4045,7 +4183,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
         mctsspa = allocate_page(bs);
         if (!mctsspa) {
-            print(L"out of memory\r\n");
+            print_string("out of memory\n");
             Status = EFI_OUT_OF_RESOURCES;
             goto end;
         }
@@ -4065,7 +4203,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     gdt = initialize_gdt(bs, tss, nmitss, dftss, mctss, version, pcrva);
     if (!gdt) {
-        print(L"initialize_gdt failed\r\n");
+        print_string("initialize_gdt failed\n");
         Status = EFI_OUT_OF_RESOURCES;
         goto end;
     }
@@ -4081,7 +4219,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     idt = initialize_idt(bs);
     if (!gdt) {
-        print(L"initialize_idt failed\r\n");
+        print_string("initialize_idt failed\n");
         Status = EFI_OUT_OF_RESOURCES;
         goto end;
     }
@@ -4272,7 +4410,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
             Status = set_graphics_mode(bs, image_handle);
             if (EFI_ERROR(Status)) {
                 print_error(L"set_graphics_mode", Status);
-                print(L"GOP failed, falling back to CSM\r\n");
+                print_string("GOP failed, falling back to CSM\n");
             }
         }
     } else
@@ -4404,7 +4542,7 @@ static EFI_STATUS load_reg_proto(EFI_BOOT_SERVICES* bs, EFI_HANDLE ImageHandle, 
 
     // FIXME - what about CloseProtocol?
 
-    print(L"Registry protocol not found.\r\n");
+    print_string("Registry protocol not found.\n");
 
     bs->FreePool(handles);
 
@@ -4436,7 +4574,7 @@ static EFI_STATUS load_pe_proto(EFI_BOOT_SERVICES* bs, EFI_HANDLE ImageHandle, E
 
     // FIXME - what about CloseProtocol?
 
-    print(L"PE loader not found.\r\n");
+    print_string("PE loader not found.\n");
 
     bs->FreePool(handles);
 
@@ -4671,7 +4809,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
         Status = EFI_SUCCESS;
         goto end;
     } else if (EFI_ERROR(Status)) {
-        print(L"Error opening \"drivers\" directory.\r\n");
+        print_string("Error opening \"drivers\" directory.\n");
         print_error(L"Open", Status);
         goto end;
     }
@@ -4705,9 +4843,15 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
             (fn[len - 3] != 'e' && fn[len - 3] != 'E') || fn[len - 4] != '.')
             continue;
 
-        print(L"Loading driver ");
-        print(fn);
-        print(L"... ");
+        {
+            char s[255], *p;
+
+            p = stpcpy(s, "Loading driver ");
+            p = stpcpy_utf16(p, fn);
+            p = stpcpy(p, "... ");
+
+            print_string(s);
+        }
 
         memcpy(path, ((FILEPATH_DEVICE_PATH*)image->FilePath)->PathName, *(uint16_t*)image->FilePath->Length);
         path[*(uint16_t*)image->FilePath->Length / sizeof(WCHAR)] = 0;
@@ -4725,14 +4869,14 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
 
         Status = create_file_device_path(bs, device_path, path, &dp);
         if (EFI_ERROR(Status)) {
-            print(L"FAILED\r\n");
+            print_string("FAILED\n");
             bs->FreePool(dp);
             continue;
         }
 
         Status = bs->LoadImage(false, image_handle, dp, NULL, 0, &h);
         if (EFI_ERROR(Status)) {
-            print(L"FAILED\r\n");
+            print_string("FAILED\n");
             bs->FreePool(dp);
             continue;
         }
@@ -4741,11 +4885,11 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
 
         Status = bs->StartImage(h, NULL, NULL);
         if (EFI_ERROR(Status)) {
-            print(L"FAILED\r\n");
+            print_string("FAILED\n");
             continue;
         }
 
-        print(L"success\r\n");
+        print_string("success\n");
         drivers_loaded = true;
     } while (true);
 
@@ -4864,17 +5008,22 @@ static EFI_STATUS parse_arc_name(EFI_BOOT_SERVICES* bs, char* system_path, EFI_F
         }
 
         if (!bd) {
-            print(L"Could not find partition ");
-            print_dec(partnum);
-            print(L" on disk ");
-            print_dec(disknum);
-            print(L".\r\n");
+            char s[255], *p;
+
+            p = stpcpy(s, "Could not find partition ");
+            p = dec_to_str(p, partnum);
+            p = stpcpy(p, " on disk ");
+            p = dec_to_str(p, disknum);
+            p = stpcpy(p, ".\n");
+
+            print_string(s);
+
             return EFI_INVALID_PARAMETER;
         }
 
         Status = bs->LocateDevicePath(&guid, &bd->device_path, fs_handle);
         if (EFI_ERROR(Status)) {
-            print(L"Could not open filesystem protocol for device path. Is filesystem driver installed?\r\n");
+            print_string("Could not open filesystem protocol for device path. Is filesystem driver installed?\n");
             print_error(L"LocateDevicePath", Status);
             return Status;
         }
@@ -4892,7 +5041,7 @@ static EFI_STATUS parse_arc_name(EFI_BOOT_SERVICES* bs, char* system_path, EFI_F
 
         Status = bs->LocateHandleBuffer(ByProtocol, &quibble_guid, NULL, &count, &handles);
         if (EFI_ERROR(Status)) {
-            print(L"Unable to parse ARC name.\r\n");
+            print_string("Unable to parse ARC name.\n");
             return Status;
         }
 
@@ -4950,7 +5099,7 @@ static EFI_STATUS parse_arc_name(EFI_BOOT_SERVICES* bs, char* system_path, EFI_F
             bs->FreePool(handles);
 
         if (!*fs) {
-            print(L"Unable to parse ARC name.\r\n");
+            print_string("Unable to parse ARC name.\n");
             return EFI_INVALID_PARAMETER;
         }
     }
@@ -4996,7 +5145,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
     }
 
     if (!opt->system_path) {
-        print(L"SystemPath not set.\r\n");
+        print_string("SystemPath not set.\n");
         bs->WaitForEvent(1, &systable->ConIn->WaitForKey, &Event);
         return;
     }
@@ -5070,9 +5219,13 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
         arc_name[len] = 0;
 
         if (Status == EFI_SUCCESS) {
-            print(L"ARC name is ");
-            print_string(arc_name);
-            print(L".\r\n");
+            char s[255], *p;
+
+            p = stpcpy(s, "ARC name is ");
+            p = stpcpy(p, arc_name);
+            p = stpcpy(p, ".\n");
+
+            print_string(s);
         }
 
         len = 0;
@@ -5114,7 +5267,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
                                   EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
 
         if (EFI_ERROR(Status)) {
-            print(L"Could not open EFI_OPEN_SUBVOL_PROTOCOL on filesystem driver.\r\n");
+            print_string("Could not open EFI_OPEN_SUBVOL_PROTOCOL on filesystem driver.\n");
             print_error(L"OpenProtocol", Status);
         } else {
             Status = open_subvol->OpenSubvol(open_subvol, cmdline.subvol, &root);
@@ -5208,19 +5361,19 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     Status = info_register(systable->BootServices);
     if (EFI_ERROR(Status)) {
         print_error(L"info_register", Status);
-        print(L"Error registering info protocol.\r\n");
+        print_string("Error registering info protocol.\n");
         goto end2;
     }
 
     Status = reg_register(systable->BootServices);
     if (EFI_ERROR(Status)) {
-        print(L"Error registering registry protocol.\r\n");
+        print_string("Error registering registry protocol.\n");
         goto end2;
     }
 
     Status = pe_register(systable->BootServices, get_random_seed());
     if (EFI_ERROR(Status)) {
-        print(L"Error registering PE loader protocol.\r\n");
+        print_string("Error registering PE loader protocol.\n");
         goto end;
     }
 

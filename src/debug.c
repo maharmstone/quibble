@@ -210,9 +210,14 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
 
     nt_Status = call_KdInitializeLibrary(ddd, &exports, &funcs, build);
     if (!NT_SUCCESS(nt_Status)) {
-        print(L"KdInitializeLibrary returned ");
-        print_hex((uint32_t)nt_Status);
-        print(L".\r\n");
+        char s[255], *p;
+
+        p = stpcpy(s, "KdInitializeLibrary returned ");
+        p = hex_to_str(p, (uint32_t)nt_Status);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+
         return EFI_INVALID_PARAMETER;
     }
 
