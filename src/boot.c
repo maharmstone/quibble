@@ -113,6 +113,7 @@ size_t console_font_size = 0;
 loader_store* store2;
 EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 void* framebuffer;
+void* framebuffer_va;
 size_t framebuffer_size;
 bool have_csm;
 
@@ -3291,6 +3292,8 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
 #endif
     block1->internal.framebuffer = *va;
 
+    framebuffer_va = *va;
+
     *va = (uint8_t*)*va + (PAGE_COUNT(framebuffer_size) * EFI_PAGE_SIZE);
 
     // allocate and map reserve pool (used as scratch space?)
@@ -4299,6 +4302,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     store = (loader_store*)store_va;
     store2 = store;
+
+    if (framebuffer)
+        framebuffer = framebuffer_va;
 
     set_gdt(gdt);
     set_idt(idt);
