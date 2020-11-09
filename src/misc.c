@@ -710,3 +710,91 @@ EFI_STATUS utf16_to_utf8(char* dest, unsigned int dest_max, unsigned int* dest_l
 
     return Status;
 }
+
+char* stpcpy(char* dest, const char* src) {
+    while (*src != 0) {
+        *dest = *src;
+        dest++;
+        src++;
+    }
+
+    *dest = 0;
+
+    return dest;
+}
+
+char* hex_to_str(char* s, uint64_t v) {
+    char *end, *p;
+
+    if (v == 0) {
+        *s = '0';
+        s++;
+
+        *s = 0;
+        return s;
+    }
+
+    end = s;
+
+    {
+        uint64_t n = v;
+
+        while (n != 0) {
+            end++;
+            n >>= 4;
+        }
+    }
+
+    *end = 0;
+
+    p = end;
+
+    while (v != 0) {
+        p = &p[-1];
+
+        if ((v & 0xf) >= 10)
+            *p = (v & 0xf) - 10 + 'a';
+        else
+            *p = (v & 0xf) + '0';
+
+        v >>= 4;
+    }
+
+    return end;
+}
+
+char* dec_to_str(char* s, uint64_t v) {
+    char *end, *p;
+
+    if (v == 0) {
+        *s = '0';
+        s++;
+
+        *s = 0;
+        return s;
+    }
+
+    end = s;
+
+    {
+        uint64_t n = v;
+
+        while (n != 0) {
+            end++;
+            n /= 10;
+        }
+    }
+
+    *end = 0;
+
+    p = end;
+
+    while (v != 0) {
+        p = &p[-1];
+        *p = (v % 10) + '0';
+
+        v /= 10;
+    }
+
+    return end;
+}

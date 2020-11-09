@@ -46,5 +46,8 @@ int wcsicmp(const WCHAR* s1, const WCHAR* s2);
 int stricmp(const char* s1, const char* s2);
 int strnicmp(const char* s1, const char* s2, int n);
 #endif
+char* stpcpy(char* dest, const char* src);
+char* hex_to_str(char* s, uint64_t v);
+char* dec_to_str(char* s, uint64_t v);
 EFI_STATUS utf8_to_utf16(WCHAR* dest, unsigned int dest_max, unsigned int* dest_len, const char* src, unsigned int src_len);
 EFI_STATUS utf16_to_utf8(char* dest, unsigned int dest_max, unsigned int* dest_len, const WCHAR* src, unsigned int src_len);

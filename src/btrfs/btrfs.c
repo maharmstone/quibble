@@ -116,6 +116,23 @@ uint32_t calc_crc32c(uint32_t seed, uint8_t* msg, unsigned int msglen);
 
 LIST_ENTRY volumes;
 
+static void do_print(const char* s) {
+    WCHAR t[255], *p;
+
+    // FIXME
+
+    p = t;
+    while (*s != 0) {
+        *p = *s;
+        s++;
+        p++;
+    }
+
+    *p = 0;
+
+    print(t);
+}
+
 static EFI_STATUS drv_supported(EFI_DRIVER_BINDING_PROTOCOL* This, EFI_HANDLE ControllerHandle,
                                 EFI_DEVICE_PATH_PROTOCOL* RemainingDevicePath) {
     EFI_STATUS Status;
@@ -198,25 +215,30 @@ static EFI_STATUS read_data(volume* vol, uint64_t address, uint32_t size, void* 
     }
 
     if (!c) {
-        print(L"Could not find chunk for address ");
-        print_hex(address);
-        print(L".\r\n");
+        char s[100], *p;
+
+        p = stpcpy(s, "Could not find chunk for address ");
+        p = hex_to_str(p, address);
+        p = stpcpy(p, ".\n");
+
+        do_print(s);
+
         return EFI_INVALID_PARAMETER;
     }
 
     // FIXME - support RAID
 
     if (c->chunk_item.type & BLOCK_FLAG_RAID0) {
-        print(L"FIXME - support RAID0.\r\n");
+        do_print("FIXME - support RAID0.\n");
         return EFI_INVALID_PARAMETER;
     } else if (c->chunk_item.type & BLOCK_FLAG_RAID10) {
-        print(L"FIXME - support RAID10.\r\n");
+        do_print("FIXME - support RAID10.\n");
         return EFI_INVALID_PARAMETER;
     } else if (c->chunk_item.type & BLOCK_FLAG_RAID5) {
-        print(L"FIXME - support RAID5.\r\n");
+        do_print("FIXME - support RAID5.\n");
         return EFI_INVALID_PARAMETER;
     } else if (c->chunk_item.type & BLOCK_FLAG_RAID6) {
-        print(L"FIXME - support RAID6.\r\n");
+        do_print("FIXME - support RAID6.\n");
         return EFI_INVALID_PARAMETER;
     }
 
@@ -316,11 +338,16 @@ static EFI_STATUS find_item(volume* vol, root* r, traverse_ptr* tp, KEY* searchk
         // FIXME - check csum
 
         if (tree->level != r->root_item.root_level - i) {
-            print(L"Tree level was ");
-            print_dec(tree->level);
-            print(L", expected ");
-            print_dec(r->root_item.root_level - i);
-            print(L".\r\n");
+            char s[100], *p;
+
+            p = stpcpy(s, "Tree level was ");
+            p = dec_to_str(p, tree->level);
+            p = stpcpy(p, ", expected");
+            p = dec_to_str(p, r->root_item.root_level - i);
+            p = stpcpy(p, ".\n");
+
+            do_print(s);
+
             return EFI_VOLUME_CORRUPTED;
         }
 
@@ -515,30 +542,38 @@ static EFI_STATUS find_default_subvol(volume* vol, uint64_t* subvol) {
     }
 
     if (keycmp(tp.key, &searchkey)) {
-        print(L"Could not find (");
-        print_hex(searchkey.obj_id);
-        print(L",");
-        print_hex(searchkey.obj_type);
-        print(L",");
-        print_hex(searchkey.offset);
-        print(L") in root tree.\r\n");
+        char s[100], *p;
+
+        p = stpcpy(s, "Could not find (");
+        p = hex_to_str(p, searchkey.obj_id);
+        p = stpcpy(p, ",");
+        p = hex_to_str(p, searchkey.obj_type);
+        p = stpcpy(p, ",");
+        p = hex_to_str(p, searchkey.offset);
+        p = stpcpy(p, ") in root tree.\n");
+
+        do_print(s);
 
         Status = EFI_NOT_FOUND;
         goto end;
     }
 
     if (tp.itemlen < sizeof(DIR_ITEM)) {
-        print(L"(");
-        print_hex(searchkey.obj_id);
-        print(L",");
-        print_hex(searchkey.obj_type);
-        print(L",");
-        print_hex(searchkey.offset);
-        print(L") was ");
-        print_dec(tp.itemlen);
-        print(L" bytes, expected at least ");
-        print_dec(sizeof(DIR_ITEM));
-        print(L".\r\n");
+        char s[100], *p;
+
+        p = stpcpy(s, "(");
+        p = hex_to_str(p, searchkey.obj_id);
+        p = stpcpy(p, ",");
+        p = hex_to_str(p, searchkey.obj_type);
+        p = stpcpy(p, ",");
+        p = hex_to_str(p, searchkey.offset);
+        p = stpcpy(p, ") was ");
+        p = dec_to_str(p, tp.itemlen);
+        p = stpcpy(p, " bytes, expected at least ");
+        p = dec_to_str(p, sizeof(DIR_ITEM));
+        p = stpcpy(p, ".\n");
+
+        do_print(s);
 
         Status = EFI_NOT_FOUND;
         goto end;
@@ -547,37 +582,45 @@ static EFI_STATUS find_default_subvol(volume* vol, uint64_t* subvol) {
     di = (DIR_ITEM*)tp.item;
 
     if (tp.itemlen < offsetof(DIR_ITEM, name[0]) + di->n) {
-        print(L"(");
-        print_hex(searchkey.obj_id);
-        print(L",");
-        print_hex(searchkey.obj_type);
-        print(L",");
-        print_hex(searchkey.offset);
-        print(L") was ");
-        print_dec(tp.itemlen);
-        print(L" bytes, expected ");
-        print_dec(offsetof(DIR_ITEM, name[0]) + di->n);
-        print(L".\r\n");
+        char s[100], *p;
+
+        p = stpcpy(s, "(");
+        p = hex_to_str(p, searchkey.obj_id);
+        p = stpcpy(p, ",");
+        p = hex_to_str(p, searchkey.obj_type);
+        p = stpcpy(p, ",");
+        p = hex_to_str(p, searchkey.offset);
+        p = stpcpy(p, ") was ");
+        p = dec_to_str(p, tp.itemlen);
+        p = stpcpy(p, " bytes, expected ");
+        p = dec_to_str(p, offsetof(DIR_ITEM, name[0]) + di->n);
+        p = stpcpy(p, ".\n");
+
+        do_print(s);
 
         Status = EFI_NOT_FOUND;
         goto end;
     }
 
     if (di->n != sizeof(fn) - 1 || memcmp(di->name, fn, di->n)) {
-        print(L"root DIR_ITEM had same CRC32, but was not \"default\"\r\n");
+        do_print("root DIR_ITEM had same CRC32, but was not \"default\"\n");
 
         Status = EFI_NOT_FOUND;
         goto end;
     }
 
     if (di->key.obj_type != TYPE_ROOT_ITEM) {
-        print(L"default root has key (");
-        print_hex(di->key.obj_id);
-        print(L",");
-        print_hex(di->key.obj_type);
-        print(L",");
-        print_hex(di->key.offset);
-        print(L"), expected subvolume\r\n");
+        char s[100], *p;
+
+        p = stpcpy(s, "default root has key (");
+        p = hex_to_str(p, di->key.obj_id);
+        p = stpcpy(p, ",");
+        p = hex_to_str(p, di->key.obj_type);
+        p = stpcpy(p, ",");
+        p = hex_to_str(p, di->key.offset);
+        p = stpcpy(p, "), expected subvolume\r\n");
+
+        do_print(s);
 
         Status = EFI_NOT_FOUND;
         goto end;
@@ -813,9 +856,13 @@ static EFI_STATUS find_file_in_dir(volume* vol, root* r, uint64_t inode_num, WCH
                 }
 
                 if (!*out_r) {
-                    print(L"Could not find subvol ");
-                    print_hex(di->key.obj_id);
-                    print(L".\r\n");
+                    char s[100], *p;
+
+                    p = stpcpy(s, "Could not find subvol ");
+                    p = hex_to_str(p, di->key.obj_id);
+                    p = stpcpy(p, ".\n");
+
+                    do_print(s);
 
                     bs->FreePool(fn);
                     free_traverse_ptr(&tp);
@@ -895,9 +942,13 @@ static EFI_STATUS find_file_in_dir_cached(volume* vol, inode* ino, WCHAR* name, 
                 }
 
                 if (!*out_r) {
-                    print(L"Could not find subvol ");
-                    print_hex(di->key.obj_id);
-                    print(L".\r\n");
+                    char s[100], *p;
+
+                    p = stpcpy(s, "Could not find subvol ");
+                    p = hex_to_str(p, di->key.obj_id);
+                    p = stpcpy(p, ".\n");
+
+                    do_print(s);
 
                     bs->FreePool(fn);
 
@@ -1000,17 +1051,25 @@ static EFI_STATUS find_children(inode* ino) {
         DIR_ITEM* di = (DIR_ITEM*)tp.item;
 
         if (tp.itemlen < sizeof(DIR_ITEM)) {
-            print(L"DIR_ITEM length was ");
-            print_dec(tp.itemlen);
-            print(L" bytes, expected at least ");
-            print_dec(sizeof(DIR_ITEM));
-            print(L".\r\n");
+            char s[100], *p;
+
+            p = stpcpy(s, "DIR_ITEM length was ");
+            p = dec_to_str(p, tp.itemlen);
+            p = stpcpy(p, " bytes, expected at least ");
+            p = dec_to_str(p, sizeof(DIR_ITEM));
+            p = stpcpy(p, ".\n");
+
+            do_print(s);
         } else if (tp.itemlen < offsetof(DIR_ITEM, name[0]) + di->m + di->n) {
-            print(L"DIR_ITEM length was ");
-            print_dec(tp.itemlen);
-            print(L" bytes, expected ");
-            print_dec(offsetof(DIR_ITEM, name[0]) + di->m + di->n);
-            print(L".\r\n");
+            char s[100], *p;
+
+            p = stpcpy(s, "DIR_ITEM length was ");
+            p = dec_to_str(p, tp.itemlen);
+            p = stpcpy(p, " bytes, expected ");
+            p = dec_to_str(p, offsetof(DIR_ITEM, name[0]) + di->m + di->n);
+            p = stpcpy(p, ".\n");
+
+            do_print(s);
         } else {
             inode_child* ic;
 
@@ -1344,17 +1403,17 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
 
         if (ext->offset <= ino->position + to_read && ext->offset >= ino->position) {
             if (ext->extent_data.compression != 0) {
-                print(L"FIXME - support compression\r\n"); // FIXME
+                do_print("FIXME - support compression\n"); // FIXME
                 return EFI_UNSUPPORTED;
             }
 
             if (ext->extent_data.encryption != 0) {
-                print(L"encryption not supported\r\n");
+                do_print("encryption not supported\n");
                 return EFI_UNSUPPORTED;
             }
 
             if (ext->extent_data.encoding != 0) {
-                print(L"other encodings not supported\r\n");
+                do_print("other encodings not supported\n");
                 return EFI_UNSUPPORTED;
             }
 
@@ -1467,11 +1526,15 @@ static EFI_STATUS load_inode(inode* ino) {
     }
 
     if (tp.key->obj_id != searchkey.obj_id || tp.key->obj_type != searchkey.obj_type) {
-        print(L"Error finding INODE_ITEM for subvol ");
-        print_hex(ino->r->id);
-        print(L", inode ");
-        print_hex(ino->inode);
-        print(L".\r\n");
+        char s[100], *p;
+
+        p = stpcpy(s, "Error finding INODE_ITEM for subvol ");
+        p = hex_to_str(p, ino->r->id);
+        p = stpcpy(p, ", inode ");
+        p = hex_to_str(p, ino->inode);
+        p = stpcpy(p, ".\n");
+
+        do_print(s);
 
         free_traverse_ptr(&tp);
 
@@ -1479,11 +1542,15 @@ static EFI_STATUS load_inode(inode* ino) {
     }
 
     if (tp.itemlen < sizeof(INODE_ITEM)) {
-        print(L"INODE_ITEM length was ");
-        print_dec(tp.itemlen);
-        print(L" bytes, expected ");
-        print_dec(sizeof(INODE_ITEM));
-        print(L".\r\n");
+        char s[100], *p;
+
+        p = stpcpy(s, "INODE_ITEM length was ");
+        p = dec_to_str(p, tp.itemlen);
+        p = stpcpy(p, " bytes, expected ");
+        p = dec_to_str(p, sizeof(INODE_ITEM));
+        p = stpcpy(p, ".\n");
+
+        do_print(s);
 
         free_traverse_ptr(&tp);
 
@@ -1504,7 +1571,7 @@ static EFI_STATUS load_inode(inode* ino) {
 
                 if ((ed->type == EXTENT_TYPE_REGULAR || ed->type == EXTENT_TYPE_PREALLOC) &&
                     tp.itemlen < offsetof(EXTENT_DATA, data[0]) + sizeof(EXTENT_DATA2)) {
-                    print(L"EXTENT_DATA was truncated\r\n");
+                    do_print("EXTENT_DATA was truncated\n");
                     free_traverse_ptr(&tp);
                     return EFI_VOLUME_CORRUPTED;
                 }
@@ -1580,8 +1647,6 @@ static EFI_STATUS EFIAPI file_get_position(struct _EFI_FILE_HANDLE* File, UINT64
     UNUSED(File);
     UNUSED(Position);
 
-    print(L"file_get_position\r\n");
-
     // FIXME
 
     return EFI_UNSUPPORTED;
@@ -1640,7 +1705,7 @@ static EFI_STATUS EFIAPI file_get_info(struct _EFI_FILE_HANDLE* File, EFI_GUID* 
 
         return EFI_SUCCESS;
     } else {
-        print(L"Unrecognized file info GUID.\r\n");
+        do_print("Unrecognized file info GUID.\n");
         return EFI_UNSUPPORTED;
     }
 }
@@ -1773,16 +1838,20 @@ static EFI_STATUS get_subvol_path(volume* vol, uint64_t subvol, LIST_ENTRY* path
     }
 
     if (tp.key->obj_id != searchkey.obj_id || tp.key->obj_type != searchkey.obj_type) {
-        print(L"ROOT_BACKREF not found for subvol ");
-        print_hex(subvol);
-        print(L".\r\n");
+        char s[100], *p;
+
+        p = stpcpy(s, "ROOT_BACKREF not found for subvol ");
+        p = hex_to_str(p, subvol);
+        p = stpcpy(p, ".\n");
+
+        do_print(s);
 
         free_traverse_ptr(&tp);
         return EFI_INVALID_PARAMETER;
     }
 
     if (tp.itemlen < sizeof(ROOT_REF) || tp.itemlen < offsetof(ROOT_REF, name[0]) + ((ROOT_REF*)tp.item)->n) {
-        print(L"ROOT_BACKREF was truncated.\r\n");
+        do_print("ROOT_BACKREF was truncated.\n");
         free_traverse_ptr(&tp);
         return EFI_INVALID_PARAMETER;
     }
@@ -1823,9 +1892,14 @@ static EFI_STATUS get_subvol_path(volume* vol, uint64_t subvol, LIST_ENTRY* path
         }
 
         if (!parent_subvol) {
-            print(L"Could not find subvol ");
-            print_hex(*parent_subvol_num);
-            print(L".\r\n");
+            char s[100], *p;
+
+            p = stpcpy(s, "Could not find subvol ");
+            p = hex_to_str(p, *parent_subvol_num);
+            p = stpcpy(p, ".\n");
+
+            do_print(s);
+
             return EFI_INVALID_PARAMETER;
         }
 
@@ -1841,18 +1915,22 @@ static EFI_STATUS get_subvol_path(volume* vol, uint64_t subvol, LIST_ENTRY* path
             }
 
             if (tp.key->obj_id != searchkey.obj_id || tp.key->obj_type != searchkey.obj_type) {
-                print(L"INODE_REF not found for inode ");
-                print_hex(searchkey.obj_id);
-                print(L" in subvol ");
-                print_hex(*parent_subvol_num);
-                print(L".\r\n");
+                char s[100], *p;
+
+                p = stpcpy(s, "INODE_REF not found for inode ");
+                p = hex_to_str(p, searchkey.obj_id);
+                p = stpcpy(p, " in subvol ");
+                p = hex_to_str(p, *parent_subvol_num);
+                p = stpcpy(p, ".\n");
+
+                do_print(s);
 
                 free_traverse_ptr(&tp);
                 return EFI_INVALID_PARAMETER;
             }
 
             if (tp.itemlen < sizeof(INODE_REF) || tp.itemlen < offsetof(INODE_REF, name[0]) + ((INODE_REF*)tp.item)->n) {
-                print(L"INODE_REF was truncated.\r\n");
+                do_print("INODE_REF was truncated.\n");
                 free_traverse_ptr(&tp);
                 return EFI_INVALID_PARAMETER;
             }
@@ -2150,9 +2228,14 @@ static EFI_STATUS EFIAPI drv_start(EFI_DRIVER_BINDING_PROTOCOL* This, EFI_HANDLE
     memset(vol, 0, sizeof(volume));
 
     if ((sb->incompat_flags & ~COMPAT_FLAGS) != 0) {
-        print(L"Cannot mount as unsupported incompat_flags (");
-        print_hex(sb->incompat_flags & ~COMPAT_FLAGS);
-        print(L").\r\n");
+        char s[100], *p;
+
+        p = stpcpy(s, "Cannot mount as unsupported incompat_flags (");
+        p = hex_to_str(p, sb->incompat_flags & ~COMPAT_FLAGS);
+        p = stpcpy(p, ").\r\n");
+
+        do_print(s);
+
         bs->FreePool(sb);
         bs->CloseProtocol(ControllerHandle, &block_guid, This->DriverBindingHandle, ControllerHandle);
         bs->CloseProtocol(ControllerHandle, &disk_guid, This->DriverBindingHandle, ControllerHandle);
