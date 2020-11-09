@@ -30,6 +30,7 @@
 #include "x86.h"
 #include "misc.h"
 #include "quibble.h"
+#include "print.h"
 
 #pragma pack(push,1)
 

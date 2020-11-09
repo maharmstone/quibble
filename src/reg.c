@@ -20,6 +20,7 @@
 #include "reg.h"
 #include "misc.h"
 #include "winreg.h"
+#include "print.h"
 
 typedef struct {
     EFI_REGISTRY_HIVE public;

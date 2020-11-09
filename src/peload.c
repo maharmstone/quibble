@@ -22,6 +22,7 @@
 #include "misc.h"
 #include "quibble.h"
 #include "tinymt32.h"
+#include "print.h"
 
 typedef struct {
     EFI_PE_IMAGE public;

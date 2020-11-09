@@ -28,6 +28,7 @@
 #include "tinymt32.h"
 #include "quibbleproto.h"
 #include "font8x8_basic.h"
+#include "print.h"
 
 // #define DEBUG_EARLY_FAULTS
 
@@ -5227,6 +5228,23 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     if (EFI_ERROR(Status))
         return Status;
 
+    have_csm = check_for_csm(systable->BootServices);
+
+    if (!have_csm) {
+        Status = set_graphics_mode(systable->BootServices, ImageHandle);
+        if (EFI_ERROR(Status)) {
+            print_error(L"set_graphics_mode", Status);
+            goto end;
+        }
+    }
+
+    Status = info_register(systable->BootServices);
+    if (EFI_ERROR(Status)) {
+        print_error(L"info_register", Status);
+        print(L"Error registering info protocol.\r\n");
+        goto end2;
+    }
+
     Status = reg_register(systable->BootServices);
     if (EFI_ERROR(Status)) {
         print(L"Error registering registry protocol.\r\n");
@@ -5249,16 +5267,6 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     if (EFI_ERROR(Status)) {
         print_error(L"look_for_block_devices", Status);
         goto end;
-    }
-
-    have_csm = check_for_csm(systable->BootServices);
-
-    if (!have_csm) {
-        Status = set_graphics_mode(systable->BootServices, ImageHandle);
-        if (EFI_ERROR(Status)) {
-            print_error(L"set_graphics_mode", Status);
-            goto end;
-        }
     }
 
     Status = change_stack(systable->BootServices, ImageHandle, stack_changed);

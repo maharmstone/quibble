@@ -28,6 +28,7 @@
 
 EFI_SYSTEM_TABLE* systable;
 EFI_BOOT_SERVICES* bs;
+EFI_QUIBBLE_INFO_PROTOCOL* info_proto = NULL;
 
 EFI_DRIVER_BINDING_PROTOCOL drvbind;
 
@@ -117,20 +118,8 @@ uint32_t calc_crc32c(uint32_t seed, uint8_t* msg, unsigned int msglen);
 LIST_ENTRY volumes;
 
 static void do_print(const char* s) {
-    WCHAR t[255], *p;
-
-    // FIXME
-
-    p = t;
-    while (*s != 0) {
-        *p = *s;
-        s++;
-        p++;
-    }
-
-    *p = 0;
-
-    print(t);
+    if (info_proto)
+        info_proto->Print(s);
 }
 
 void do_print_error(const char* func, EFI_STATUS Status) {
@@ -2301,12 +2290,41 @@ static EFI_STATUS EFIAPI drv_stop(EFI_DRIVER_BINDING_PROTOCOL* This, EFI_HANDLE 
     return EFI_SUCCESS;
 }
 
+static void get_info_protocol(EFI_HANDLE image_handle) {
+    EFI_GUID guid = EFI_QUIBBLE_INFO_PROTOCOL_GUID;
+    EFI_HANDLE* handles = NULL;
+    UINTN count;
+    EFI_STATUS Status;
+
+    Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
+    if (EFI_ERROR(Status))
+        return;
+
+    if (count == 0) {
+        bs->FreePool(handles);
+        return;
+    }
+
+    for (unsigned int i = 0; i < count; i++) {
+        Status = bs->OpenProtocol(handles[i], &guid, (void**)&info_proto, image_handle, NULL,
+                                  EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+        if (EFI_ERROR(Status))
+            continue;
+
+        break;
+    }
+
+    bs->FreePool(handles);
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
     EFI_STATUS Status;
     EFI_GUID guid = EFI_DRIVER_BINDING_PROTOCOL_GUID;
 
     systable = SystemTable;
     bs = SystemTable->BootServices;
+
+    get_info_protocol(ImageHandle);
 
     InitializeListHead(&volumes);
 

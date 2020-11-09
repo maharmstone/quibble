@@ -1,0 +1,204 @@
+#include <string.h>
+#include "quibble.h"
+#include "quibbleproto.h"
+#include "print.h"
+#include "misc.h"
+
+static EFI_HANDLE info_handle = NULL;
+static EFI_QUIBBLE_INFO_PROTOCOL info_proto;
+
+EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
+    EFI_GUID info_guid = EFI_QUIBBLE_INFO_PROTOCOL_GUID;
+
+    info_proto.Print = print_string;
+
+    return bs->InstallProtocolInterface(&info_handle, &info_guid, EFI_NATIVE_INTERFACE, &info_proto);
+}
+
+void print(const WCHAR* s) {
+    systable->ConOut->OutputString(systable->ConOut, (CHAR16*)s);
+}
+
+void print_string(const char* s) {
+    WCHAR w[255], *t;
+
+    // FIXME - make sure no overflow
+
+    t = w;
+
+    while (*s) {
+        if (*s == '\n') {
+            *t = '\r';
+            t++;
+        }
+
+        *t = *s;
+        s++;
+        t++;
+    }
+
+    *t = 0;
+
+    print(w);
+}
+
+static WCHAR* error_string_utf16(EFI_STATUS Status) {
+    switch (Status) {
+        case EFI_SUCCESS:
+            return L"EFI_SUCCESS";
+
+        case EFI_LOAD_ERROR:
+            return L"EFI_LOAD_ERROR";
+
+        case EFI_INVALID_PARAMETER:
+            return L"EFI_INVALID_PARAMETER";
+
+        case EFI_UNSUPPORTED:
+            return L"EFI_UNSUPPORTED";
+
+        case EFI_BAD_BUFFER_SIZE:
+            return L"EFI_BAD_BUFFER_SIZE";
+
+        case EFI_BUFFER_TOO_SMALL:
+            return L"EFI_BUFFER_TOO_SMALL";
+
+        case EFI_NOT_READY:
+            return L"EFI_NOT_READY";
+
+        case EFI_DEVICE_ERROR:
+            return L"EFI_DEVICE_ERROR";
+
+        case EFI_WRITE_PROTECTED:
+            return L"EFI_WRITE_PROTECTED";
+
+        case EFI_OUT_OF_RESOURCES:
+            return L"EFI_OUT_OF_RESOURCES";
+
+        case EFI_VOLUME_CORRUPTED:
+            return L"EFI_VOLUME_CORRUPTED";
+
+        case EFI_VOLUME_FULL:
+            return L"EFI_VOLUME_FULL";
+
+        case EFI_NO_MEDIA:
+            return L"EFI_NO_MEDIA";
+
+        case EFI_MEDIA_CHANGED:
+            return L"EFI_MEDIA_CHANGED";
+
+        case EFI_NOT_FOUND:
+            return L"EFI_NOT_FOUND";
+
+        case EFI_ACCESS_DENIED:
+            return L"EFI_ACCESS_DENIED";
+
+        case EFI_NO_RESPONSE:
+            return L"EFI_NO_RESPONSE";
+
+        case EFI_NO_MAPPING:
+            return L"EFI_NO_MAPPING";
+
+        case EFI_TIMEOUT:
+            return L"EFI_TIMEOUT";
+
+        case EFI_NOT_STARTED:
+            return L"EFI_NOT_STARTED";
+
+        case EFI_ALREADY_STARTED:
+            return L"EFI_ALREADY_STARTED";
+
+        case EFI_ABORTED:
+            return L"EFI_ABORTED";
+
+        case EFI_ICMP_ERROR:
+            return L"EFI_ICMP_ERROR";
+
+        case EFI_TFTP_ERROR:
+            return L"EFI_TFTP_ERROR";
+
+        case EFI_PROTOCOL_ERROR:
+            return L"EFI_PROTOCOL_ERROR";
+
+        case EFI_INCOMPATIBLE_VERSION:
+            return L"EFI_INCOMPATIBLE_VERSION";
+
+        case EFI_SECURITY_VIOLATION:
+            return L"EFI_SECURITY_VIOLATION";
+
+        case EFI_CRC_ERROR:
+            return L"EFI_CRC_ERROR";
+
+        case EFI_END_OF_MEDIA:
+            return L"EFI_END_OF_MEDIA";
+
+        case EFI_END_OF_FILE:
+            return L"EFI_END_OF_FILE";
+
+        case EFI_INVALID_LANGUAGE:
+            return L"EFI_INVALID_LANGUAGE";
+
+        case EFI_COMPROMISED_DATA:
+            return L"EFI_COMPROMISED_DATA";
+
+        default:
+            return L"(unknown error)";
+    }
+}
+
+void print_error(const WCHAR* func, EFI_STATUS Status) {
+    WCHAR s[255];
+
+    wcsncpy(s, func, sizeof(s) / sizeof(WCHAR));
+    wcsncat(s, L" returned ", sizeof(s) / sizeof(WCHAR));
+    wcsncat(s, error_string_utf16(Status), sizeof(s) / sizeof(WCHAR));
+    wcsncat(s, L"\r\n", sizeof(s) / sizeof(WCHAR));
+
+    systable->ConOut->OutputString(systable->ConOut, s);
+}
+
+void print_hex(uint64_t v) {
+    WCHAR s[17], *p;
+
+    if (v == 0) {
+        print(L"0");
+        return;
+    }
+
+    s[16] = 0;
+    p = &s[16];
+
+    while (v != 0) {
+        p = &p[-1];
+
+        if ((v & 0xf) >= 10)
+            *p = (v & 0xf) - 10 + 'a';
+        else
+            *p = (v & 0xf) + '0';
+
+        v >>= 4;
+    }
+
+    print(p);
+}
+
+void print_dec(uint32_t v) {
+    WCHAR s[12], *p;
+
+    if (v == 0) {
+        print(L"0");
+        return;
+    }
+
+    s[11] = 0;
+    p = &s[11];
+
+    while (v != 0) {
+        p = &p[-1];
+
+        *p = (v % 10) + '0';
+
+        v /= 10;
+    }
+
+    print(p);
+}

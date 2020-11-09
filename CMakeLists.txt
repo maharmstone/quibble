@@ -25,7 +25,8 @@ set(SRC_FILES src/apiset.c
     src/misc.c
     src/peload.c
     src/reg.c
-    src/tinymt32.c)
+    src/tinymt32.c
+    src/print.c)
 
 if(MSVC)
     enable_language(ASM_MASM)

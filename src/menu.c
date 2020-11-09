@@ -20,6 +20,7 @@
 #include "quibble.h"
 #include "misc.h"
 #include "x86.h"
+#include "print.h"
 
 typedef struct {
     LIST_ENTRY list_entry;

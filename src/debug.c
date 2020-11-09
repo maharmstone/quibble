@@ -4,6 +4,7 @@
 #include "misc.h"
 #include "peload.h"
 #include "x86.h"
+#include "print.h"
 
 typedef int32_t NTSTATUS;
 #define NT_SUCCESS(Status) ((Status)>=0)

@@ -20,6 +20,7 @@
 #include "misc.h"
 #include "peload.h"
 #include "x86.h"
+#include "print.h"
 
 void* apiset;
 unsigned int apisetsize;
