@@ -119,6 +119,7 @@ loader_store* store2;
 EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 void* framebuffer;
 size_t framebuffer_size;
+bool have_csm;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -4300,10 +4301,14 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     if (version >= _WIN32_WINNT_WIN8) {
-        Status = set_graphics_mode(bs, image_handle);
-        if (EFI_ERROR(Status)) {
-            print_error(L"set_graphics_mode", Status);
-            print(L"GOP failed, falling back to CSM\r\n");
+        if (have_csm)
+            Status = EFI_SUCCESS; // already enabled
+        else {
+            Status = set_graphics_mode(bs, image_handle);
+            if (EFI_ERROR(Status)) {
+                print_error(L"set_graphics_mode", Status);
+                print(L"GOP failed, falling back to CSM\r\n");
+            }
         }
     } else
         Status = EFI_NOT_FOUND;
@@ -5193,6 +5198,25 @@ static uint32_t get_random_seed() {
     return seed;
 }
 
+static bool check_for_csm(EFI_BOOT_SERVICES* bs) {
+    EFI_STATUS Status;
+    EFI_GUID guid = EFI_LEGACY_BIOS_PROTOCOL_GUID;
+    EFI_HANDLE* handles = NULL;
+    UINTN count;
+
+    Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
+    if (EFI_ERROR(Status))
+        return false;
+
+    if (count == 0) {
+        Status = EFI_NOT_FOUND;
+        bs->FreePool(handles);
+        return false;
+    }
+
+    return true;
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
     EFI_STATUS Status;
 
@@ -5225,6 +5249,16 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     if (EFI_ERROR(Status)) {
         print_error(L"look_for_block_devices", Status);
         goto end;
+    }
+
+    have_csm = check_for_csm(systable->BootServices);
+
+    if (!have_csm) {
+        Status = set_graphics_mode(systable->BootServices, ImageHandle);
+        if (EFI_ERROR(Status)) {
+            print_error(L"set_graphics_mode", Status);
+            goto end;
+        }
     }
 
     Status = change_stack(systable->BootServices, ImageHandle, stack_changed);
