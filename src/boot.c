@@ -5356,6 +5356,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
             print_error(L"set_graphics_mode", Status);
             goto end;
         }
+
+        init_gop_console();
     }
 
     Status = info_register(systable->BootServices);

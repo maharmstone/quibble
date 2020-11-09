@@ -7,10 +7,12 @@
 
 static EFI_HANDLE info_handle = NULL;
 static EFI_QUIBBLE_INFO_PROTOCOL info_proto;
+static text_pos console_pos;
 
 extern bool have_csm;
 extern void* framebuffer;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
+unsigned int console_width, console_height;
 
 EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     EFI_GUID info_guid = EFI_QUIBBLE_INFO_PROTOCOL_GUID;
@@ -29,6 +31,10 @@ void draw_text(const char* s, text_pos* p) {
         if (s[i] == '\n') {
             p->y++;
             p->x = 0;
+
+            if (p->y > console_height)
+                p->y = 0; // FIXME
+
             continue;
         }
 
@@ -50,30 +56,47 @@ void draw_text(const char* s, text_pos* p) {
         }
 
         p->x++;
+
+        if (p->x > console_width) {
+            p->y++;
+            p->x = 0;
+
+            if (p->y > console_height)
+                p->y = 0; // FIXME
+        }
     }
 }
 
+void init_gop_console() {
+    console_width = gop_info.HorizontalResolution / 8;
+    console_height = gop_info.VerticalResolution / 8;
+}
+
 void print_string(const char* s) {
-    WCHAR w[255], *t;
+    if (!have_csm)
+        draw_text(s, &console_pos);
+    else {
+        WCHAR w[255], *t;
 
-    // FIXME - make sure no overflow
+        // FIXME - make sure no overflow
 
-    t = w;
+        t = w;
 
-    while (*s) {
-        if (*s == '\n') {
-            *t = '\r';
+        while (*s) {
+            if (*s == '\n') {
+                *t = '\r';
+                t++;
+            }
+
+            *t = *s;
+            s++;
             t++;
         }
 
-        *t = *s;
-        s++;
-        t++;
+        *t = 0;
+
+        systable->ConOut->OutputString(systable->ConOut, (CHAR16*)w);
     }
-
-    *t = 0;
-
-    systable->ConOut->OutputString(systable->ConOut, (CHAR16*)w);
 }
 
 static WCHAR* error_string_utf16(EFI_STATUS Status) {
