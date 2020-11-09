@@ -22,6 +22,32 @@ EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     return bs->InstallProtocolInterface(&info_handle, &info_guid, EFI_NATIVE_INTERFACE, &info_proto);
 }
 
+static void move_up_console() {
+    uint32_t* src;
+    uint32_t* dest;
+    unsigned int delta = 8;
+
+    src = (uint32_t*)framebuffer + (gop_info.PixelsPerScanLine * 8);
+    dest = (uint32_t*)framebuffer;
+
+    for (unsigned int y = 0; y < gop_info.VerticalResolution - delta; y++) {
+        for (unsigned int x = 0; x < gop_info.HorizontalResolution; x++) {
+            dest[x] = src[x];
+        }
+
+        src += gop_info.PixelsPerScanLine;
+        dest += gop_info.PixelsPerScanLine;
+    }
+
+    for (unsigned int y = gop_info.VerticalResolution - delta; y < gop_info.VerticalResolution; y++) {
+        for (unsigned int x = 0; x < gop_info.HorizontalResolution; x++) {
+            dest[x] = 0; // black
+        }
+
+        dest += gop_info.PixelsPerScanLine;
+    }
+}
+
 void draw_text(const char* s, text_pos* p) {
     unsigned int len = strlen(s);
 
@@ -32,8 +58,10 @@ void draw_text(const char* s, text_pos* p) {
             p->y++;
             p->x = 0;
 
-            if (p->y > console_height)
-                p->y = 0; // FIXME
+            if (p->y >= console_height) {
+                move_up_console();
+                p->y = console_height - 1;
+            }
 
             continue;
         }
@@ -61,8 +89,10 @@ void draw_text(const char* s, text_pos* p) {
             p->y++;
             p->x = 0;
 
-            if (p->y > console_height)
-                p->y = 0; // FIXME
+            if (p->y >= console_height) {
+                move_up_console();
+                p->y = console_height - 1;
+            }
         }
     }
 }
