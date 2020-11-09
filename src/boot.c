@@ -27,7 +27,6 @@
 #include "x86.h"
 #include "tinymt32.h"
 #include "quibbleproto.h"
-#include "font8x8_basic.h"
 #include "print.h"
 
 // #define DEBUG_EARLY_FAULTS
@@ -93,11 +92,6 @@ typedef struct _command_line {
     unsigned int nx;
 #endif
 } command_line;
-
-typedef struct {
-    unsigned int x;
-    unsigned int y;
-} text_pos;
 
 EFI_SYSTEM_TABLE* systable;
 NLS_DATA_BLOCK nls;
@@ -1168,39 +1162,6 @@ static void* initialize_gdt(EFI_BOOT_SERVICES* bs, KTSS* tss, KTSS* nmitss, KTSS
 }
 
 #ifdef DEBUG_EARLY_FAULTS
-static void draw_text(const char* s, text_pos* p) {
-    unsigned int len = strlen(s);
-
-    for (unsigned int i = 0; i < len; i++) {
-        char* v = font8x8_basic[(unsigned int)s[i]];
-
-        if (s[i] == '\n') {
-            p->y++;
-            p->x = 0;
-            continue;
-        }
-
-        uint32_t* base = (uint32_t*)store2->bgc.internal.framebuffer + (store2->bgc.internal.pixels_per_scan_line * p->y * 8) + (p->x * 8);
-
-        for (unsigned int y = 0; y < 8; y++) {
-            uint8_t v2 = v[y];
-            uint32_t* buf = base + (store2->bgc.internal.pixels_per_scan_line * y);
-
-            for (unsigned int x = 0; x < 8; x++) {
-                if (v2 & 1)
-                    *buf = 0xffffffff;
-                else
-                    *buf = 0;
-
-                v2 >>= 1;
-                buf++;
-            }
-        }
-
-        p->x++;
-    }
-}
-
 static void draw_text_hex(uint64_t v, text_pos* p) {
     char s[17], *t;
 

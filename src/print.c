@@ -3,9 +3,14 @@
 #include "quibbleproto.h"
 #include "print.h"
 #include "misc.h"
+#include "font8x8_basic.h"
 
 static EFI_HANDLE info_handle = NULL;
 static EFI_QUIBBLE_INFO_PROTOCOL info_proto;
+
+extern bool have_csm;
+extern void* framebuffer;
+extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 
 EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     EFI_GUID info_guid = EFI_QUIBBLE_INFO_PROTOCOL_GUID;
@@ -17,6 +22,39 @@ EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
 
 void print(const WCHAR* s) {
     systable->ConOut->OutputString(systable->ConOut, (CHAR16*)s);
+}
+
+void draw_text(const char* s, text_pos* p) {
+    unsigned int len = strlen(s);
+
+    for (unsigned int i = 0; i < len; i++) {
+        char* v = font8x8_basic[(unsigned int)s[i]];
+
+        if (s[i] == '\n') {
+            p->y++;
+            p->x = 0;
+            continue;
+        }
+
+        uint32_t* base = (uint32_t*)framebuffer + (gop_info.PixelsPerScanLine * p->y * 8) + (p->x * 8);
+
+        for (unsigned int y = 0; y < 8; y++) {
+            uint8_t v2 = v[y];
+            uint32_t* buf = base + (gop_info.PixelsPerScanLine * y);
+
+            for (unsigned int x = 0; x < 8; x++) {
+                if (v2 & 1)
+                    *buf = 0xffffffff;
+                else
+                    *buf = 0;
+
+                v2 >>= 1;
+                buf++;
+            }
+        }
+
+        p->x++;
+    }
 }
 
 void print_string(const char* s) {
