@@ -133,6 +133,17 @@ static void do_print(const char* s) {
     print(t);
 }
 
+void do_print_error(const char* func, EFI_STATUS Status) {
+    char s[255], *p;
+
+    p = stpcpy(s, func);
+    p = stpcpy(p, " returned ");
+    p = stpcpy(p, error_string(Status));
+    p = stpcpy(p, "\n");
+
+    do_print(p);
+}
+
 static EFI_STATUS drv_supported(EFI_DRIVER_BINDING_PROTOCOL* This, EFI_HANDLE ControllerHandle,
                                 EFI_DEVICE_PATH_PROTOCOL* RemainingDevicePath) {
     EFI_STATUS Status;
@@ -162,7 +173,7 @@ static EFI_STATUS bootstrap_roots(volume* vol) {
 
     Status = bs->AllocatePool(EfiBootServicesData, sizeof(root), (void**)&r);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -178,7 +189,7 @@ static EFI_STATUS bootstrap_roots(volume* vol) {
 
     Status = bs->AllocatePool(EfiBootServicesData, sizeof(root), (void**)&r);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -253,7 +264,7 @@ static EFI_STATUS read_data(volume* vol, uint64_t address, uint32_t size, void* 
                                             (stripes[i].offset + address - c->address) / vol->block->Media->BlockSize,
                                             size, data);
             if (EFI_ERROR(Status)) {
-                print_error(L"ReadBlocks", Status);
+                do_print_error("ReadBlocks", Status);
                 continue;
             }
 
@@ -293,13 +304,13 @@ static EFI_STATUS find_item(volume* vol, root* r, traverse_ptr* tp, KEY* searchk
 
     Status = bs->AllocatePool(EfiBootServicesData, (r->root_item.root_level + 1) * vol->sb->leaf_size, (void**)&tp->data);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         return Status;
     }
 
     Status = bs->AllocatePool(EfiBootServicesData, (r->root_item.root_level + 1) * sizeof(uint16_t), (void**)&tp->positions);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         bs->FreePool(tp->data);
         return Status;
     }
@@ -309,13 +320,13 @@ static EFI_STATUS find_item(volume* vol, root* r, traverse_ptr* tp, KEY* searchk
     if (!r->top_tree) {
         Status = bs->AllocatePool(EfiBootServicesData, vol->sb->leaf_size, &r->top_tree);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            do_print_error("AllocatePool", Status);
             return Status;
         }
 
         Status = read_data(vol, r->root_item.block_number, vol->sb->leaf_size, r->top_tree);
         if (EFI_ERROR(Status)) {
-            print_error(L"read_data", Status);
+            do_print_error("read_data", Status);
             bs->FreePool(r->top_tree);
             r->top_tree = NULL;
             return Status;
@@ -328,7 +339,7 @@ static EFI_STATUS find_item(volume* vol, root* r, traverse_ptr* tp, KEY* searchk
         if (i != 0) {
             Status = read_data(vol, addr, vol->sb->leaf_size, (uint8_t*)tp->data + (i * vol->sb->leaf_size));
             if (EFI_ERROR(Status)) {
-                print_error(L"read_data", Status);
+                do_print_error("read_data", Status);
                 return Status;
             }
         }
@@ -427,7 +438,7 @@ static EFI_STATUS next_item(volume* vol, traverse_ptr* tp) {
 
                 Status = read_data(vol, addr, vol->sb->leaf_size, (uint8_t*)tp->data + (j * vol->sb->leaf_size));
                 if (EFI_ERROR(Status)) {
-                    print_error(L"read_data", Status);
+                    do_print_error("read_data", Status);
                     return Status;
                 }
 
@@ -464,7 +475,7 @@ static EFI_STATUS load_roots(volume* vol) {
 
     Status = find_item(vol, vol->root_root, &tp, &searchkey);
     if (EFI_ERROR(Status)) {
-        print_error(L"find_item", Status);
+        do_print_error("find_item", Status);
         return Status;
     }
 
@@ -474,7 +485,7 @@ static EFI_STATUS load_roots(volume* vol) {
 
             Status = bs->AllocatePool(EfiBootServicesData, sizeof(root), (void**)&r);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePool", Status);
+                do_print_error("AllocatePool", Status);
                 return Status;
             }
 
@@ -510,7 +521,7 @@ static EFI_STATUS load_roots(volume* vol) {
         if (Status == EFI_NOT_FOUND)
             break;
         else if (EFI_ERROR(Status)) {
-            print_error(L"next_item", Status);
+            do_print_error("next_item", Status);
             break;
         }
     } while (true);
@@ -537,7 +548,7 @@ static EFI_STATUS find_default_subvol(volume* vol, uint64_t* subvol) {
 
     Status = find_item(vol, vol->root_root, &tp, &searchkey);
     if (EFI_ERROR(Status)) {
-        print_error(L"find_item", Status);
+        do_print_error("find_item", Status);
         return Status;
     }
 
@@ -672,7 +683,7 @@ static EFI_STATUS load_chunks(volume* vol) {
                                   offsetof(chunk, chunk_item) + sizeof(CHUNK_ITEM) + (ci->num_stripes * sizeof(CHUNK_ITEM_STRIPE)),
                                   (void**)&c);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            do_print_error("AllocatePool", Status);
             return Status;
         }
 
@@ -686,7 +697,7 @@ static EFI_STATUS load_chunks(volume* vol) {
 
     Status = bootstrap_roots(vol);
     if (EFI_ERROR(Status)) {
-        print_error(L"bootstrap_roots", Status);
+        do_print_error("bootstrap_roots", Status);
         return Status;
     }
 
@@ -698,7 +709,7 @@ static EFI_STATUS load_chunks(volume* vol) {
 
     Status = find_item(vol, vol->chunk_root, &tp, &searchkey);
     if (EFI_ERROR(Status)) {
-        print_error(L"find_item", Status);
+        do_print_error("find_item", Status);
         return Status;
     }
 
@@ -712,7 +723,7 @@ static EFI_STATUS load_chunks(volume* vol) {
             if (tp.itemlen >= sizeof(CHUNK_ITEM) + (ci->num_stripes * sizeof(CHUNK_ITEM_STRIPE))) {
                 Status = bs->AllocatePool(EfiBootServicesData, offsetof(chunk, chunk_item) + tp.itemlen, (void**)&c);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePool", Status);
+                    do_print_error("AllocatePool", Status);
                     return Status;
                 }
 
@@ -726,7 +737,7 @@ static EFI_STATUS load_chunks(volume* vol) {
         if (Status == EFI_NOT_FOUND)
             break;
         else if (EFI_ERROR(Status)) {
-            print_error(L"next_item", Status);
+            do_print_error("next_item", Status);
             break;
         }
     } while (true);
@@ -748,7 +759,7 @@ static EFI_STATUS load_chunks(volume* vol) {
 
     Status = load_roots(vol);
     if (EFI_ERROR(Status)) {
-        print_error(L"load_roots", Status);
+        do_print_error("load_roots", Status);
         return Status;
     }
 
@@ -790,19 +801,19 @@ static EFI_STATUS find_file_in_dir(volume* vol, root* r, uint64_t inode_num, WCH
 
     Status = utf16_to_utf8(NULL, 0, &fnlen, name, name_len * sizeof(WCHAR));
     if (EFI_ERROR(Status)) {
-        print_error(L"utf16_to_utf8", Status);
+        do_print_error("utf16_to_utf8", Status);
         return Status;
     }
 
     Status = bs->AllocatePool(EfiBootServicesData, fnlen, (void**)&fn);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         return Status;
     }
 
     Status = utf16_to_utf8(fn, fnlen, &fnlen, name, name_len * sizeof(WCHAR));
     if (EFI_ERROR(Status)) {
-        print_error(L"utf16_to_utf8", Status);
+        do_print_error("utf16_to_utf8", Status);
         bs->FreePool(fn);
         return Status;
     }
@@ -822,7 +833,7 @@ static EFI_STATUS find_file_in_dir(volume* vol, root* r, uint64_t inode_num, WCH
         bs->FreePool(fn);
         return Status;
     } else if (EFI_ERROR(Status)) {
-        print_error(L"find_item", Status);
+        do_print_error("find_item", Status);
         bs->FreePool(fn);
         return Status;
     }
@@ -901,19 +912,19 @@ static EFI_STATUS find_file_in_dir_cached(volume* vol, inode* ino, WCHAR* name, 
 
     Status = utf16_to_utf8(NULL, 0, &fnlen, name, name_len * sizeof(WCHAR));
     if (EFI_ERROR(Status)) {
-        print_error(L"utf16_to_utf8", Status);
+        do_print_error("utf16_to_utf8", Status);
         return Status;
     }
 
     Status = bs->AllocatePool(EfiBootServicesData, fnlen, (void**)&fn);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         return Status;
     }
 
     Status = utf16_to_utf8(fn, fnlen, &fnlen, name, name_len * sizeof(WCHAR));
     if (EFI_ERROR(Status)) {
-        print_error(L"utf16_to_utf8", Status);
+        do_print_error("utf16_to_utf8", Status);
         bs->FreePool(fn);
         return Status;
     }
@@ -1029,7 +1040,7 @@ static EFI_STATUS find_children(inode* ino) {
 
     Status = find_item(ino->vol, ino->r, &tp, &searchkey);
     if (EFI_ERROR(Status)) {
-        print_error(L"find_item", Status);
+        do_print_error("find_item", Status);
         return Status;
     }
 
@@ -1041,7 +1052,7 @@ static EFI_STATUS find_children(inode* ino) {
             free_traverse_ptr(&tp);
             return EFI_SUCCESS;
         } else if (EFI_ERROR(Status)) {
-            print_error(L"next_item", Status);
+            do_print_error("next_item", Status);
             free_traverse_ptr(&tp);
             return Status;
         }
@@ -1075,7 +1086,7 @@ static EFI_STATUS find_children(inode* ino) {
 
             Status = bs->AllocatePool(EfiBootServicesData, offsetof(inode_child, dir_item) + tp.itemlen, (void**)&ic);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePool", Status);
+                do_print_error("AllocatePool", Status);
                 free_traverse_ptr(&tp);
                 return Status;
             }
@@ -1089,7 +1100,7 @@ static EFI_STATUS find_children(inode* ino) {
         if (Status == EFI_NOT_FOUND)
             break;
         else if (EFI_ERROR(Status)) {
-            print_error(L"next_item", Status);
+            do_print_error("next_item", Status);
             free_traverse_ptr(&tp);
             return Status;
         }
@@ -1125,7 +1136,7 @@ static EFI_STATUS EFIAPI file_open(struct _EFI_FILE_HANDLE* File, struct _EFI_FI
 
         Status = bs->AllocatePool(EfiBootServicesData, (pathlen + 1) * sizeof(WCHAR), (void**)&path);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            do_print_error("AllocatePool", Status);
             return Status;
         }
 
@@ -1138,7 +1149,7 @@ static EFI_STATUS EFIAPI file_open(struct _EFI_FILE_HANDLE* File, struct _EFI_FI
 
         Status = bs->AllocatePool(EfiBootServicesData, (pathlen + 1) * sizeof(WCHAR), (void**)&path);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            do_print_error("AllocatePool", Status);
             return Status;
         }
 
@@ -1216,7 +1227,7 @@ static EFI_STATUS EFIAPI file_open(struct _EFI_FILE_HANDLE* File, struct _EFI_FI
                 if (!ino->children_found) {
                     Status = find_children(ino);
                     if (EFI_ERROR(Status)) {
-                        print_error(L"find_children", Status);
+                        do_print_error("find_children", Status);
                         bs->FreePool(path);
                         return Status;
                     }
@@ -1227,7 +1238,7 @@ static EFI_STATUS EFIAPI file_open(struct _EFI_FILE_HANDLE* File, struct _EFI_FI
                     bs->FreePool(path);
                     return Status;
                 } else if (EFI_ERROR(Status)) {
-                    print_error(L"find_file_in_dir_cached", Status);
+                    do_print_error("find_file_in_dir_cached", Status);
                     bs->FreePool(path);
                     return Status;
                 }
@@ -1237,7 +1248,7 @@ static EFI_STATUS EFIAPI file_open(struct _EFI_FILE_HANDLE* File, struct _EFI_FI
                     bs->FreePool(path);
                     return Status;
                 } else if (EFI_ERROR(Status)) {
-                    print_error(L"find_file_in_dir", Status);
+                    do_print_error("find_file_in_dir", Status);
                     bs->FreePool(path);
                     return Status;
                 }
@@ -1252,7 +1263,7 @@ static EFI_STATUS EFIAPI file_open(struct _EFI_FILE_HANDLE* File, struct _EFI_FI
 
     Status = bs->AllocatePool(EfiBootServicesData, sizeof(inode), (void**)&ino2);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         bs->FreePool(path);
         return Status;
     }
@@ -1315,7 +1326,7 @@ static EFI_STATUS read_dir(inode* ino, UINTN* bufsize, void* buf) {
     if (!ino->children_found) {
         Status = find_children(ino);
         if (EFI_ERROR(Status)) {
-            print_error(L"find_children", Status);
+            do_print_error("find_children", Status);
             return Status;
         }
     }
@@ -1330,7 +1341,7 @@ static EFI_STATUS read_dir(inode* ino, UINTN* bufsize, void* buf) {
 
     Status = utf8_to_utf16(NULL, 0, &fnlen, di->name, di->n);
     if (EFI_ERROR(Status)) {
-        print_error(L"utf8_to_utf16", Status);
+        do_print_error("utf8_to_utf16", Status);
         return Status;
     }
 
@@ -1352,7 +1363,7 @@ static EFI_STATUS read_dir(inode* ino, UINTN* bufsize, void* buf) {
 
     Status = utf8_to_utf16(info->FileName, fnlen, &fnlen, di->name, di->n);
     if (EFI_ERROR(Status)) {
-        print_error(L"utf8_to_utf16", Status);
+        do_print_error("utf8_to_utf16", Status);
         return Status;
     }
 
@@ -1374,7 +1385,7 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
     if (!ino->inode_loaded) {
         Status = load_inode(ino);
         if (EFI_ERROR(Status)) {
-            print_error(L"load_inode", Status);
+            do_print_error("load_inode", Status);
             return Status;
         }
     }
@@ -1450,13 +1461,13 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
 
                 Status = bs->AllocatePool(EfiBootServicesData, size, (void**)&tmp);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"AllocatePool", Status);
+                    do_print_error("AllocatePool", Status);
                     return Status;
                 }
 
                 Status = read_data(ino->vol, ed2->address + ed2->offset + pos - ext->offset, size, tmp);
                 if (EFI_ERROR(Status)) {
-                    print_error(L"read_data", Status);
+                    do_print_error("read_data", Status);
                     bs->FreePool(tmp);
                     return Status;
                 }
@@ -1491,7 +1502,7 @@ static EFI_STATUS EFIAPI file_read(struct _EFI_FILE_HANDLE* File, UINTN* BufferS
     if (!ino->inode_loaded) {
         Status = load_inode(ino);
         if (EFI_ERROR(Status)) {
-            print_error(L"load_inode", Status);
+            do_print_error("load_inode", Status);
             return Status;
         }
     }
@@ -1521,7 +1532,7 @@ static EFI_STATUS load_inode(inode* ino) {
 
     Status = find_item(ino->vol, ino->r, &tp, &searchkey);
     if (EFI_ERROR(Status)) {
-        print_error(L"find_item", Status);
+        do_print_error("find_item", Status);
         return Status;
     }
 
@@ -1587,7 +1598,7 @@ static EFI_STATUS load_inode(inode* ino) {
                 if (!skip) {
                     Status = bs->AllocatePool(EfiBootServicesData, offsetof(extent, extent_data) + tp.itemlen, (void**)&ext);
                     if (EFI_ERROR(Status)) {
-                        print_error(L"AllocatePool", Status);
+                        do_print_error("AllocatePool", Status);
                         free_traverse_ptr(&tp);
                         return Status;
                     }
@@ -1603,7 +1614,7 @@ static EFI_STATUS load_inode(inode* ino) {
             if (Status == EFI_NOT_FOUND)
                 break;
             else if (EFI_ERROR(Status)) {
-                print_error(L"next_item", Status);
+                do_print_error("next_item", Status);
                 free_traverse_ptr(&tp);
                 return Status;
             }
@@ -1622,7 +1633,7 @@ static EFI_STATUS EFIAPI file_set_position(struct _EFI_FILE_HANDLE* File, UINT64
     if (!ino->inode_loaded) {
         Status = load_inode(ino);
         if (EFI_ERROR(Status)) {
-            print_error(L"load_inode", Status);
+            do_print_error("load_inode", Status);
             return Status;
         }
     }
@@ -1683,7 +1694,7 @@ static EFI_STATUS EFIAPI file_get_info(struct _EFI_FILE_HANDLE* File, EFI_GUID* 
         if (!ino->inode_loaded) {
             Status = load_inode(ino);
             if (EFI_ERROR(Status)) {
-                print_error(L"load_inode", Status);
+                do_print_error("load_inode", Status);
                 return Status;
             }
         }
@@ -1749,14 +1760,14 @@ static EFI_STATUS EFIAPI open_volume(EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* This, EFI_
     if (!vol->chunks_loaded) {
         Status = load_chunks(vol);
         if (EFI_ERROR(Status)) {
-            print_error(L"load_chunks", Status);
+            do_print_error("load_chunks", Status);
             return Status;
         }
     }
 
     Status = bs->AllocatePool(EfiBootServicesData, sizeof(inode), (void**)&ino);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         return Status;
     }
 
@@ -1833,7 +1844,7 @@ static EFI_STATUS get_subvol_path(volume* vol, uint64_t subvol, LIST_ENTRY* path
 
     Status = find_item(vol, vol->root_root, &tp, &searchkey);
     if (EFI_ERROR(Status)) {
-        print_error(L"find_item", Status);
+        do_print_error("find_item", Status);
         return Status;
     }
 
@@ -1860,7 +1871,7 @@ static EFI_STATUS get_subvol_path(volume* vol, uint64_t subvol, LIST_ENTRY* path
 
     Status = bs->AllocatePool(EfiBootServicesData, offsetof(path_segment, name[0]) + rr->n + 1, (void**)&ps);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         free_traverse_ptr(&tp);
         return Status;
     }
@@ -1910,7 +1921,7 @@ static EFI_STATUS get_subvol_path(volume* vol, uint64_t subvol, LIST_ENTRY* path
 
             Status = find_item(vol, parent_subvol, &tp, &searchkey);
             if (EFI_ERROR(Status)) {
-                print_error(L"find_item", Status);
+                do_print_error("find_item", Status);
                 return Status;
             }
 
@@ -1939,7 +1950,7 @@ static EFI_STATUS get_subvol_path(volume* vol, uint64_t subvol, LIST_ENTRY* path
 
             Status = bs->AllocatePool(EfiBootServicesData, offsetof(path_segment, name[0]) + ir->n + 1, (void**)&ps);
             if (EFI_ERROR(Status)) {
-                print_error(L"AllocatePool", Status);
+                do_print_error("AllocatePool", Status);
                 free_traverse_ptr(&tp);
                 return Status;
             }
@@ -1968,7 +1979,7 @@ static EFI_STATUS EFIAPI open_subvol(EFI_OPEN_SUBVOL_PROTOCOL* This, UINT64 Subv
     if (!vol->chunks_loaded) {
         Status = load_chunks(vol);
         if (EFI_ERROR(Status)) {
-            print_error(L"load_chunks", Status);
+            do_print_error("load_chunks", Status);
             return Status;
         }
     }
@@ -2001,7 +2012,7 @@ static EFI_STATUS EFIAPI open_subvol(EFI_OPEN_SUBVOL_PROTOCOL* This, UINT64 Subv
         do {
             Status = get_subvol_path(vol, root_num, &pathbits, &parent);
             if (EFI_ERROR(Status)) {
-                print_error(L"get_subvol_path", Status);
+                do_print_error("get_subvol_path", Status);
 
                 while (!IsListEmpty(&pathbits)) {
                     path_segment* ps = _CR(pathbits.Flink, path_segment, list_entry);
@@ -2024,7 +2035,7 @@ static EFI_STATUS EFIAPI open_subvol(EFI_OPEN_SUBVOL_PROTOCOL* This, UINT64 Subv
 
             Status = utf8_to_utf16(NULL, 0, &pslen, ps->name, strlen(ps->name));
             if (EFI_ERROR(Status)) {
-                print_error(L"utf8_to_utf16", Status);
+                do_print_error("utf8_to_utf16", Status);
 
                 while (!IsListEmpty(&pathbits)) {
                     path_segment* ps = _CR(pathbits.Flink, path_segment, list_entry);
@@ -2042,7 +2053,7 @@ static EFI_STATUS EFIAPI open_subvol(EFI_OPEN_SUBVOL_PROTOCOL* This, UINT64 Subv
 
         Status = bs->AllocatePool(EfiBootServicesData, len, (void**)&name);
         if (EFI_ERROR(Status)) {
-            print_error(L"AllocatePool", Status);
+            do_print_error("AllocatePool", Status);
 
             while (!IsListEmpty(&pathbits)) {
                 path_segment* ps = _CR(pathbits.Flink, path_segment, list_entry);
@@ -2074,7 +2085,7 @@ static EFI_STATUS EFIAPI open_subvol(EFI_OPEN_SUBVOL_PROTOCOL* This, UINT64 Subv
 
             Status = utf8_to_utf16(s, left, &pslen, ps->name, strlen(ps->name));
             if (EFI_ERROR(Status)) {
-                print_error(L"utf8_to_utf16", Status);
+                do_print_error("utf8_to_utf16", Status);
 
                 bs->FreePool(ps);
                 bs->FreePool(name);
@@ -2099,7 +2110,7 @@ static EFI_STATUS EFIAPI open_subvol(EFI_OPEN_SUBVOL_PROTOCOL* This, UINT64 Subv
 
     Status = bs->AllocatePool(EfiBootServicesData, sizeof(inode), (void**)&ino);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
 
         if (name)
             bs->FreePool(name);
@@ -2190,7 +2201,7 @@ static EFI_STATUS EFIAPI drv_start(EFI_DRIVER_BINDING_PROTOCOL* This, EFI_HANDLE
 
     Status = bs->AllocatePool(EfiBootServicesData, sblen, (void**)&sb);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         bs->CloseProtocol(ControllerHandle, &block_guid, This->DriverBindingHandle, ControllerHandle);
         bs->CloseProtocol(ControllerHandle, &disk_guid, This->DriverBindingHandle, ControllerHandle);
         return Status;
@@ -2218,7 +2229,7 @@ static EFI_STATUS EFIAPI drv_start(EFI_DRIVER_BINDING_PROTOCOL* This, EFI_HANDLE
 
     Status = bs->AllocatePool(EfiBootServicesData, sizeof(volume), (void**)&vol);
     if (EFI_ERROR(Status)) {
-        print_error(L"AllocatePool", Status);
+        do_print_error("AllocatePool", Status);
         bs->FreePool(sb);
         bs->CloseProtocol(ControllerHandle, &block_guid, This->DriverBindingHandle, ControllerHandle);
         bs->CloseProtocol(ControllerHandle, &disk_guid, This->DriverBindingHandle, ControllerHandle);
@@ -2256,7 +2267,7 @@ static EFI_STATUS EFIAPI drv_start(EFI_DRIVER_BINDING_PROTOCOL* This, EFI_HANDLE
                                                    &quibble_guid, &vol->quibble_proto,
                                                    &open_subvol_guid, &vol->open_subvol_proto, NULL);
     if (EFI_ERROR(Status)) {
-        print_error(L"InstallMultipleProtocolInterfaces", Status);
+        do_print_error("InstallMultipleProtocolInterfaces", Status);
         bs->FreePool(sb);
         bs->FreePool(vol);
         bs->CloseProtocol(ControllerHandle, &block_guid, This->DriverBindingHandle, ControllerHandle);
@@ -2309,7 +2320,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     Status = bs->InstallProtocolInterface(&drvbind.DriverBindingHandle, &guid,
                                           EFI_NATIVE_INTERFACE, &drvbind);
     if (EFI_ERROR(Status)) {
-        print_error(L"InstallProtocolInterface", Status);
+        do_print_error("InstallProtocolInterface", Status);
         return Status;
     }
 

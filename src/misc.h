@@ -51,3 +51,4 @@ char* hex_to_str(char* s, uint64_t v);
 char* dec_to_str(char* s, uint64_t v);
 EFI_STATUS utf8_to_utf16(WCHAR* dest, unsigned int dest_max, unsigned int* dest_len, const char* src, unsigned int src_len);
 EFI_STATUS utf16_to_utf8(char* dest, unsigned int dest_max, unsigned int* dest_len, const WCHAR* src, unsigned int src_len);
+const char* error_string(EFI_STATUS Status);
