@@ -11,6 +11,10 @@ static EFI_HANDLE info_handle = NULL;
 static EFI_QUIBBLE_INFO_PROTOCOL info_proto;
 static text_pos console_pos;
 static unsigned int console_width, console_height;
+static FT_Library ft = NULL;
+static FT_Face face = NULL;
+static void* font_data = NULL;
+static size_t font_size;
 
 extern bool have_csm;
 extern void* framebuffer;
@@ -100,8 +104,108 @@ void draw_text(const char* s, text_pos* p) {
 }
 
 void init_gop_console() {
+    EFI_STATUS Status;
+    EFI_BOOT_SERVICES* bs = systable->BootServices;
+    EFI_GUID guid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
+    EFI_GUID guid2 = SIMPLE_FILE_SYSTEM_PROTOCOL;
+    EFI_LOADED_IMAGE_PROTOCOL* image;
+    EFI_FILE_IO_INTERFACE* fs;
+    EFI_FILE_HANDLE dir;
+    FT_Error error;
+
     console_width = gop_info.HorizontalResolution / 8;
     console_height = gop_info.VerticalResolution / 8;
+
+    Status = bs->OpenProtocol(image_handle, &guid, (void**)&image, image_handle, NULL,
+                              EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+    if (EFI_ERROR(Status)) {
+        print_error("OpenProtocol", Status);
+        return;
+    }
+
+    if (!image->DeviceHandle) {
+        bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
+        return;
+    }
+
+    Status = bs->OpenProtocol(image->DeviceHandle, &guid2, (void**)&fs, image_handle, NULL,
+                              EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+    if (EFI_ERROR(Status)) {
+        print_error("OpenProtocol", Status);
+        bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
+        return;
+    }
+
+    Status = bs->OpenProtocol(image->DeviceHandle, &guid2, (void**)&fs, image_handle, NULL,
+                              EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+    if (EFI_ERROR(Status)) {
+        print_error("OpenProtocol", Status);
+        bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
+        return;
+    }
+
+    Status = open_parent_dir(fs, (FILEPATH_DEVICE_PATH*)image->FilePath, &dir);
+    if (EFI_ERROR(Status)) {
+        print_error("open_parent_dir", Status);
+        bs->CloseProtocol(image->DeviceHandle, &guid2, image_handle, NULL);
+        bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
+        return;
+    }
+
+    // FIXME - allow font filename to be specified in freeldr.ini
+    Status = read_file(bs, dir, L"font.ttf", (void**)&font_data, &font_size);
+
+    dir->Close(dir);
+
+    bs->CloseProtocol(image->DeviceHandle, &guid2, image_handle, NULL);
+    bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
+
+    if (EFI_ERROR(Status)) {
+        print_string("Could not load font file.\n");
+        print_error("read_file", Status);
+        return;
+    }
+
+    error = FT_Init_FreeType(&ft);
+    if (error) {
+        char s[255], *p;
+
+        p = stpcpy(s, "FT_Init_FreeType failed (");
+        p = dec_to_str(p, error);
+        p = stpcpy(p, ").\n");
+
+        print_string(s);
+
+        return;
+    }
+
+    error = FT_New_Memory_Face(ft, font_data, font_size, 0, &face);
+    if (error) {
+        char s[255], *p;
+
+        p = stpcpy(s, "FT_New_Memory_Face failed (");
+        p = dec_to_str(p, error);
+        p = stpcpy(p, ").\n");
+
+        print_string(s);
+
+        return;
+    }
+
+    // FIXME - allow font size to be specified
+    // FIXME - get DPI from EDID?
+    error = FT_Set_Char_Size(face, 50 * 64, 0, 100, 0);
+    if (error) {
+        char s[255], *p;
+
+        p = stpcpy(s, "FT_Set_Char_Size failed (");
+        p = dec_to_str(p, error);
+        p = stpcpy(p, ").\n");
+
+        print_string(s);
+
+        return;
+    }
 }
 
 void print_string(const char* s) {

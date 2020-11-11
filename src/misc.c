@@ -858,13 +858,13 @@ char* strstr(const char* haystack, const char* needle) {
         bool found = true;
 
         for (size_t i = 0; i < len; i++) {
+            if (haystack[i] == 0)
+                return NULL;
+
             if (haystack[i] != needle[i]) {
                 found = false;
                 break;
             }
-
-            if (haystack[i] == 0)
-                return NULL;
         }
 
         if (found)
