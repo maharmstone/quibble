@@ -28,12 +28,11 @@ EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     return bs->InstallProtocolInterface(&info_handle, &info_guid, EFI_NATIVE_INTERFACE, &info_proto);
 }
 
-static void move_up_console() {
+static void move_up_console(unsigned int delta) {
     uint32_t* src;
     uint32_t* dest;
-    unsigned int delta = 8;
 
-    src = (uint32_t*)framebuffer + (gop_info.PixelsPerScanLine * 8);
+    src = (uint32_t*)framebuffer + (gop_info.PixelsPerScanLine * delta);
     dest = (uint32_t*)framebuffer;
 
     for (unsigned int y = 0; y < gop_info.VerticalResolution - delta; y++) {
@@ -65,7 +64,7 @@ void draw_text(const char* s, text_pos* p) {
             p->x = 0;
 
             if (p->y >= console_height) {
-                move_up_console();
+                move_up_console(8);
                 p->y = console_height - 1;
             }
 
@@ -96,7 +95,7 @@ void draw_text(const char* s, text_pos* p) {
             p->x = 0;
 
             if (p->y >= console_height) {
-                move_up_console();
+                move_up_console(8);
                 p->y = console_height - 1;
             }
         }
@@ -118,9 +117,15 @@ static void draw_text_ft(const char* s, text_pos* p) {
         uint32_t skip_y, width;
 
         if (s[i] == '\n') {
+            unsigned int delta = face->size->metrics.height / 64;
+
             p->x = 0;
-            p->y += face->size->metrics.height / 64;
-            // FIXME - scrolling
+            p->y += delta;
+
+            if (p->y > gop_info.VerticalResolution - delta) {
+                move_up_console(delta);
+                p->y -= delta;
+            }
 
             continue;
         }
@@ -133,9 +138,15 @@ static void draw_text_ft(const char* s, text_pos* p) {
 
         // if overruns right of screen, do newline
         if (p->x + face->glyph->bitmap_left + bitmap->width >= gop_info.HorizontalResolution) {
+            unsigned int delta = face->size->metrics.height / 64;
+
             p->x = 0;
-            p->y += face->size->metrics.height / 64;
-            // FIXME - scrolling
+            p->y += delta;
+
+            if (p->y > gop_info.VerticalResolution - delta) {
+                move_up_console(delta);
+                p->y -= delta;
+            }
         }
 
         // FIXME - make sure won't overflow left of screen
