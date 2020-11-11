@@ -268,7 +268,7 @@ void init_gop_console() {
 
     // FIXME - allow font size to be specified
     // FIXME - get DPI from EDID?
-    error = FT_Set_Char_Size(face, 50 * 64, 0, 100, 0);
+    error = FT_Set_Char_Size(face, 12 * 64, 0, 100, 0);
     if (error) {
         char s[255], *p;
 
