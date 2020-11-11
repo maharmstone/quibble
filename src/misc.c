@@ -260,8 +260,8 @@ void* memset(void* s, int c, size_t n) {
     v = 0;
 
     for (unsigned int i = 0; i < sizeof(uint32_t); i++) {
-        v |= c & 0xff;
         v <<= 8;
+        v |= c & 0xff;
     }
 
     while (n >= sizeof(uint32_t)) {
