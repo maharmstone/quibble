@@ -129,6 +129,8 @@ static void draw_text_ft(const char* s, text_pos* p) {
         if (error)
             continue;
 
+        bitmap = &face->glyph->bitmap;
+
         // if overruns right of screen, do newline
         if (p->x + face->glyph->bitmap_left + bitmap->width >= gop_info.HorizontalResolution) {
             p->x = 0;
@@ -143,7 +145,6 @@ static void draw_text_ft(const char* s, text_pos* p) {
             base += gop_info.PixelsPerScanLine * (p->y - face->glyph->bitmap_top);
 
         base += p->x + face->glyph->bitmap_left;
-        bitmap = &face->glyph->bitmap;
 
         buf = bitmap->buffer;
 
