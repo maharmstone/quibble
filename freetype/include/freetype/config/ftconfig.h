@@ -42,6 +42,7 @@
 #include FT_CONFIG_OPTIONS_H
 #include FT_CONFIG_STANDARD_LIBRARY_H
 
+#include <stdint.h>
 
 FT_BEGIN_HEADER
 
@@ -264,7 +265,7 @@ FT_BEGIN_HEADER
 
 #endif
 
-
+#if 0
   /* determine whether we have a 64-bit int type for platforms without */
   /* Autoconf                                                          */
 #if FT_SIZEOF_LONG == ( 64 / FT_CHAR_BIT )
@@ -326,6 +327,11 @@ FT_BEGIN_HEADER
 #endif /* __STDC_VERSION__ >= 199901L */
 
 #endif /* FT_SIZEOF_LONG == (64 / FT_CHAR_BIT) */
+#endif
+
+#define FT_LONG64
+#define FT_INT64   int64_t
+#define FT_UINT64  uint64_t
 
 #ifdef FT_LONG64
   typedef FT_INT64   FT_Int64;

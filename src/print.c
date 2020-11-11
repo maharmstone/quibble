@@ -103,6 +103,79 @@ void draw_text(const char* s, text_pos* p) {
     }
 }
 
+static void draw_text_ft(const char* s, text_pos* p) {
+    size_t len;
+    FT_Error error;
+    uint32_t* base;
+    FT_Bitmap* bitmap;
+
+    len = strlen(s);
+
+    // FIXME - UTF-8
+
+    for (size_t i = 0; i < len; i++) {
+        uint8_t* buf;
+        uint32_t skip_y, width;
+
+        if (s[i] == '\n') {
+            p->x = 0;
+            p->y += face->size->metrics.height / 64;
+            // FIXME - scrolling
+
+            continue;
+        }
+
+        error = FT_Load_Char(face, s[i], FT_LOAD_RENDER | FT_RENDER_MODE_MONO);
+        if (error)
+            continue;
+
+        // if overruns right of screen, do newline
+        if (p->x + face->glyph->bitmap_left + bitmap->width >= gop_info.HorizontalResolution) {
+            p->x = 0;
+            p->y += face->size->metrics.height / 64;
+            // FIXME - scrolling
+        }
+
+        // FIXME - make sure won't overflow left of screen
+        base = (uint32_t*)framebuffer;
+
+        if ((int)p->y > face->glyph->bitmap_top)
+            base += gop_info.PixelsPerScanLine * (p->y - face->glyph->bitmap_top);
+
+        base += p->x + face->glyph->bitmap_left;
+        bitmap = &face->glyph->bitmap;
+
+        buf = bitmap->buffer;
+
+        width = bitmap->width;
+        if (p->x + face->glyph->bitmap_left + width > gop_info.HorizontalResolution)
+            width = gop_info.HorizontalResolution - p->x - face->glyph->bitmap_left;
+
+        if ((int)p->y < face->glyph->bitmap_top) {
+            skip_y = face->glyph->bitmap_top - p->y;
+            buf += bitmap->width * skip_y;
+        } else
+            skip_y = 0;
+
+        for (unsigned int y = skip_y; y < bitmap->rows; y++) {
+            if (p->y - face->glyph->bitmap_top + y >= gop_info.VerticalResolution)
+                break;
+
+            for (unsigned int x = 0; x < width; x++) {
+                base[x] = (*buf << 16) | (*buf << 8) | *buf;
+                buf++;
+            }
+
+            buf += bitmap->width - width;
+
+            base += gop_info.PixelsPerScanLine;
+        }
+
+        p->x += face->glyph->advance.x / 64;
+        p->y += face->glyph->advance.y / 64;
+    }
+}
+
 void init_gop_console() {
     EFI_STATUS Status;
     EFI_BOOT_SERVICES* bs = systable->BootServices;
@@ -209,9 +282,12 @@ void init_gop_console() {
 }
 
 void print_string(const char* s) {
-    if (!have_csm)
-        draw_text(s, &console_pos);
-    else {
+    if (!have_csm) {
+        if (face)
+            draw_text_ft(s, &console_pos);
+        else
+            draw_text(s, &console_pos);
+    } else {
         WCHAR w[255], *t;
 
         // FIXME - make sure no overflow
