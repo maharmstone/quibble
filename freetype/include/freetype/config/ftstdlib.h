@@ -143,7 +143,8 @@
 
 
 #define ft_strtol  strtol
-#define ft_getenv  getenv
+// #define ft_getenv  getenv
+#define ft_getenv(a) NULL
 
 
   /**********************************************************************/
@@ -159,8 +160,11 @@
                                 /*       jmp_buf is defined as a macro  */
                                 /*       on certain platforms           */
 
-#define ft_longjmp     longjmp
-#define ft_setjmp( b ) setjmp( *(ft_jmp_buf*) &(b) ) /* same thing here */
+// #define ft_longjmp     longjmp
+// #define ft_setjmp( b ) setjmp( *(ft_jmp_buf*) &(b) ) /* same thing here */
+
+#define ft_longjmp(a, b)
+#define ft_setjmp(b) 0
 
 
   /* the following is only used for debugging purposes, i.e., if */

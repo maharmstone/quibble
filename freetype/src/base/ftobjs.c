@@ -2050,7 +2050,7 @@
     return error;
   }
 
-
+#ifdef FT_CONFIG_OPTION_MAC_FONTS
   /* Check for a valid resource fork header, or a valid dfont    */
   /* header.  In a resource fork the first 16 bytes are repeated */
   /* at the location specified by bytes 4-7.  In a dfont bytes   */
@@ -2111,7 +2111,7 @@
 
     return error;
   }
-
+#endif
 
   /* Check for a valid macbinary header, and if we find one   */
   /* check that the (flattened) resource fork in it is valid. */

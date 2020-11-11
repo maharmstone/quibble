@@ -35,9 +35,7 @@ void wcsncpy(WCHAR* dest, const WCHAR* src, size_t n) {
 }
 
 void wcsncat(WCHAR* dest, const WCHAR* src, size_t n) {
-    size_t i = 0;
-
-    while (dest[i] != 0) {
+    while (*dest != 0) {
         if (n == 0)
             return;
 
@@ -283,7 +281,9 @@ void* memset(void* s, int c, size_t n) {
     return orig_s;
 }
 
-void strcpy(char* dest, const char* src) {
+char* strcpy(char* dest, const char* src) {
+    char* orig_dest = dest;
+
     while (*src != 0) {
         *dest = *src;
         src++;
@@ -291,6 +291,8 @@ void strcpy(char* dest, const char* src) {
     }
 
     *dest = 0;
+
+    return orig_dest;
 }
 
 void itow(int v, WCHAR* w) {
@@ -765,4 +767,111 @@ char* stpcpy_utf16(char* dest, const WCHAR* src) {
     }
 
     return dest;
+}
+
+int strncmp(const char* s1, const char* s2, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        char c1 = s1[i];
+        char c2 = s2[i];
+
+        if (c1 == 0 && c2 == 0)
+            return 0;
+        else if (c1 == 0)
+            return -1;
+        else if (c2 == 0)
+            return 1;
+
+        if (c1 != c2)
+            return c1 > c2 ? 1 : -1;
+
+        i++;
+    }
+
+    return 0;
+}
+
+void memmove(void* dest, const void* src, size_t n) {
+    while (n > 0) {
+        *(uint8_t*)dest = *(uint8_t*)src;
+
+        dest = (uint8_t*)dest + 1;
+        src = (uint8_t*)src + 1;
+
+        n--;
+    }
+}
+
+long int strtol(const char* nptr, char** endptr, int base) {
+    long int val;
+
+    while (*nptr == ' ' || *nptr == '\t') {
+        nptr++;
+    }
+
+    val = 0;
+
+    while (true) {
+        if (*nptr >= '0' && *nptr <= '9') {
+            val *= base;
+            val += *nptr - '0';
+        } else {
+            if (endptr)
+                *endptr = (char*)nptr;
+
+            return val;
+        }
+
+        nptr++;
+    }
+}
+
+char* strcat(char* dest, const char *src) {
+    char* orig_dest = dest;
+
+    while (*dest != 0) {
+        dest++;
+    }
+
+    strcpy(dest, src);
+
+    return orig_dest;
+}
+
+void* memchr(const void* s, int c, size_t n) {
+    uint8_t* ptr = (uint8_t*)s;
+
+    while (n > 0) {
+        if (*ptr == c)
+            return ptr;
+
+        ptr++;
+        n--;
+    }
+
+    return NULL;
+}
+
+char* strstr(const char* haystack, const char* needle) {
+    size_t len = strlen(needle);
+
+    while (true) {
+        bool found = true;
+
+        for (size_t i = 0; i < len; i++) {
+            if (haystack[i] != needle[i]) {
+                found = false;
+                break;
+            }
+
+            if (haystack[i] == 0)
+                return NULL;
+        }
+
+        if (found)
+            return (char*)haystack;
+
+        haystack++;
+    }
+
+    return NULL;
 }

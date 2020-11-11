@@ -14,6 +14,8 @@ if(MSVC)
     if (${MSVC_CXX_ARCHITECTURE_ID} STREQUAL "X86")
         set(CMAKE_SYSTEM_PROCESSOR "X86")
     endif()
+else()
+    add_compile_options(-fno-stack-check -fno-stack-protector -mno-stack-arg-probe)
 endif()
 
 set(SRC_FILES src/apiset.c
@@ -35,9 +37,13 @@ endif()
 
 add_executable(quibble ${SRC_FILES})
 
+set(CMAKE_DISABLE_FIND_PACKAGE_BZip2 TRUE)
+set(CMAKE_DISABLE_FIND_PACKAGE_HARFBUZZ TRUE)
+add_definitions(-DFT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT)
 add_subdirectory(freetype)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(freetype/include)
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     target_link_libraries(quibble libgcc.a)

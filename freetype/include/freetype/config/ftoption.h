@@ -340,7 +340,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   Note that the `FOND' resource isn't checked.                        */
   /*                                                                       */
-#define FT_CONFIG_OPTION_MAC_FONTS
+// #define FT_CONFIG_OPTION_MAC_FONTS
 
 
   /*************************************************************************/

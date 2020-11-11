@@ -4,15 +4,17 @@
 #include "print.h"
 #include "misc.h"
 #include "font8x8_basic.h"
+#include <ft2build.h>
+#include <freetype/freetype.h>
 
 static EFI_HANDLE info_handle = NULL;
 static EFI_QUIBBLE_INFO_PROTOCOL info_proto;
 static text_pos console_pos;
+static unsigned int console_width, console_height;
 
 extern bool have_csm;
 extern void* framebuffer;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
-unsigned int console_width, console_height;
 
 EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     EFI_GUID info_guid = EFI_QUIBBLE_INFO_PROTOCOL_GUID;
@@ -138,4 +140,60 @@ void print_error(const char* func, EFI_STATUS Status) {
     p = stpcpy(p, "\n");
 
     print_string(s);
+}
+
+static void* ft_alloc(FT_Memory memory, long size) {
+    EFI_STATUS Status;
+    void* ret;
+
+    UNUSED(memory);
+
+    Status = systable->BootServices->AllocatePool(EfiLoaderData, size, &ret);
+    if (EFI_ERROR(Status))
+        return NULL;
+
+    return ret;
+}
+
+static void* ft_realloc(FT_Memory memory, long cur_size, long new_size, void* block) {
+    EFI_STATUS Status;
+    void* ret;
+
+    UNUSED(memory);
+
+    Status = systable->BootServices->AllocatePool(EfiLoaderData, new_size, &ret);
+    if (EFI_ERROR(Status))
+        return NULL;
+
+    memcpy(ret, block, cur_size < new_size ? new_size : cur_size);
+
+    systable->BootServices->FreePool(block);
+
+    return ret;
+}
+
+void ft_free(FT_Memory memory, void* block) {
+    UNUSED(memory);
+
+    systable->BootServices->FreePool(block);
+}
+
+FT_Memory FT_New_Memory() {
+    EFI_STATUS Status;
+    FT_Memory memory;
+
+    Status = systable->BootServices->AllocatePool(EfiLoaderData, sizeof(*memory), (void**)&memory);
+    if (EFI_ERROR(Status))
+        return NULL;
+
+    memory->user = NULL;
+    memory->alloc = ft_alloc;
+    memory->realloc = ft_realloc;
+    memory->free = ft_free;
+
+    return memory;
+}
+
+void FT_Done_Memory(FT_Memory memory) {
+    UNUSED(memory);
 }

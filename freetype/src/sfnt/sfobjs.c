@@ -389,7 +389,7 @@
       return 0;
   }
 
-
+#if 0
   /* Replace `face->root.stream' with a stream containing the extracted */
   /* SFNT of a WOFF font.                                               */
 
@@ -728,7 +728,7 @@
 
     return error;
   }
-
+#endif
 
 #undef WRITE_USHORT
 #undef WRITE_ULONG
@@ -766,6 +766,7 @@
     if ( FT_READ_ULONG( tag ) )
       return error;
 
+#if 0
     if ( tag == TTAG_wOFF )
     {
       FT_TRACE2(( "sfnt_open_font: file is a WOFF; synthesizing SFNT\n" ));
@@ -781,6 +782,7 @@
       stream = face->root.stream;
       goto retry;
     }
+#endif
 
     if ( tag != 0x00010000UL &&
          tag != TTAG_ttcf    &&
