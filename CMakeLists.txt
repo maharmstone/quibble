@@ -35,6 +35,8 @@ endif()
 
 add_executable(quibble ${SRC_FILES})
 
+add_subdirectory(freetype)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
@@ -83,6 +85,10 @@ endif()
 elseif(MSVC)
 target_link_options(quibble PRIVATE "/SUBSYSTEM:EFI_APPLICATION")
 endif()
+
+target_link_libraries(quibble freetype)
+
+# -----------------------------------
 
 set(SRC_FILES src/btrfs/btrfs.c
     src/btrfs/crc32c.c
