@@ -252,10 +252,27 @@ void memcpy(void* dest, const void* src, size_t n) {
 
 void* memset(void* s, int c, size_t n) {
     void* orig_s = s;
-    uint32_t v;
 
-    // FIXME - use uint64_t instead if 64-bit CPU
     // FIXME - faster if we make sure we're aligned (also in memcpy)?
+
+#if __INTPTR_WIDTH__ == 64
+    uint64_t v;
+
+    v = 0;
+
+    for (unsigned int i = 0; i < sizeof(uint64_t); i++) {
+        v <<= 8;
+        v |= c & 0xff;
+    }
+
+    while (n >= sizeof(uint64_t)) {
+        *(uint64_t*)s = v;
+
+        s = (uint8_t*)s + sizeof(uint64_t);
+        n -= sizeof(uint64_t);
+    }
+#else
+    uint32_t v;
 
     v = 0;
 
@@ -270,6 +287,7 @@ void* memset(void* s, int c, size_t n) {
         s = (uint8_t*)s + sizeof(uint32_t);
         n -= sizeof(uint32_t);
     }
+#endif
 
     while (n > 0) {
         *(uint8_t*)s = c;
