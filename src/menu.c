@@ -47,6 +47,7 @@ extern bool have_csm;
 extern void* framebuffer;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 extern unsigned int font_height;
+extern text_pos console_pos;
 
 static const char timeout_message[] = "Time until selected option is chosen: ";
 static const WCHAR timeout_messagew[] = L"Time until selected option is chosen: ";
@@ -968,7 +969,9 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
     *ret = &options[selected_option];
 
     if (!have_csm) {
-        // FIXME
+        memset(framebuffer, 0, gop_info.PixelsPerScanLine * gop_info.VerticalResolution * 4); // clear screen
+
+        console_pos.x = console_pos.y = 0;
     } else {
         Status = con->ClearScreen(con);
         if (EFI_ERROR(Status)) {

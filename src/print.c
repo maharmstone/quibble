@@ -9,7 +9,7 @@
 
 static EFI_HANDLE info_handle = NULL;
 static EFI_QUIBBLE_INFO_PROTOCOL info_proto;
-static text_pos console_pos;
+text_pos console_pos;
 static unsigned int console_width, console_height;
 static FT_Library ft = NULL;
 static FT_Face face = NULL;
