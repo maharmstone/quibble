@@ -75,7 +75,8 @@ typedef struct {
 } image;
 
 typedef struct {
-    WCHAR* name;
+    char* name;
+    WCHAR* namew;
     char* system_path;
     char* options;
 } boot_option;

@@ -16,6 +16,8 @@ static FT_Face face = NULL;
 static void* font_data = NULL;
 static size_t font_size;
 
+unsigned int font_height = 0;
+
 extern bool have_csm;
 extern void* framebuffer;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
@@ -36,19 +38,13 @@ static void move_up_console(unsigned int delta) {
     dest = (uint32_t*)framebuffer;
 
     for (unsigned int y = 0; y < gop_info.VerticalResolution - delta; y++) {
-        for (unsigned int x = 0; x < gop_info.HorizontalResolution; x++) {
-            dest[x] = src[x];
-        }
-
+        memcpy(dest, src, gop_info.HorizontalResolution * sizeof(uint32_t));
         src += gop_info.PixelsPerScanLine;
         dest += gop_info.PixelsPerScanLine;
     }
 
     for (unsigned int y = gop_info.VerticalResolution - delta; y < gop_info.VerticalResolution; y++) {
-        for (unsigned int x = 0; x < gop_info.HorizontalResolution; x++) {
-            dest[x] = 0; // black
-        }
-
+        memset(dest, 0, gop_info.HorizontalResolution * sizeof(uint32_t)); // black
         dest += gop_info.PixelsPerScanLine;
     }
 }
@@ -102,7 +98,7 @@ void draw_text(const char* s, text_pos* p) {
     }
 }
 
-static void draw_text_ft(const char* s, text_pos* p) {
+void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour) {
     size_t len;
     FT_Error error;
     uint32_t* base;
@@ -117,14 +113,12 @@ static void draw_text_ft(const char* s, text_pos* p) {
         uint32_t skip_y, width;
 
         if (s[i] == '\n') {
-            unsigned int delta = face->size->metrics.height / 64;
-
             p->x = 0;
-            p->y += delta;
+            p->y += font_height;
 
-            if (p->y > gop_info.VerticalResolution - delta) {
-                move_up_console(delta);
-                p->y -= delta;
+            if (p->y > gop_info.VerticalResolution - font_height) {
+                move_up_console(font_height);
+                p->y -= font_height;
             }
 
             continue;
@@ -138,14 +132,12 @@ static void draw_text_ft(const char* s, text_pos* p) {
 
         // if overruns right of screen, do newline
         if (p->x + face->glyph->bitmap_left + bitmap->width >= gop_info.HorizontalResolution) {
-            unsigned int delta = face->size->metrics.height / 64;
-
             p->x = 0;
-            p->y += delta;
+            p->y += font_height;
 
-            if (p->y > gop_info.VerticalResolution - delta) {
-                move_up_console(delta);
-                p->y -= delta;
+            if (p->y > gop_info.VerticalResolution - font_height) {
+                move_up_console(font_height);
+                p->y -= font_height;
             }
         }
 
@@ -174,7 +166,19 @@ static void draw_text_ft(const char* s, text_pos* p) {
                 break;
 
             for (unsigned int x = 0; x < width; x++) {
-                base[x] = (*buf << 16) | (*buf << 8) | *buf;
+                if (*buf == 0xff || bg_colour == 0x000000)
+                    base[x] = (*buf << 16) | (*buf << 8) | *buf;
+                else if (*buf != 0) {
+                    // FIXME - should we be doing this without using floats?
+
+                    float f = *buf / 255.0f;
+                    uint8_t r = ((1.0f - f) * (bg_colour >> 16)) + (f * 255.0f);
+                    uint8_t g = ((1.0f - f) * ((bg_colour >> 8) & 0xff)) + (f * 255.0f);
+                    uint8_t b = ((1.0f - f) * (bg_colour & 0xff)) + (f * 255.0f);
+
+                    base[x] = (r << 16) | (g << 8) | b;
+                }
+
                 buf++;
             }
 
@@ -291,12 +295,14 @@ void init_gop_console() {
 
         return;
     }
+
+    font_height = face->size->metrics.height / 64;
 }
 
 void print_string(const char* s) {
     if (!have_csm) {
         if (face)
-            draw_text_ft(s, &console_pos);
+            draw_text_ft(s, &console_pos, 0x000000);
         else
             draw_text(s, &console_pos);
     } else {
