@@ -670,10 +670,9 @@ static void draw_option_gop(unsigned int num, const char* name, bool selected) {
 
     // FIXME - non-TTF
 
-    if (selected) {
-        draw_rect(font_height + 1, (font_height * (num + 3)) + 1 + (font_height / 4),
-                  gop_info.HorizontalResolution - (2 * font_height) - 2, font_height, 0xcccccc);
-    }
+    draw_rect(font_height + 1, (font_height * (num + 3)) + 1 + (font_height / 4),
+              gop_info.HorizontalResolution - (2 * font_height) - 2, font_height,
+              selected ? 0xcccccc : 0x000000);
 
     p.x = font_height * 3 / 2;
     p.y = font_height * (num + 4);
@@ -894,6 +893,8 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                     break;
                 }
             } else { // key press
+                unsigned int old_option = selected_option;
+
                 if (!timer_cancelled) {
                     Status = systable->BootServices->SetTimer(evt, TimerCancel, 0);
                     if (EFI_ERROR(Status)) {
@@ -937,12 +938,6 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
 
                     if (selected_option == num_options)
                         selected_option = 0;
-
-                    Status = draw_options(con, cols);
-                    if (EFI_ERROR(Status)) {
-                        print_error("draw_options", Status);
-                        goto end;
-                    }
                 } else if (key.ScanCode == 1) { // up
                     if (selected_option == 0)
                         selected_option = num_options - 1;
@@ -953,7 +948,8 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
 
                 if (key.ScanCode == 1 || key.ScanCode == 2) {
                     if (!have_csm) {
-                        // FIXME
+                        draw_option_gop(old_option, options[old_option].name, false);
+                        draw_option_gop(selected_option, options[selected_option].name, true);
                     } else {
                         Status = draw_options(con, cols);
                         if (EFI_ERROR(Status)) {
