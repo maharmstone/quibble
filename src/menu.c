@@ -678,9 +678,9 @@ static void draw_option_gop(unsigned int num, const char* name, bool selected) {
     p.y = font_height * (num + 4);
 
     if (selected)
-        draw_text_ft(name, &p, 0xcccccc); // FIXME - black text if selected
+        draw_text_ft(name, &p, 0xcccccc, 0x000000);
     else
-        draw_text_ft(name, &p, 0x000000);
+        draw_text_ft(name, &p, 0x000000, 0xffffff);
 }
 
 static void draw_options_gop() {
@@ -724,8 +724,8 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
             p.x = 0;
             p.y = font_height;
 
-            draw_text_ft(VERSION "\n", &p, 0x000000);
-            draw_text_ft(URL "\n", &p, 0x000000);
+            draw_text_ft(VERSION "\n", &p, 0x000000, 0xffffff);
+            draw_text_ft(URL "\n", &p, 0x000000, 0xffffff);
         }
     } else {
         Status = con->ClearScreen(con);
@@ -787,12 +787,12 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
             p.x = font_height;
             p.y = gop_info.VerticalResolution - (font_height * 3 / 4);
 
-            draw_text_ft(timeout_message, &p, 0x000000);
+            draw_text_ft(timeout_message, &p, 0x000000, 0xffffff);
 
             timer_pos = p.x;
 
             dec_to_str(s, timer);
-            draw_text_ft(s, &p, 0x000000);
+            draw_text_ft(s, &p, 0x000000, 0xffffff);
         } else {
             if (cursor_visible)
                 con->EnableCursor(con, false);
@@ -860,7 +860,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                     draw_rect(p.x, p.y - font_height, font_height * 5, font_height * 2, 0x000000);
 
                     dec_to_str(s, timer);
-                    draw_text_ft(s, &p, 0x000000);
+                    draw_text_ft(s, &p, 0x000000, 0xffffff);
                 } else {
                     Status = con->SetCursorPosition(con, (sizeof(timeout_message) - sizeof(WCHAR)) / sizeof(WCHAR), rows - 1);
                     if (EFI_ERROR(Status)) {

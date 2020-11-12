@@ -98,11 +98,19 @@ void draw_text(const char* s, text_pos* p) {
     }
 }
 
-void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour) {
+void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_colour) {
     size_t len;
     FT_Error error;
     uint32_t* base;
     FT_Bitmap* bitmap;
+    uint8_t bg_r, bg_g, bg_b, fg_r, fg_g, fg_b;
+
+    bg_r = bg_colour >> 16;
+    bg_g = (bg_colour >> 8) & 0xff;
+    bg_b = bg_colour & 0xff;
+    fg_r = fg_colour >> 16;
+    fg_g = (fg_colour >> 8) & 0xff;
+    fg_b = fg_colour & 0xff;
 
     len = strlen(s);
 
@@ -166,15 +174,13 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour) {
                 break;
 
             for (unsigned int x = 0; x < width; x++) {
-                if (*buf == 0xff || bg_colour == 0x000000)
+                if ((*buf == 0xff || bg_colour == 0x000000) && fg_colour == 0xffffff)
                     base[x] = (*buf << 16) | (*buf << 8) | *buf;
                 else if (*buf != 0) {
-                    // FIXME - should we be doing this without using floats?
-
                     float f = *buf / 255.0f;
-                    uint8_t r = ((1.0f - f) * (bg_colour >> 16)) + (f * 255.0f);
-                    uint8_t g = ((1.0f - f) * ((bg_colour >> 8) & 0xff)) + (f * 255.0f);
-                    uint8_t b = ((1.0f - f) * (bg_colour & 0xff)) + (f * 255.0f);
+                    uint8_t r = ((1.0f - f) * bg_r) + (f * fg_r);
+                    uint8_t g = ((1.0f - f) * bg_g) + (f * fg_g);
+                    uint8_t b = ((1.0f - f) * bg_b) + (f * fg_b);
 
                     base[x] = (r << 16) | (g << 8) | b;
                 }
@@ -302,7 +308,7 @@ void init_gop_console() {
 void print_string(const char* s) {
     if (!have_csm) {
         if (face)
-            draw_text_ft(s, &console_pos, 0x000000);
+            draw_text_ft(s, &console_pos, 0x000000, 0xffffff);
         else
             draw_text(s, &console_pos);
     } else {
