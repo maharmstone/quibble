@@ -116,6 +116,7 @@ void* framebuffer;
 void* framebuffer_va;
 size_t framebuffer_size;
 bool have_csm;
+uint8_t edid[128];
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -5338,6 +5339,41 @@ static bool check_for_csm(EFI_BOOT_SERVICES* bs) {
     return true;
 }
 
+static void get_edid(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle) {
+    EFI_GUID guid = EFI_EDID_ACTIVE_PROTOCOL_GUID;
+    EFI_HANDLE* handles = NULL;
+    UINTN count;
+    EFI_STATUS Status;
+
+    // FIXME - what if multiple screens?
+
+    Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
+    if (EFI_ERROR(Status))
+        return;
+
+    for (unsigned int i = 0; i < count; i++) {
+        EFI_EDID_ACTIVE_PROTOCOL* edidproto = NULL;
+
+        Status = bs->OpenProtocol(handles[i], &guid, (void**)&edidproto, image_handle, NULL,
+                                  EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+        if (EFI_ERROR(Status))
+            continue;
+
+        if (edidproto->SizeOfEdid < sizeof(edid)) {
+            bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+            continue;
+        }
+
+        memcpy(edid, edidproto->Edid, sizeof(edid));
+
+        bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+
+        break;
+    }
+
+    bs->FreePool(handles);
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
     EFI_STATUS Status;
 
@@ -5356,6 +5392,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
             print_error("set_graphics_mode", Status);
             goto end;
         }
+
+        get_edid(systable->BootServices, ImageHandle);
 
         init_gop_console();
     }
