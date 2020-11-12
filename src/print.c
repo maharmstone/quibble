@@ -21,6 +21,8 @@ unsigned int font_height = 0;
 extern bool have_csm;
 extern void* framebuffer;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
+extern bool have_edid;
+extern uint8_t edid[128];
 
 EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     EFI_GUID info_guid = EFI_QUIBBLE_INFO_PROTOCOL_GUID;
@@ -207,6 +209,7 @@ void init_gop_console() {
     EFI_FILE_IO_INTERFACE* fs;
     EFI_FILE_HANDLE dir;
     FT_Error error;
+    unsigned int dpi = 96;
 
     console_width = gop_info.HorizontalResolution / 8;
     console_height = gop_info.VerticalResolution / 8;
@@ -288,8 +291,19 @@ void init_gop_console() {
     }
 
     // FIXME - allow font size to be specified
-    // FIXME - get DPI from EDID?
-    error = FT_Set_Char_Size(face, 12 * 64, 0, 100, 0);
+
+    if (have_edid) {
+        uint8_t screen_x_cm = edid[21];
+        uint8_t screen_y_cm = edid[22];
+
+        if (screen_x_cm != 0 && screen_y_cm != 0) {
+            float screen_x_in = (float)screen_x_cm / 2.54f;
+
+            dpi = (unsigned int)((float)gop_info.HorizontalResolution / screen_x_in);
+        }
+    }
+
+    error = FT_Set_Char_Size(face, 12 * 64, 0, dpi, 0);
     if (error) {
         char s[255], *p;
 

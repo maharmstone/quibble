@@ -117,6 +117,7 @@ void* framebuffer_va;
 size_t framebuffer_size;
 bool have_csm;
 uint8_t edid[128];
+bool have_edid = false;
 
 typedef void (EFIAPI* change_stack_cb) (
     EFI_BOOT_SERVICES* bs,
@@ -5365,6 +5366,7 @@ static void get_edid(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle) {
         }
 
         memcpy(edid, edidproto->Edid, sizeof(edid));
+        have_edid = true;
 
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
 
