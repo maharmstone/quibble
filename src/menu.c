@@ -48,7 +48,8 @@ extern void* framebuffer;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 extern unsigned int font_height;
 
-static const WCHAR timeout_message[] = L"Time until selected option is chosen: ";
+static const char timeout_message[] = "Time until selected option is chosen: ";
+static const WCHAR timeout_messagew[] = L"Time until selected option is chosen: ";
 
 static EFI_STATUS parse_ini_file(char* data, LIST_ENTRY* ini_sections) {
     EFI_STATUS Status;
@@ -772,13 +773,26 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
     }
 
     if (timer > 0) {
+        unsigned int timer_pos;
+
         if (!have_csm) {
+            text_pos p;
+            char s[10];
+
             // FIXME - non-TTF support
-            draw_box_gop(font_height, font_height * 3, gop_info.HorizontalResolution - (font_height * 2), gop_info.VerticalResolution - (font_height * 4));
+            draw_box_gop(font_height, font_height * 3, gop_info.HorizontalResolution - (font_height * 2), gop_info.VerticalResolution - (font_height * 5));
 
             draw_options_gop();
 
-            // FIXME - print timeout message with timer
+            p.x = font_height;
+            p.y = gop_info.VerticalResolution - (font_height * 3 / 4);
+
+            draw_text_ft(timeout_message, &p, 0x000000);
+
+            timer_pos = p.x;
+
+            dec_to_str(s, timer);
+            draw_text_ft(s, &p, 0x000000);
         } else {
             if (cursor_visible)
                 con->EnableCursor(con, false);
@@ -801,7 +815,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                 return Status;
             }
 
-            print((WCHAR*)timeout_message);
+            print(timeout_messagew);
             print_dec(timer);
         }
 
@@ -837,7 +851,16 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                 timer--;
 
                 if (!have_csm) {
-                    // FIXME
+                    text_pos p;
+                    char s[10];
+
+                    p.x = timer_pos;
+                    p.y = gop_info.VerticalResolution - (font_height * 3 / 4);
+
+                    draw_rect(p.x, p.y - font_height, font_height * 5, font_height * 2, 0x000000);
+
+                    dec_to_str(s, timer);
+                    draw_text_ft(s, &p, 0x000000);
                 } else {
                     Status = con->SetCursorPosition(con, (sizeof(timeout_message) - sizeof(WCHAR)) / sizeof(WCHAR), rows - 1);
                     if (EFI_ERROR(Status)) {
@@ -880,7 +903,8 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                     timer_cancelled = true;
 
                     if (!have_csm) {
-                        // FIXME
+                        draw_rect(font_height, gop_info.VerticalResolution - (font_height * 7 / 4),
+                                  timer_pos + (font_height * 5), font_height * 2, 0x000000);
                     } else {
                         Status = con->SetCursorPosition(con, 0, rows - 1);
                         if (EFI_ERROR(Status)) {
