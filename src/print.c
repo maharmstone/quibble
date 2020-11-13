@@ -39,16 +39,10 @@ static void move_up_console(unsigned int delta) {
     src = (uint32_t*)framebuffer + (gop_info.PixelsPerScanLine * delta);
     dest = (uint32_t*)framebuffer;
 
-    for (unsigned int y = 0; y < gop_info.VerticalResolution - delta; y++) {
-        memcpy(dest, src, gop_info.HorizontalResolution * sizeof(uint32_t));
-        src += gop_info.PixelsPerScanLine;
-        dest += gop_info.PixelsPerScanLine;
-    }
+    memcpy(dest, src, gop_info.PixelsPerScanLine * (gop_info.VerticalResolution - delta) * sizeof(uint32_t));
+    dest += gop_info.PixelsPerScanLine * (gop_info.VerticalResolution - delta);
 
-    for (unsigned int y = gop_info.VerticalResolution - delta; y < gop_info.VerticalResolution; y++) {
-        memset(dest, 0, gop_info.HorizontalResolution * sizeof(uint32_t)); // black
-        dest += gop_info.PixelsPerScanLine;
-    }
+    memset(dest, 0, gop_info.PixelsPerScanLine * delta * sizeof(uint32_t)); // black
 }
 
 void draw_text(const char* s, text_pos* p) {
