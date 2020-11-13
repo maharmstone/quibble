@@ -3281,6 +3281,86 @@ static void parse_options(const char* options, command_line* cmdline) {
     }
 }
 
+#ifdef __x86_64__
+#define IA32_PAT_MSR 0x277
+
+static void mark_framebuffer_wc() {
+    uintptr_t cr0, cr3, pfn, pat_msr;
+    HARDWARE_PTE_PAE* pml4;
+    int cpu_info[4];
+
+    // check for PAT support, and return if not found
+    __cpuid(cpu_info, 1);
+
+    if (!(cpu_info[3] & 0x10000)) // PAT not supported
+        return;
+
+    // FIXME - make sure Windows not expecting a certain PAT number to be used!
+
+    // set PAT4 to be write-combining
+
+    pat_msr = __readmsr(IA32_PAT_MSR);
+    pat_msr &= 0xfffffff0ffffffff;
+    pat_msr |= 0x100000000;
+    __writemsr(IA32_PAT_MSR, pat_msr);
+
+    // switch PAT on for framebuffer pages
+    // UEFI guarantees that we're identity-mapped at this point
+
+    cr3 = __readcr3();
+    pml4 = (HARDWARE_PTE_PAE*)(cr3 & ~0xfff);
+    pfn = ((uintptr_t)framebuffer) >> EFI_PAGE_SHIFT;
+    // FIXME - what if framebuffer in upper half?
+
+    // disable write protection
+    cr0 = __readcr0();
+    __writecr0(cr0 & ~CR0_WP);
+
+    for (unsigned int i = 0; i < PAGE_COUNT(framebuffer_size); i++) {
+        HARDWARE_PTE_PAE* pdpt;
+        HARDWARE_PTE_PAE* pd;
+        HARDWARE_PTE_PAE* pt;
+        unsigned int index = (pfn & 0xff8000000) >> 27;
+        unsigned int index2 = (pfn & 0x7fc0000) >> 18;
+        unsigned int index3 = (pfn & 0x3fe00) >> 9;
+
+        pdpt = (HARDWARE_PTE_PAE*)((uintptr_t)pml4[index].PageFrameNumber << EFI_PAGE_SHIFT);
+
+        if (pdpt[index2].LargePage) // 2GB pages
+            break;
+
+        pd = (HARDWARE_PTE_PAE*)((uintptr_t)pdpt[index2].PageFrameNumber << EFI_PAGE_SHIFT);
+
+        if (pd[index3].LargePage) { // 2MB pages
+            // switch to PAT4
+            pd[index3].PageFrameNumber |= 1;
+            pd[index3].CacheDisable = 0;
+            pd[index3].WriteThrough = 0;
+
+            pfn += 512;
+            i += 511;
+        } else {
+            unsigned int index4 = pfn & 0x1ff;
+
+            pt = (HARDWARE_PTE_PAE*)((uintptr_t)pd[index3].PageFrameNumber << EFI_PAGE_SHIFT);
+
+            // switch to PAT4
+            pt[index4].LargePage = 1;
+            pt[index4].CacheDisable = 0;
+            pt[index4].WriteThrough = 0;
+
+            pfn++;
+        }
+    }
+
+    // force refresh
+    __writecr3(__readcr3());
+
+    // re-enable write protection
+    __writecr0(cr0);
+}
+#endif
+
 static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle) {
     EFI_GUID guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     EFI_HANDLE* handles = NULL;
@@ -3337,6 +3417,10 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         framebuffer_size = gop->Mode->FrameBufferSize;
 
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
+
+#ifdef __x86_64__
+        mark_framebuffer_wc();
+#endif
 
         Status = EFI_SUCCESS;
         goto end;
