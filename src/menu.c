@@ -45,6 +45,7 @@ static unsigned int num_options, selected_option;
 
 extern bool have_csm;
 extern void* framebuffer;
+extern void* shadow_fb;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 extern unsigned int font_height;
 extern text_pos console_pos;
@@ -966,6 +967,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
 
     if (!have_csm) {
         memset(framebuffer, 0, gop_info.PixelsPerScanLine * gop_info.VerticalResolution * 4); // clear screen
+        memset(shadow_fb, 0, gop_info.PixelsPerScanLine * gop_info.VerticalResolution * 4);
 
         console_pos.x = 0;
         console_pos.y = font_height;

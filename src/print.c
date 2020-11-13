@@ -20,6 +20,8 @@ unsigned int font_height = 0;
 
 extern bool have_csm;
 extern void* framebuffer;
+extern void* shadow_fb;
+extern size_t framebuffer_size;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 extern bool have_edid;
 extern uint8_t edid[128];
@@ -36,13 +38,15 @@ static void move_up_console(unsigned int delta) {
     uint32_t* src;
     uint32_t* dest;
 
-    src = (uint32_t*)framebuffer + (gop_info.PixelsPerScanLine * delta);
-    dest = (uint32_t*)framebuffer;
+    src = (uint32_t*)shadow_fb + (gop_info.PixelsPerScanLine * delta);
+    dest = (uint32_t*)shadow_fb;
 
     memcpy(dest, src, gop_info.PixelsPerScanLine * (gop_info.VerticalResolution - delta) * sizeof(uint32_t));
     dest += gop_info.PixelsPerScanLine * (gop_info.VerticalResolution - delta);
 
     memset(dest, 0, gop_info.PixelsPerScanLine * delta * sizeof(uint32_t)); // black
+
+    memcpy(framebuffer, shadow_fb, framebuffer_size);
 }
 
 void draw_text(const char* s, text_pos* p) {
@@ -98,6 +102,7 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
     size_t len;
     FT_Error error;
     uint32_t* base;
+    uint32_t* shadow_base;
     FT_Bitmap* bitmap;
     uint8_t bg_r, bg_g, bg_b, fg_r, fg_g, fg_b;
 
@@ -152,6 +157,7 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
             base += gop_info.PixelsPerScanLine * (p->y - face->glyph->bitmap_top);
 
         base += p->x + face->glyph->bitmap_left;
+        shadow_base = (uint32_t*)(((uint8_t*)base - (uint8_t*)framebuffer) + (uint8_t*)shadow_fb);
 
         buf = bitmap->buffer;
 
@@ -171,14 +177,14 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
 
             for (unsigned int x = 0; x < width; x++) {
                 if ((*buf == 0xff || bg_colour == 0x000000) && fg_colour == 0xffffff)
-                    base[x] = (*buf << 16) | (*buf << 8) | *buf;
+                    base[x] = shadow_base[x] = (*buf << 16) | (*buf << 8) | *buf;
                 else if (*buf != 0) {
                     float f = *buf / 255.0f;
                     uint8_t r = ((1.0f - f) * bg_r) + (f * fg_r);
                     uint8_t g = ((1.0f - f) * bg_g) + (f * fg_g);
                     uint8_t b = ((1.0f - f) * bg_b) + (f * fg_b);
 
-                    base[x] = (r << 16) | (g << 8) | b;
+                    base[x] = shadow_base[x] = (r << 16) | (g << 8) | b;
                 }
 
                 buf++;
@@ -187,6 +193,7 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
             buf += bitmap->width - width;
 
             base += gop_info.PixelsPerScanLine;
+            shadow_base += gop_info.PixelsPerScanLine;
         }
 
         p->x += face->glyph->advance.x / 64;

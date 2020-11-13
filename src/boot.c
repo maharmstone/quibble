@@ -115,6 +115,7 @@ EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 void* framebuffer;
 void* framebuffer_va;
 size_t framebuffer_size;
+void* shadow_fb;
 bool have_csm;
 uint8_t edid[128];
 bool have_edid = false;
@@ -3421,6 +3422,14 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
 #ifdef __x86_64__
         mark_framebuffer_wc();
 #endif
+
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(framebuffer_size), (EFI_PHYSICAL_ADDRESS*)&shadow_fb);
+        if (EFI_ERROR(Status)) {
+            print_error("AllocatePages", Status);
+            goto end;
+        }
+
+        memset(shadow_fb, 0, framebuffer_size);
 
         Status = EFI_SUCCESS;
         goto end;
