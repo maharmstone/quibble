@@ -115,11 +115,10 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
 
     len = strlen(s);
 
-    // FIXME - UTF-8
-
     for (size_t i = 0; i < len; i++) {
         uint8_t* buf;
         uint32_t skip_y, width;
+        uint32_t cp;
 
         if (s[i] == '\n') {
             p->x = 0;
@@ -133,7 +132,35 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
             continue;
         }
 
-        error = FT_Load_Char(face, s[i], FT_LOAD_RENDER | FT_RENDER_MODE_MONO);
+        // get UTF-8 code point
+
+        if (!((uint8_t)s[i] & 0x80))
+            cp = s[i];
+        else if (((uint8_t)s[i] & 0xe0) == 0xc0) { // 2-byte UTF-8
+            if (((uint8_t)s[i+1] & 0xc0) != 0x80)
+                cp = 0xfffd;
+            else {
+                cp = (((uint8_t)s[i] & 0x1f) << 6) | ((uint8_t)s[i+1] & 0x3f);
+                i++;
+            }
+        } else if (((uint8_t)s[i] & 0xf0) == 0xe0) { // 3-byte UTF-8
+            if (((uint8_t)s[i+1] & 0xc0) != 0x80 || ((uint8_t)s[i+2] & 0xc0) != 0x80)
+                cp = 0xfffd;
+            else {
+                cp = (((uint8_t)s[i] & 0xf) << 12) | (((uint8_t)s[i+1] & 0x3f) << 6) | ((uint8_t)s[i+2] & 0x3f);
+                i += 2;
+            }
+        } else if (((uint8_t)s[i] & 0xf8) == 0xf0) { // 4-byte UTF-8
+            if (((uint8_t)s[i+1] & 0xc0) != 0x80 || ((uint8_t)s[i+2] & 0xc0) != 0x80 || ((uint8_t)s[i+3] & 0xc0) != 0x80)
+                cp = 0xfffd;
+            else {
+                cp = (((uint8_t)s[i] & 0x7) << 18) | (((uint8_t)s[i+1] & 0x3f) << 12) | (((uint8_t)s[i+2] & 0x3f) << 6) | ((uint8_t)s[i+3] & 0x3f);
+                i += 3;
+            }
+        } else
+            cp = 0xfffd;
+
+        error = FT_Load_Char(face, cp, FT_LOAD_RENDER | FT_RENDER_MODE_MONO);
         if (error)
             continue;
 
