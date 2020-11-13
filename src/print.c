@@ -317,6 +317,9 @@ void init_gop_console() {
     }
 
     font_height = face->size->metrics.height / 64;
+
+    console_pos.x = 0;
+    console_pos.y = font_height;
 }
 
 void print_string(const char* s) {

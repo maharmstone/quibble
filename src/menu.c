@@ -967,7 +967,8 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
     if (!have_csm) {
         memset(framebuffer, 0, gop_info.PixelsPerScanLine * gop_info.VerticalResolution * 4); // clear screen
 
-        console_pos.x = console_pos.y = 0;
+        console_pos.x = 0;
+        console_pos.y = font_height;
     } else {
         Status = con->ClearScreen(con);
         if (EFI_ERROR(Status)) {
