@@ -98,7 +98,14 @@ target_link_libraries(quibble freetype)
 
 set(SRC_FILES src/btrfs/btrfs.c
     src/btrfs/crc32c.c
-    src/misc.c)
+    src/misc.c
+    src/zlib/adler32.c
+    src/zlib/deflate.c
+    src/zlib/inffast.c
+    src/zlib/inflate.c
+    src/zlib/inftrees.c
+    src/zlib/trees.c
+    src/zlib/zutil.c)
 
 add_executable(btrfs ${SRC_FILES})
 
