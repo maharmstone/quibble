@@ -106,7 +106,16 @@ set(SRC_FILES src/btrfs/btrfs.c
     src/btrfs/zlib/inftrees.c
     src/btrfs/zlib/trees.c
     src/btrfs/zlib/zutil.c
-    src/btrfs/lzo.c)
+    src/btrfs/lzo.c
+    src/btrfs/xxhash.c
+    src/btrfs/zstd/entropy_common.c
+    src/btrfs/zstd/error_private.c
+    src/btrfs/zstd/fse_decompress.c
+    src/btrfs/zstd/huf_decompress.c
+    src/btrfs/zstd/zstd_common.c
+    src/btrfs/zstd/zstd_ddict.c
+    src/btrfs/zstd/zstd_decompress.c
+    src/btrfs/zstd/zstd_decompress_block.c)
 
 add_executable(btrfs ${SRC_FILES})
 

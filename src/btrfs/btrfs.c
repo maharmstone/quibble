@@ -31,6 +31,10 @@
 #include "zlib/inftrees.h"
 #include "zlib/inflate.h"
 
+#define ZSTD_STATIC_LINKING_ONLY
+
+#include "zstd/zstd.h"
+
 #define __S_IFDIR 0040000
 
 EFI_SYSTEM_TABLE* systable;
@@ -108,15 +112,19 @@ typedef struct {
     char name[1];
 } path_segment;
 
+static void* zstd_malloc(void* opaque, size_t size);
+static void zstd_free(void* opaque, void* address);
+
+static const ZSTD_customMem zstd_mem = { .customAlloc = zstd_malloc, .customFree = zstd_free, .opaque = NULL };
+
 #define UNUSED(x) (void)(x)
 #define sector_align(n, a) ((n)&((a)-1)?(((n)+(a))&~((a)-1)):(n))
 
 #define COMPAT_FLAGS (BTRFS_INCOMPAT_FLAGS_MIXED_BACKREF | BTRFS_INCOMPAT_FLAGS_DEFAULT_SUBVOL | \
                      BTRFS_INCOMPAT_FLAGS_MIXED_GROUPS | BTRFS_INCOMPAT_FLAGS_COMPRESS_LZO | \
-                     BTRFS_INCOMPAT_FLAGS_BIG_METADATA | BTRFS_INCOMPAT_FLAGS_EXTENDED_IREF | \
-                     BTRFS_INCOMPAT_FLAGS_SKINNY_METADATA | BTRFS_INCOMPAT_FLAGS_NO_HOLES | \
-                     BTRFS_INCOMPAT_FLAGS_METADATA_UUID)
-// FIXME - COMPRESS_ZSTD
+                     BTRFS_INCOMPAT_FLAGS_COMPRESS_ZSTD | BTRFS_INCOMPAT_FLAGS_BIG_METADATA | \
+                     BTRFS_INCOMPAT_FLAGS_EXTENDED_IREF | BTRFS_INCOMPAT_FLAGS_SKINNY_METADATA | \
+                     BTRFS_INCOMPAT_FLAGS_NO_HOLES | BTRFS_INCOMPAT_FLAGS_METADATA_UUID)
 // FIXME - RAID56
 // FIXME - RAID1C34
 
@@ -1463,6 +1471,92 @@ static EFI_STATUS zlib_decompress(uint8_t* inbuf, uint32_t inlen, uint8_t* outbu
     return EFI_SUCCESS;
 }
 
+static void* zstd_malloc(void* opaque, size_t size) {
+    EFI_STATUS Status;
+    void* r;
+
+    UNUSED(opaque);
+
+    Status = bs->AllocatePool(EfiBootServicesData, size, &r);
+    if (EFI_ERROR(Status)) {
+        do_print_error("AllocatePool", Status);
+        return NULL;
+    }
+
+    return r;
+}
+
+static void zstd_free(void* opaque, void* address) {
+    UNUSED(opaque);
+
+    bs->FreePool(address);
+}
+
+static EFI_STATUS zstd_decompress(uint8_t* inbuf, uint32_t inlen, uint8_t* outbuf, uint32_t outlen) {
+    EFI_STATUS Status;
+    ZSTD_DStream* stream;
+    size_t init_res, read;
+    ZSTD_inBuffer input;
+    ZSTD_outBuffer output;
+
+    stream = ZSTD_createDStream_advanced(zstd_mem);
+
+    if (!stream) {
+        do_print("ZSTD_createDStream failed.\n");
+        return EFI_INVALID_PARAMETER;
+    }
+
+    init_res = ZSTD_initDStream(stream);
+
+    if (ZSTD_isError(init_res)) {
+        char s[255], *p;
+
+        p = stpcpy(s, "ZSTD_initDStream failed: ");
+        p = stpcpy(p, ZSTD_getErrorName(init_res));
+        p = stpcpy(p, "\n");
+
+        do_print(s);
+
+        Status = EFI_INVALID_PARAMETER;
+        goto end;
+    }
+
+    input.src = inbuf;
+    input.size = inlen;
+    input.pos = 0;
+
+    output.dst = outbuf;
+    output.size = outlen;
+    output.pos = 0;
+
+    do {
+        read = ZSTD_decompressStream(stream, &output, &input);
+
+        if (ZSTD_isError(read)) {
+            char s[255], *p;
+
+            p = stpcpy(s, "ZSTD_decompressStream failed: ");
+            p = stpcpy(p, ZSTD_getErrorName(init_res));
+            p = stpcpy(p, "\n");
+
+            do_print(s);
+
+            Status = EFI_INVALID_PARAMETER;
+            goto end;
+        }
+
+        if (output.pos == output.size)
+            break;
+    } while (read != 0);
+
+    Status = EFI_SUCCESS;
+
+end:
+    ZSTD_freeDStream(stream);
+
+    return Status;
+}
+
 static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
     EFI_STATUS Status;
     unsigned int to_read, left;
@@ -1503,7 +1597,8 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
         if (ext->offset <= ino->position + to_read && ext->offset >= ino->position) {
             if (ext->extent_data.compression != BTRFS_COMPRESSION_NONE &&
                 ext->extent_data.compression != BTRFS_COMPRESSION_ZLIB &&
-                ext->extent_data.compression != BTRFS_COMPRESSION_LZO) {
+                ext->extent_data.compression != BTRFS_COMPRESSION_LZO &&
+                ext->extent_data.compression != BTRFS_COMPRESSION_ZSTD) {
                 char s[255], *p;
 
                 p = stpcpy(s, "unsupported compression type ");
@@ -1616,6 +1711,14 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
                         Status = lzo_decompress(comp + sizeof(uint32_t), ed2->size - sizeof(uint32_t), tmp, ext->extent_data.decoded_size, sizeof(uint32_t));
                         if (EFI_ERROR(Status)) {
                             do_print_error("lzo_decompress", Status);
+                            bs->FreePool(comp);
+                            bs->FreePool(tmp);
+                            return Status;
+                        }
+                    } else if (ext->extent_data.compression == BTRFS_COMPRESSION_ZSTD) {
+                        Status = zstd_decompress(comp, ed2->size, tmp, ext->extent_data.decoded_size);
+                        if (EFI_ERROR(Status)) {
+                            do_print_error("zstd_decompress", Status);
                             bs->FreePool(comp);
                             bs->FreePool(tmp);
                             return Status;
