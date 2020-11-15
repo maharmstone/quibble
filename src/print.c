@@ -3,7 +3,6 @@
 #include "quibbleproto.h"
 #include "print.h"
 #include "misc.h"
-#include "font8x8_basic.h"
 #include <ft2build.h>
 #include <freetype/freetype.h>
 
@@ -15,10 +14,10 @@ static FT_Library ft = NULL;
 static FT_Face face = NULL;
 static void* font_data = NULL;
 static size_t font_size;
+bool gop_console = false;
 
 unsigned int font_height = 0;
 
-extern bool have_csm;
 extern void* framebuffer;
 extern void* shadow_fb;
 extern size_t framebuffer_size;
@@ -47,55 +46,6 @@ static void move_up_console(unsigned int delta) {
     memset(dest, 0, gop_info.PixelsPerScanLine * delta * sizeof(uint32_t)); // black
 
     memcpy(framebuffer, shadow_fb, framebuffer_size);
-}
-
-void draw_text(const char* s, text_pos* p) {
-    unsigned int len = strlen(s);
-
-    for (unsigned int i = 0; i < len; i++) {
-        char* v = font8x8_basic[(unsigned int)s[i]];
-
-        if (s[i] == '\n') {
-            p->y++;
-            p->x = 0;
-
-            if (p->y >= console_height) {
-                move_up_console(8);
-                p->y = console_height - 1;
-            }
-
-            continue;
-        }
-
-        uint32_t* base = (uint32_t*)framebuffer + (gop_info.PixelsPerScanLine * p->y * 8) + (p->x * 8);
-
-        for (unsigned int y = 0; y < 8; y++) {
-            uint8_t v2 = v[y];
-            uint32_t* buf = base + (gop_info.PixelsPerScanLine * y);
-
-            for (unsigned int x = 0; x < 8; x++) {
-                if (v2 & 1)
-                    *buf = 0xffffffff;
-                else
-                    *buf = 0;
-
-                v2 >>= 1;
-                buf++;
-            }
-        }
-
-        p->x++;
-
-        if (p->x > console_width) {
-            p->y++;
-            p->x = 0;
-
-            if (p->y >= console_height) {
-                move_up_console(8);
-                p->y = console_height - 1;
-            }
-        }
-    }
 }
 
 void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_colour) {
@@ -228,7 +178,7 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
     }
 }
 
-void init_gop_console() {
+EFI_STATUS load_font() {
     EFI_STATUS Status;
     EFI_BOOT_SERVICES* bs = systable->BootServices;
     EFI_GUID guid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
@@ -237,21 +187,17 @@ void init_gop_console() {
     EFI_FILE_IO_INTERFACE* fs;
     EFI_FILE_HANDLE dir;
     FT_Error error;
-    unsigned int dpi = 96;
-
-    console_width = gop_info.HorizontalResolution / 8;
-    console_height = gop_info.VerticalResolution / 8;
 
     Status = bs->OpenProtocol(image_handle, &guid, (void**)&image, image_handle, NULL,
                               EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
     if (EFI_ERROR(Status)) {
         print_error("OpenProtocol", Status);
-        return;
+        return Status;
     }
 
     if (!image->DeviceHandle) {
         bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
-        return;
+        return Status;
     }
 
     Status = bs->OpenProtocol(image->DeviceHandle, &guid2, (void**)&fs, image_handle, NULL,
@@ -259,7 +205,7 @@ void init_gop_console() {
     if (EFI_ERROR(Status)) {
         print_error("OpenProtocol", Status);
         bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
-        return;
+        return Status;
     }
 
     Status = bs->OpenProtocol(image->DeviceHandle, &guid2, (void**)&fs, image_handle, NULL,
@@ -267,7 +213,7 @@ void init_gop_console() {
     if (EFI_ERROR(Status)) {
         print_error("OpenProtocol", Status);
         bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
-        return;
+        return Status;
     }
 
     Status = open_parent_dir(fs, (FILEPATH_DEVICE_PATH*)image->FilePath, &dir);
@@ -275,7 +221,7 @@ void init_gop_console() {
         print_error("open_parent_dir", Status);
         bs->CloseProtocol(image->DeviceHandle, &guid2, image_handle, NULL);
         bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
-        return;
+        return Status;
     }
 
     // FIXME - allow font filename to be specified in freeldr.ini
@@ -289,7 +235,7 @@ void init_gop_console() {
     if (EFI_ERROR(Status)) {
         print_string("Could not load font file.\n");
         print_error("read_file", Status);
-        return;
+        return Status;
     }
 
     error = FT_Init_FreeType(&ft);
@@ -302,7 +248,7 @@ void init_gop_console() {
 
         print_string(s);
 
-        return;
+        return EFI_INVALID_PARAMETER;
     }
 
     error = FT_New_Memory_Face(ft, font_data, font_size, 0, &face);
@@ -315,8 +261,18 @@ void init_gop_console() {
 
         print_string(s);
 
-        return;
+        return EFI_INVALID_PARAMETER;
     }
+
+    return EFI_SUCCESS;
+}
+
+void init_gop_console() {
+    FT_Error error;
+    unsigned int dpi = 96;
+
+    console_width = gop_info.HorizontalResolution / 8;
+    console_height = gop_info.VerticalResolution / 8;
 
     // FIXME - allow font size to be specified
 
@@ -348,15 +304,14 @@ void init_gop_console() {
 
     console_pos.x = 0;
     console_pos.y = font_height;
+
+    gop_console = true;
 }
 
 void print_string(const char* s) {
-    if (!have_csm) {
-        if (face)
-            draw_text_ft(s, &console_pos, 0x000000, 0xffffff);
-        else
-            draw_text(s, &console_pos);
-    } else {
+    if (face)
+        draw_text_ft(s, &console_pos, 0x000000, 0xffffff);
+    else {
         WCHAR w[255], *t;
 
         // FIXME - make sure no overflow

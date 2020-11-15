@@ -4499,7 +4499,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     if (version >= _WIN32_WINNT_WIN8) {
-        if (have_csm)
+        if (gop_console)
             Status = EFI_SUCCESS; // already enabled
         else {
             Status = set_graphics_mode(bs, image_handle);
@@ -5482,15 +5482,18 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     have_csm = check_for_csm(systable->BootServices);
 
     if (!have_csm) {
-        Status = set_graphics_mode(systable->BootServices, ImageHandle);
-        if (EFI_ERROR(Status)) {
-            print_error("set_graphics_mode", Status);
-            goto end;
-        }
-
         get_edid(systable->BootServices, ImageHandle);
 
-        init_gop_console();
+        Status = load_font();
+        if (!EFI_ERROR(Status)) {
+            Status = set_graphics_mode(systable->BootServices, ImageHandle);
+            if (EFI_ERROR(Status)) {
+                print_error("set_graphics_mode", Status);
+                goto end;
+            }
+
+            init_gop_console();
+        }
     }
 
     Status = info_register(systable->BootServices);

@@ -43,7 +43,6 @@ typedef struct {
 static boot_option* options = NULL;
 static unsigned int num_options, selected_option;
 
-extern bool have_csm;
 extern void* framebuffer;
 extern void* shadow_fb;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
@@ -274,7 +273,7 @@ static EFI_STATUS populate_options_from_ini(LIST_ENTRY* ini_sections, unsigned i
             ini_section* sect = NULL;
             unsigned int wlen;
 
-            if (!have_csm) {
+            if (gop_console) {
                 size_t len = strlen(v->value);
 
                 Status = systable->BootServices->AllocatePool(EfiLoaderData, len + 1, (void**)&opt->name);
@@ -710,24 +709,16 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
         return Status;
     }
 
-    if (!have_csm) {
+    if (gop_console) {
         text_pos p;
 
         memset(framebuffer, 0, gop_info.PixelsPerScanLine * gop_info.VerticalResolution * 4); // clear screen
 
-        if (font_height == 0) {
-            p.x = 0;
-            p.y = 0;
+        p.x = 0;
+        p.y = font_height;
 
-            draw_text(VERSION "\n", &p);
-            draw_text(URL "\n", &p);
-        } else {
-            p.x = 0;
-            p.y = font_height;
-
-            draw_text_ft(VERSION "\n", &p, 0x000000, 0xffffff);
-            draw_text_ft(URL "\n", &p, 0x000000, 0xffffff);
-        }
+        draw_text_ft(VERSION "\n", &p, 0x000000, 0xffffff);
+        draw_text_ft(URL "\n", &p, 0x000000, 0xffffff);
     } else {
         Status = con->ClearScreen(con);
         if (EFI_ERROR(Status)) {
@@ -776,11 +767,10 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
     if (timer > 0) {
         unsigned int timer_pos;
 
-        if (!have_csm) {
+        if (gop_console) {
             text_pos p;
             char s[10];
 
-            // FIXME - non-TTF support
             draw_box_gop(font_height, font_height * 3, gop_info.HorizontalResolution - (font_height * 2), gop_info.VerticalResolution - (font_height * 5));
 
             draw_options_gop();
@@ -851,7 +841,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
             if (index == 0) { // timer
                 timer--;
 
-                if (!have_csm) {
+                if (gop_console) {
                     text_pos p;
                     char s[10];
 
@@ -905,7 +895,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
 
                     timer_cancelled = true;
 
-                    if (!have_csm) {
+                    if (gop_console) {
                         draw_rect(font_height, gop_info.VerticalResolution - (font_height * 7 / 4),
                                   timer_pos + (font_height * 5), font_height * 2, 0x000000);
                     } else {
@@ -948,7 +938,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                     return EFI_ABORTED;
 
                 if (key.ScanCode == 1 || key.ScanCode == 2) {
-                    if (!have_csm) {
+                    if (gop_console) {
                         draw_option_gop(old_option, options[old_option].name, false);
                         draw_option_gop(selected_option, options[selected_option].name, true);
                     } else {
@@ -965,7 +955,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
 
     *ret = &options[selected_option];
 
-    if (!have_csm) {
+    if (gop_console) {
         memset(framebuffer, 0, gop_info.PixelsPerScanLine * gop_info.VerticalResolution * 4); // clear screen
         memset(shadow_fb, 0, gop_info.PixelsPerScanLine * gop_info.VerticalResolution * 4);
 
@@ -988,7 +978,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
     Status = EFI_SUCCESS;
 
 end:
-    if (cursor_visible && have_csm)
+    if (cursor_visible && !gop_console)
         con->EnableCursor(con, true);
 
     return Status;
