@@ -785,9 +785,13 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
     desc = efi_memory_map;
 
     for (unsigned int i = 0; i < efi_map_size / map_desc_size; i++) {
-        if (desc->Type == EfiRuntimeServicesData || desc->Type == EfiRuntimeServicesCode ||
-            desc->Type == EfiMemoryMappedIO || desc->Type == EfiMemoryMappedIOPortSpace) {
-            num_entries++;
+        switch (desc->Type) {
+            case EfiRuntimeServicesData:
+            case EfiRuntimeServicesCode:
+            case EfiMemoryMappedIO:
+            case EfiMemoryMappedIOPortSpace:
+                num_entries++;
+            break;
         }
 
         desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc + map_desc_size);
@@ -814,24 +818,28 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
     desc2 = efi_runtime_map;
 
     for (unsigned int i = 0; i < efi_map_size / map_desc_size; i++) {
-        if (desc->Type == EfiRuntimeServicesData || desc->Type == EfiRuntimeServicesCode ||
-            desc->Type == EfiMemoryMappedIO || desc->Type == EfiMemoryMappedIOPortSpace) {
-            desc2->Type = desc->Type;
-            desc2->PhysicalStart = desc->PhysicalStart;
-            desc2->VirtualStart = (EFI_VIRTUAL_ADDRESS)(uintptr_t)va2;
-            desc2->NumberOfPages = desc->NumberOfPages;
-            desc2->Attribute = desc->Attribute;
+        switch (desc->Type) {
+            case EfiRuntimeServicesData:
+            case EfiRuntimeServicesCode:
+            case EfiMemoryMappedIO:
+            case EfiMemoryMappedIOPortSpace:
+                desc2->Type = desc->Type;
+                desc2->PhysicalStart = desc->PhysicalStart;
+                desc2->VirtualStart = (EFI_VIRTUAL_ADDRESS)(uintptr_t)va2;
+                desc2->NumberOfPages = desc->NumberOfPages;
+                desc2->Attribute = desc->Attribute;
 
-            Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)desc->PhysicalStart,
-                                desc->NumberOfPages, LoaderFirmwarePermanent);
-            if (EFI_ERROR(Status)) {
-                print_error("add_mapping", Status);
-                return Status;
-            }
+                Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)desc->PhysicalStart,
+                                    desc->NumberOfPages, LoaderFirmwarePermanent);
+                if (EFI_ERROR(Status)) {
+                    print_error("add_mapping", Status);
+                    return Status;
+                }
 
-            va2 = (uint8_t*)va2 + (desc->NumberOfPages * EFI_PAGE_SIZE);
+                va2 = (uint8_t*)va2 + (desc->NumberOfPages * EFI_PAGE_SIZE);
 
-            desc2 = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc2 + map_desc_size);
+                desc2 = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc2 + map_desc_size);
+            break;
         }
 
         desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc + map_desc_size);
