@@ -24,6 +24,13 @@
 #include "../quibbleproto.h"
 #include "btrfs.h"
 
+#define Z_SOLO
+#define ZLIB_INTERNAL
+
+#include "zlib/zlib.h"
+#include "zlib/inftrees.h"
+#include "zlib/inflate.h"
+
 #define __S_IFDIR 0040000
 
 EFI_SYSTEM_TABLE* systable;
@@ -1364,6 +1371,92 @@ static EFI_STATUS read_dir(inode* ino, UINTN* bufsize, void* buf) {
     return EFI_SUCCESS;
 }
 
+static void* zlib_alloc(void* opaque, unsigned int items, unsigned int size) {
+    EFI_STATUS Status;
+    void* r;
+
+    UNUSED(opaque);
+
+    Status = bs->AllocatePool(EfiBootServicesData, items * size, &r);
+    if (EFI_ERROR(Status)) {
+        do_print_error("AllocatePool", Status);
+        return NULL;
+    }
+
+    return r;
+}
+
+static void zlib_free(void* opaque, void* ptr) {
+    UNUSED(opaque);
+
+    bs->FreePool(ptr);
+}
+
+static EFI_STATUS zlib_decompress(uint8_t* inbuf, uint32_t inlen, uint8_t* outbuf, uint32_t outlen) {
+    z_stream c_stream;
+    int ret;
+
+    c_stream.zalloc = zlib_alloc;
+    c_stream.zfree = zlib_free;
+    c_stream.opaque = (voidpf)0;
+
+    ret = inflateInit(&c_stream);
+
+    if (ret != Z_OK) {
+        char s[255], *p;
+
+        p = stpcpy(s, "inflateInit returned ");
+        p = dec_to_str(p, ret);
+        p = stpcpy(p, "\n");
+
+        do_print(s);
+
+        return EFI_INVALID_PARAMETER;
+    }
+
+    c_stream.next_in = inbuf;
+    c_stream.avail_in = inlen;
+
+    c_stream.next_out = outbuf;
+    c_stream.avail_out = outlen;
+
+    do {
+        ret = inflate(&c_stream, Z_NO_FLUSH);
+
+        if (ret != Z_OK && ret != Z_STREAM_END) {
+            char s[255], *p;
+
+            p = stpcpy(s, "inflate returned ");
+            p = dec_to_str(p, ret);
+            p = stpcpy(p, "\n");
+
+            do_print(s);
+
+            inflateEnd(&c_stream);
+            return EFI_INVALID_PARAMETER;
+        }
+
+        if (c_stream.avail_out == 0)
+            break;
+    } while (ret != Z_STREAM_END);
+
+    ret = inflateEnd(&c_stream);
+
+    if (ret != Z_OK) {
+        char s[255], *p;
+
+        p = stpcpy(s, "inflateEnd returned ");
+        p = dec_to_str(p, ret);
+        p = stpcpy(p, "\n");
+
+        do_print(s);
+
+        return EFI_INVALID_PARAMETER;
+    }
+
+    return EFI_SUCCESS;
+}
+
 static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
     EFI_STATUS Status;
     unsigned int to_read, left;
@@ -1402,8 +1495,16 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
         extent* ext = _CR(le, extent, list_entry);
 
         if (ext->offset <= ino->position + to_read && ext->offset >= ino->position) {
-            if (ext->extent_data.compression != 0) {
-                do_print("FIXME - support compression\n"); // FIXME
+            if (ext->extent_data.compression != BTRFS_COMPRESSION_NONE &&
+                ext->extent_data.compression != BTRFS_COMPRESSION_ZLIB) {
+                char s[255], *p;
+
+                p = stpcpy(s, "unsupported compression type ");
+                p = dec_to_str(p, ext->extent_data.compression);
+                p = stpcpy(p, "\n");
+
+                do_print(s);
+
                 return EFI_UNSUPPORTED;
             }
 
@@ -1418,6 +1519,8 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
             }
 
             if (ext->extent_data.type == EXTENT_TYPE_INLINE) {
+                // FIXME - compression
+
                 memcpy(dest, &ext->extent_data.data[pos - ext->offset], ext->extent_data.decoded_size - pos + ext->offset);
                 dest += ext->extent_data.decoded_size - pos + ext->offset;
                 left -= ext->extent_data.decoded_size - pos + ext->offset;
@@ -1448,20 +1551,59 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
                 if (size > left)
                     size = sector_align(left, ino->vol->block->Media->BlockSize);
 
-                Status = bs->AllocatePool(EfiBootServicesData, size, (void**)&tmp);
-                if (EFI_ERROR(Status)) {
-                    do_print_error("AllocatePool", Status);
-                    return Status;
-                }
+                if (ext->extent_data.compression == BTRFS_COMPRESSION_NONE) {
+                    Status = bs->AllocatePool(EfiBootServicesData, size, (void**)&tmp);
+                    if (EFI_ERROR(Status)) {
+                        do_print_error("AllocatePool", Status);
+                        return Status;
+                    }
 
-                Status = read_data(ino->vol, ed2->address + ed2->offset + pos - ext->offset, size, tmp);
-                if (EFI_ERROR(Status)) {
-                    do_print_error("read_data", Status);
-                    bs->FreePool(tmp);
-                    return Status;
-                }
+                    Status = read_data(ino->vol, ed2->address + ed2->offset + pos - ext->offset, size, tmp);
+                    if (EFI_ERROR(Status)) {
+                        do_print_error("read_data", Status);
+                        bs->FreePool(tmp);
+                        return Status;
+                    }
 
-                memcpy(dest, tmp, size);
+                    memcpy(dest, tmp, size);
+                } else {
+                    uint8_t* comp;
+
+                    Status = bs->AllocatePool(EfiBootServicesData, ext->extent_data.decoded_size, (void**)&tmp);
+                    if (EFI_ERROR(Status)) {
+                        do_print_error("AllocatePool", Status);
+                        return Status;
+                    }
+
+                    Status = bs->AllocatePool(EfiBootServicesData, ed2->size, (void**)&comp);
+                    if (EFI_ERROR(Status)) {
+                        do_print_error("AllocatePool", Status);
+                        bs->FreePool(tmp);
+                        return Status;
+                    }
+
+                    Status = read_data(ino->vol, ed2->address, ed2->size, comp);
+                    if (EFI_ERROR(Status)) {
+                        do_print_error("read_data", Status);
+                        bs->FreePool(comp);
+                        bs->FreePool(tmp);
+                        return Status;
+                    }
+
+                    if (ext->extent_data.compression == BTRFS_COMPRESSION_ZLIB) {
+                        Status = zlib_decompress(comp, ed2->size, tmp, ext->extent_data.decoded_size);
+                        if (EFI_ERROR(Status)) {
+                            do_print_error("read_data", Status);
+                            bs->FreePool(comp);
+                            bs->FreePool(tmp);
+                            return Status;
+                        }
+                    }
+
+                    memcpy(dest, tmp + ed2->offset, size);
+
+                    bs->FreePool(comp);
+                }
 
                 bs->FreePool(tmp);
 
