@@ -104,6 +104,7 @@ typedef struct {
 typedef struct {
     LIST_ENTRY list_entry;
     uint64_t offset;
+    uint16_t size;
     EXTENT_DATA extent_data;
 } extent;
 
@@ -1621,9 +1622,80 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
             }
 
             if (ext->extent_data.type == EXTENT_TYPE_INLINE) {
-                // FIXME - compression
+                if (ext->extent_data.compression == BTRFS_COMPRESSION_NONE)
+                    memcpy(dest, &ext->extent_data.data[pos - ext->offset], ext->extent_data.decoded_size - pos + ext->offset);
+                else {
+                    uint8_t* decomp;
+                    bool decomp_alloc;
+                    uint32_t read;
+                    uint16_t inlen = ext->size - (uint16_t)offsetof(EXTENT_DATA, data[0]);
 
-                memcpy(dest, &ext->extent_data.data[pos - ext->offset], ext->extent_data.decoded_size - pos + ext->offset);
+                    if (ext->extent_data.decoded_size == 0 || ext->extent_data.decoded_size > 0xffffffff) {
+                        char s[255], *p;
+
+                        p = stpcpy(s, "ed->decoded_size was invalid (");
+                        p = hex_to_str(p, ext->extent_data.decoded_size);
+                        p = stpcpy(p, ")\n");
+
+                        do_print(p);
+
+                        return EFI_INVALID_PARAMETER;
+                    }
+
+                    read = (uint32_t)ext->extent_data.decoded_size - pos;
+
+                    if (read > ino->inode_item.st_size)
+                        read = ino->inode_item.st_size;
+
+                    if (pos > 0) {
+                        Status = bs->AllocatePool(EfiBootServicesData, ext->extent_data.decoded_size, (void**)&decomp);
+                        if (EFI_ERROR(Status)) {
+                            do_print("out of memory\n");
+                            return Status;
+                        }
+
+                        decomp_alloc = true;
+                    } else {
+                        decomp = dest;
+                        decomp_alloc = false;
+                    }
+
+                    if (ext->extent_data.compression == BTRFS_COMPRESSION_ZLIB) {
+                        Status = zlib_decompress(ext->extent_data.data, inlen, decomp, (uint32_t)(read + pos));
+                        if (EFI_ERROR(Status)) {
+                            do_print_error("zlib_decompress", Status);
+                            if (decomp_alloc) bs->FreePool(decomp);
+                            return Status;
+                        }
+                    } else if (ext->extent_data.compression == BTRFS_COMPRESSION_LZO) {
+                        if (inlen < sizeof(uint32_t)) {
+                            do_print("extent data was truncated\n");
+                            if (decomp_alloc) bs->FreePool(decomp);
+                            return EFI_INVALID_PARAMETER;
+                        } else
+                            inlen -= sizeof(uint32_t);
+
+                        Status = lzo_decompress((uint8_t*)ext->extent_data.data + sizeof(uint32_t), inlen, decomp, (uint32_t)(read + pos), sizeof(uint32_t));
+                        if (EFI_ERROR(Status)) {
+                            do_print_error("lzo_decompress", Status);
+                            if (decomp_alloc) bs->FreePool(decomp);
+                            return Status;
+                        }
+                    } else if (ext->extent_data.compression == BTRFS_COMPRESSION_ZSTD) {
+                        Status = zstd_decompress(ext->extent_data.data, inlen, decomp, (uint32_t)(read + pos));
+                        if (EFI_ERROR(Status)) {
+                            do_print_error("zstd_decompress", Status);
+                            if (decomp_alloc) bs->FreePool(decomp);
+                            return Status;
+                        }
+                    }
+
+                    if (decomp_alloc) {
+                        memcpy(dest, decomp + pos, read);
+                        bs->FreePool(decomp);
+                    }
+                }
+
                 dest += ext->extent_data.decoded_size - pos + ext->offset;
                 left -= ext->extent_data.decoded_size - pos + ext->offset;
                 pos = ext->extent_data.decoded_size + ext->offset;
@@ -1860,6 +1932,7 @@ static EFI_STATUS load_inode(inode* ino) {
                     }
 
                     ext->offset = tp.key->offset;
+                    ext->size = tp.itemlen;
                     memcpy(&ext->extent_data, tp.item, tp.itemlen);
 
                     InsertTailList(&ino->extents, &ext->list_entry);
