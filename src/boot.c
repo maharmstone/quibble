@@ -3450,6 +3450,7 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
     bgblock1* block1;
     bgblock2* block2;
     EFI_PHYSICAL_ADDRESS rp;
+    uint8_t* bg_edid;
 
     if (version < _WIN32_WINNT_WINBLUE) { // Win 8 (and 7?)
         BOOT_GRAPHICS_CONTEXT_V1* bgc1 = (BOOT_GRAPHICS_CONTEXT_V1*)bgc;
@@ -3457,24 +3458,28 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
         bg_version = 1;
         block1 = &bgc1->block1;
         block2 = &bgc1->block2;
+        bg_edid = NULL;
     } else if (version == _WIN32_WINNT_WINBLUE || build < WIN10_BUILD_1703) { // 8.1, 1507, 1511, 1607
         BOOT_GRAPHICS_CONTEXT_V2* bgc2 = (BOOT_GRAPHICS_CONTEXT_V2*)bgc;
 
         bg_version = 2;
         block1 = &bgc2->block1;
         block2 = &bgc2->block2;
+        bg_edid = bgc2->edid;
     } else if (build < WIN10_BUILD_1803) { // 1703 and 1709
         BOOT_GRAPHICS_CONTEXT_V3* bgc3 = (BOOT_GRAPHICS_CONTEXT_V3*)bgc;
 
         bg_version = 3;
         block1 = &bgc3->block1;
         block2 = &bgc3->block2;
+        bg_edid = bgc3->edid;
     } else { // 1803 on
         BOOT_GRAPHICS_CONTEXT_V4* bgc4 = (BOOT_GRAPHICS_CONTEXT_V4*)bgc;
 
         bg_version = 4;
         block1 = &bgc4->block1;
         block2 = &bgc4->block2;
+        bg_edid = bgc4->edid;
     }
 
     // map framebuffer
@@ -3553,6 +3558,9 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
 
         *va = (uint8_t*)*va + (PAGE_COUNT(console_font_size) * EFI_PAGE_SIZE);
     }
+
+    if (bg_edid && have_edid)
+        memcpy(bg_edid, edid, sizeof(edid));
 
     extblock3->BgContext = bgc;
 
