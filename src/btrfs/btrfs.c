@@ -112,19 +112,25 @@ typedef struct {
 #define sector_align(n, a) ((n)&((a)-1)?(((n)+(a))&~((a)-1)):(n))
 
 #define COMPAT_FLAGS (BTRFS_INCOMPAT_FLAGS_MIXED_BACKREF | BTRFS_INCOMPAT_FLAGS_DEFAULT_SUBVOL | \
-                     BTRFS_INCOMPAT_FLAGS_MIXED_GROUPS | BTRFS_INCOMPAT_FLAGS_BIG_METADATA | \
-                     BTRFS_INCOMPAT_FLAGS_EXTENDED_IREF | BTRFS_INCOMPAT_FLAGS_SKINNY_METADATA | \
-                     BTRFS_INCOMPAT_FLAGS_NO_HOLES | BTRFS_INCOMPAT_FLAGS_METADATA_UUID)
+                     BTRFS_INCOMPAT_FLAGS_MIXED_GROUPS | BTRFS_INCOMPAT_FLAGS_COMPRESS_LZO | \
+                     BTRFS_INCOMPAT_FLAGS_BIG_METADATA | BTRFS_INCOMPAT_FLAGS_EXTENDED_IREF | \
+                     BTRFS_INCOMPAT_FLAGS_SKINNY_METADATA | BTRFS_INCOMPAT_FLAGS_NO_HOLES | \
+                     BTRFS_INCOMPAT_FLAGS_METADATA_UUID)
+// FIXME - COMPRESS_ZSTD
+// FIXME - RAID56
+// FIXME - RAID1C34
 
 __inline static void populate_file_handle(EFI_FILE_PROTOCOL* h);
 static EFI_STATUS load_inode(inode* ino);
+
+EFI_STATUS lzo_decompress(uint8_t* inbuf, uint32_t inlen, uint8_t* outbuf, uint32_t outlen, uint32_t inpageoff);
 
 // crc32c.c
 uint32_t calc_crc32c(uint32_t seed, uint8_t* msg, unsigned int msglen);
 
 LIST_ENTRY volumes;
 
-static void do_print(const char* s) {
+void do_print(const char* s) {
     if (info_proto)
         info_proto->Print(s);
 }
@@ -137,7 +143,7 @@ void do_print_error(const char* func, EFI_STATUS Status) {
     p = stpcpy(p, error_string(Status));
     p = stpcpy(p, "\n");
 
-    do_print(p);
+    do_print(s);
 }
 
 static EFI_STATUS drv_supported(EFI_DRIVER_BINDING_PROTOCOL* This, EFI_HANDLE ControllerHandle,
@@ -1496,7 +1502,8 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
 
         if (ext->offset <= ino->position + to_read && ext->offset >= ino->position) {
             if (ext->extent_data.compression != BTRFS_COMPRESSION_NONE &&
-                ext->extent_data.compression != BTRFS_COMPRESSION_ZLIB) {
+                ext->extent_data.compression != BTRFS_COMPRESSION_ZLIB &&
+                ext->extent_data.compression != BTRFS_COMPRESSION_LZO) {
                 char s[255], *p;
 
                 p = stpcpy(s, "unsupported compression type ");
@@ -1593,7 +1600,22 @@ static EFI_STATUS read_file(inode* ino, UINTN* bufsize, void* buf) {
                     if (ext->extent_data.compression == BTRFS_COMPRESSION_ZLIB) {
                         Status = zlib_decompress(comp, ed2->size, tmp, ext->extent_data.decoded_size);
                         if (EFI_ERROR(Status)) {
-                            do_print_error("read_data", Status);
+                            do_print_error("zlib_decompress", Status);
+                            bs->FreePool(comp);
+                            bs->FreePool(tmp);
+                            return Status;
+                        }
+                    } else if (ext->extent_data.compression == BTRFS_COMPRESSION_LZO) {
+                        if (ed2->size < sizeof(uint32_t)) {
+                            do_print("extent data was truncated\n");
+                            bs->FreePool(comp);
+                            bs->FreePool(tmp);
+                            return EFI_INVALID_PARAMETER;
+                        }
+
+                        Status = lzo_decompress(comp + sizeof(uint32_t), ed2->size - sizeof(uint32_t), tmp, ext->extent_data.decoded_size, sizeof(uint32_t));
+                        if (EFI_ERROR(Status)) {
+                            do_print_error("lzo_decompress", Status);
                             bs->FreePool(comp);
                             bs->FreePool(tmp);
                             return Status;

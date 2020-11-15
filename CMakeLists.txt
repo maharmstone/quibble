@@ -105,7 +105,8 @@ set(SRC_FILES src/btrfs/btrfs.c
     src/btrfs/zlib/inflate.c
     src/btrfs/zlib/inftrees.c
     src/btrfs/zlib/trees.c
-    src/btrfs/zlib/zutil.c)
+    src/btrfs/zlib/zutil.c
+    src/btrfs/lzo.c)
 
 add_executable(btrfs ${SRC_FILES})
 
@@ -120,6 +121,7 @@ target_compile_options(btrfs PRIVATE "-ffreestanding")
 target_compile_options(btrfs PRIVATE "-fno-stack-protector")
 target_compile_options(btrfs PRIVATE "-fno-stack-check")
 target_compile_options(btrfs PRIVATE "-mno-stack-arg-probe")
+target_compile_options(btrfs PRIVATE "-Werror-implicit-function-declaration")
 target_compile_options(btrfs PRIVATE "-masm=intel")
 
 target_link_options(btrfs PRIVATE "-nostdlib")
