@@ -54,6 +54,7 @@ EFI_STATUS reg_unregister() {
 static bool check_header(hive* h) {
     HBASE_BLOCK* base_block = (HBASE_BLOCK*)h->data;
     uint32_t csum;
+    bool dirty = false;
 
     if (base_block->Signature != HV_HBLOCK_SIGNATURE) {
         print_string("Invalid signature.\n");
@@ -86,14 +87,9 @@ static bool check_header(hive* h) {
     }
 
     if (base_block->Sequence1 != base_block->Sequence2) {
-        print_string("Hive is dirty.\n");
-        /* This isn't quite as lazy as it seems - this is what Windows does if it can't process
-         * a log file (e.g. loading a dirty Windows 10 hive on Windows 7). */
-
-        // FIXME - recover by processing LOG files (old style, < Windows 8.1)
-        // FIXME - recover by processing LOG files (new style, >= Windows 8.1)
-
+        print_string("Sequence1 != Sequence2.\n");
         base_block->Sequence2 = base_block->Sequence1;
+        dirty = true;
     }
 
     // check checksum
@@ -111,7 +107,15 @@ static bool check_header(hive* h) {
 
     if (csum != base_block->CheckSum) {
         print_string("Invalid checksum.\n");
-        return false;
+        base_block->CheckSum = csum;
+        dirty = true;
+    }
+
+    if (dirty) {
+        print_string("Hive is dirty.\n");
+
+        // FIXME - recover by processing LOG files (old style, < Windows 8.1)
+        // FIXME - recover by processing LOG files (new style, >= Windows 8.1)
     }
 
     return true;
