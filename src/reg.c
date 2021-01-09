@@ -85,11 +85,15 @@ static bool check_header(hive* h) {
         return false;
     }
 
-    // FIXME - should apply LOG file if sequences don't match
-
     if (base_block->Sequence1 != base_block->Sequence2) {
-        print_string("Sequence1 did not match Sequence2.\n");
-        return false;
+        print_string("Hive is dirty.\n");
+        /* This isn't quite as lazy as it seems - this is what Windows does if it can't process
+         * a log file (e.g. loading a dirty Windows 10 hive on Windows 7). */
+
+        // FIXME - recover by processing LOG files (old style, < Windows 8.1)
+        // FIXME - recover by processing LOG files (new style, >= Windows 8.1)
+
+        base_block->Sequence2 = base_block->Sequence1;
     }
 
     // check checksum
