@@ -4533,6 +4533,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         }
     }
 
+    print_string("Booting Windows...\n");
+
     fix_store_mapping(store, store_va, &mappings, version, build);
 
     Status = enable_paging(image_handle, bs, &mappings, block1a, va, loader_pages_spanned);
