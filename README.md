@@ -44,12 +44,19 @@ but if you have trouble you might need to put it in the root.
 
 * Adjust the file freeldr.ini, if necessary - the default is for it to boot from the first partition
 of the first disk. You can also change the SystemPath to e.g. `SystemPath=btrfs(1e10b60a-8e9d-466b-a33a-21760829cf3a)\Windows`,
-referring to the partition by UUID rather than number.
+referring to the partition by UUID rather than number. This is the Btrfs UUID, i.e. what shows up in
+the drive properties box on WinBtrfs, or what shows in `btrfs check` on Linux.
 
 * Add quibble.efi to your list of UEFI boot options, and hope that it works...
 
 Changelog
 ---------
+
+* 20210111
+  * Added support for GOP graphics
+  * Added support for TTF fonts
+  * Added rudimentary recovery of unclean Registry hives
+  * Added support for Btrfs compression
 
 * 20201108
   * Added support for Windows 10 2004 and 2009
@@ -92,12 +99,16 @@ On Windows:
 FAQs
 ----
 
+* Why don't I get pretty graphics?
+
+Disable CSM in your BIOS. Bear in mind that this will also stop Windows 7 and earlier
+from booting.
+
 * Which versions of Windows does this work on?
 
 With the Btrfs driver, this should work on XP, Vista, Windows 7, Windows 8, Windows 8.1,
-and Windows 10 versions 1507 to 2009. XP and Vista work only in 32-bit mode for the time being.
-Earlier versions _ought_ to work, as the boot structures were backwards-compatible at that
-point, but the Btrfs driver won't work.
+and Windows 10 versions 1507 to 2009. Earlier versions _ought_ to work, as the boot
+structures were backwards-compatible at that point, but the Btrfs driver won't work.
 
 * Which filesystems does this support?
 
@@ -108,9 +119,9 @@ Windows XP, Vista, and 7 will work fine from a FAT volume, anything after that w
 
 Drop your EFI driver in the drivers folder, and it'll load it on startup.
 
-* Why do I get a message about Sequence1 and Sequence2?
+* Why do I get a BAD_SYSTEM_CONFIG_INFO BSOD?
 
-This means that the Registry is unclean, which we can't currently recover from. If you attach
+This means that the Registry is unclean, and our rudimentary recovery wasn't good enough. If you attach
 C:\Windows\System32\config\SYSTEM to another machine via Regedit temporarily, it'll fix it.
 Make sure you shut Windows down properly to avoid having to do this.
 
@@ -136,19 +147,78 @@ indicator, just a few seconds of blackness.
 There's a race condition in the latest version of WinBtrfs, which manifests itself on some hardware.
 Try adding /ONECPU to your boot options, to see if that makes a difference.
 
-Licence
--------
+Licences and Thanks
+-------------------
 
 This is released under the LGPL. The Mersenne Twister code is by Mutsuo Saito and Makoto Matsumoto -
 see the header of tinymt32.c. The GNU-EFI headers are under the BSD licence.
 
-Thanks to Daniel Hepper for his [public-domain bitmap font](https://github.com/dhepper/font8x8).
+This code incorporates FreeType, licensed under the [FreeType Licence](https://github.com/freetype/freetype2/blob/master/docs/LICENSE.TXT).
+
+The included font is [Jost*](https://indestructibletype.com/Jost.html), from Indestructible Type.
+
+The Btrfs EFI driver contains portions of the following software:
+
+### Zlib
+
+  Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+
+### LZO
+
+WinBtrfs contains portions of an early version of lzo, which is copyright 1996
+Markus Oberhumer. Modern versions are licensed under the GPL, but this was
+licensed under the LGPL, so I believe it is okay to use.
+
+### Zstd
+
+Copyright (c) 2016-present, Facebook, Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+ * Neither the name Facebook nor the names of its contributors may be used to
+   endorse or promote products derived from this software without specific
+   prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 To-do list
 ----------
 
 * Get working with XP and Vista on amd64 (done?)
-* Add Registry recovery
+* Add proper Registry recovery
 * Add NTFS driver
 * Parse BCD files
 * Get tested on more hardware
@@ -159,6 +229,5 @@ To-do list
 * ASLR
 * Booting 32-bit Windows on 64-bit machine
 * Add RAID support for Btrfs
-* Add compression support for Btrfs
 * Hibernation, etc.
 * Get kdnet working with Windows 8.1
