@@ -1303,17 +1303,17 @@ static void set_gdt(gdt_entry* gdt) {
 
     // set task register
     __asm__ __volatile__ (
-        "mov ax, %0\n\t"
-        "ltr ax\n\t"
+        "mov %0, %%ax\n\t"
+        "ltr %%ax\n\t"
         :
-        : "" ((uint32_t)KGDT_TSS)
+        : "i" ((uint32_t)KGDT_TSS)
         : "ax"
     );
 
 #ifdef _X86_
     // change cs to 0x8
     __asm__ __volatile__ (
-        "ljmp %0, label\n\t"
+        "ljmp %0,$label\n\t"
         "label:\n\t"
         :
         : "i" (0x8)
@@ -1321,10 +1321,10 @@ static void set_gdt(gdt_entry* gdt) {
 #elif defined(__x86_64__)
     // change cs to 0x10
     __asm__ __volatile__ (
-        "mov rax, %0\n\t"
-        "push rax\n\t"
-        "lea rax, [rip+label]\n\t"
-        "push rax\n\t"
+        "mov %0, %%rax\n\t"
+        "push %%rax\n\t"
+        "lea label(%%rip), %%rax\n\t"
+        "push %%rax\n\t"
         "lretq\n\t"
         "label:\n\t"
         :
@@ -1334,8 +1334,8 @@ static void set_gdt(gdt_entry* gdt) {
 
     // change ss to 0x18
     __asm__ __volatile__ (
-        "mov ax, %0\n\t"
-        "mov ss, ax\n\t"
+        "mov %0, %%ax\n\t"
+        "mov %%ax, %%ss\n\t"
         :
         : "i" (0x18)
         : "ax"
@@ -4572,9 +4572,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
 #ifndef _MSC_VER
     __asm__ __volatile__ (
-        "mov rsp, %0\n\t"
-        "lea rcx, %1\n\t"
-        "call %2\n\t"
+        "mov %0, %%rsp\n\t"
+        "lea %1, %%rcx\n\t"
+        "call *%2\n\t"
         :
         : "m" (tss->Rsp0), "m" (store->loader_block), "m" (KiSystemStartup)
         : "rcx"
@@ -4690,44 +4690,44 @@ static EFI_STATUS load_pe_proto(EFI_BOOT_SERVICES* bs, EFI_HANDLE ImageHandle, E
 static void change_stack2(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, void* stack_end, change_stack_cb cb) {
 #ifdef _X86_
     __asm__ __volatile__ (
-        "mov eax, %0\n\t"
-        "mov ebx, %1\n\t"
-        "mov ecx, %3\n\t"
-        "mov edx, esp\n\t"
-        "mov esp, %2\n\t"
-        "push ebp\n\t"
-        "mov ebp, esp\n\t"
-        "push edx\n\t"
-        "push ebx\n\t"
-        "push eax\n\t"
-        "call ecx\n\t"
-        "pop edx\n\t"
-        "pop ebp\n\t"
-        "mov esp, edx\n\t"
+        "mov %0, %%eax\n\t"
+        "mov %1, %%ebx\n\t"
+        "mov %3, %%ecx\n\t"
+        "mov %%esp, %%edx\n\t"
+        "mov %2, %%esp\n\t"
+        "push %%ebp\n\t"
+        "mov %%esp, %%ebp\n\t"
+        "push %%edx\n\t"
+        "push %%ebx\n\t"
+        "push %%eax\n\t"
+        "call *%%ecx\n\t"
+        "pop %%edx\n\t"
+        "pop %%ebp\n\t"
+        "mov %%edx, %%esp\n\t"
         :
-        : "m" (bs), "m" (image_handle), "m" (stack_end), "" (cb)
+        : "m" (bs), "m" (image_handle), "m" (stack_end), "m" (cb)
         : "eax", "ebx", "ecx", "edx"
     );
 #elif defined(__x86_64__)
     // FIXME - probably should restore original rbx
 
     __asm__ __volatile__ (
-        "mov rcx, %0\n\t"
-        "mov rdx, %1\n\t"
-        "mov rax, %3\n\t"
-        "mov rbx, rsp\n\t"
-        "mov rsp, %2\n\t"
-        "push rbp\n\t"
-        "mov rbp, rsp\n\t"
-        "push rbx\n\t"
-        "sub rsp, 32\n\t"
-        "call rax\n\t"
-        "add rsp, 32\n\t"
-        "pop rbx\n\t"
-        "pop rbp\n\t"
-        "mov rsp, rbx\n\t"
+        "mov %0, %%rcx\n\t"
+        "mov %1, %%rdx\n\t"
+        "mov %3, %%rax\n\t"
+        "mov %%rsp, %%rbx\n\t"
+        "mov %2, %%rsp\n\t"
+        "push %%rbp\n\t"
+        "mov %%rsp, %%rbp\n\t"
+        "push %%rbx\n\t"
+        "sub $32, %%rsp\n\t"
+        "call *%%rax\n\t"
+        "add $32, %%rsp\n\t"
+        "pop %%rbx\n\t"
+        "pop %%rbp\n\t"
+        "mov %%rbx, %%rsp\n\t"
         :
-        : "m" (bs), "m" (image_handle), "m" (stack_end), "" (cb)
+        : "m" (bs), "m" (image_handle), "m" (stack_end), "m" (cb)
         : "rax", "rcx", "rdx", "rbx"
     );
 #endif
