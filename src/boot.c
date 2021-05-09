@@ -1323,7 +1323,7 @@ static void set_gdt(gdt_entry* gdt) {
     __asm__ __volatile__ (
         "mov rax, %0\n\t"
         "push rax\n\t"
-        "lea rax, label\n\t"
+        "lea rax, [rip+label]\n\t"
         "push rax\n\t"
         "lretq\n\t"
         "label:\n\t"
