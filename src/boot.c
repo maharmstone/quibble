@@ -3414,7 +3414,7 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         }
 
         memcpy(&gop_info, gop->Mode->Info, sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION));
-        framebuffer = (void*)gop->Mode->FrameBufferBase;
+        framebuffer = (void*)(uintptr_t)gop->Mode->FrameBufferBase;
         framebuffer_size = gop->Mode->FrameBufferSize;
 
         bs->CloseProtocol(handles[i], &guid, image_handle, NULL);
