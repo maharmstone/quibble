@@ -509,7 +509,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
 
             store->extension_win10_2004.Profile.Status = 2;
             store->extension_win10_2004.BootEntropyResult.maxEntropySources = 10;
-            store->extension_win10_2004.MajorRelease = NTDDI_WIN10_20H1;
+            store->extension_win10_2004.Block7.MajorRelease = NTDDI_WIN10_20H1;
             store->extension_win10_2004.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_1903) {
             extblock1a = &store->extension_win10_1903.Block1a;
