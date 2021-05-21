@@ -93,6 +93,8 @@
 #define WIN10_BUILD_1903            18362
 #define WIN10_BUILD_1909            18363
 #define WIN10_BUILD_2004            19041
+#define WIN10_BUILD_20H2            19042
+#define WIN10_BUILD_21H1            19043
 
 #define NTDDI_WIN7                          0x06010000
 #define NTDDI_WIN8                          0x06020000
