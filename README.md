@@ -3,7 +3,7 @@ Quibble
 
 Quibble is the custom Windows bootloader - an open-source reimplementation of the
 files bootmgfw.efi and winload.efi, able to boot every version of Windows from XP
-to Windows 10 2009. Unlike the official bootloader, it is extensible, allowing you
+to Windows 10 20H2. Unlike the official bootloader, it is extensible, allowing you
 to boot from other filesystems than just NTFS.
 
 This is only a proof of concept at this stage - don't use this for anything serious.
@@ -59,7 +59,7 @@ Changelog
   * Added support for Btrfs compression
 
 * 20201108
-  * Added support for Windows 10 2004 and 2009
+  * Added support for Windows 10 2004 and 20H2.
   * KDNET now works with Realtek devices
   * Added support for booting Windows 8 and up without CSM
   * Added workarounds for issues with real EFI implementations
@@ -107,7 +107,7 @@ from booting.
 * Which versions of Windows does this work on?
 
 With the Btrfs driver, this should work on XP, Vista, Windows 7, Windows 8, Windows 8.1,
-and Windows 10 versions 1507 to 2009. Earlier versions _ought_ to work, as the boot
+and Windows 10 versions 1507 to 20H2. Earlier versions _ought_ to work, as the boot
 structures were backwards-compatible at that point, but the Btrfs driver won't work.
 
 * Which filesystems does this support?
