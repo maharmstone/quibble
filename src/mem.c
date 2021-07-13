@@ -873,14 +873,17 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     EFI_SYSTEM_TABLE* new_ST;
     void* mdl_pa;
     size_t mdl_pages;
+    mapping* first_map = _CR(mappings->Flink, mapping, list_entry);
 
     size = 0;
 
-    // mark first page as LoaderFirmwarePermanent
-    Status = add_mapping(bs, mappings, 0, 0, 1, LoaderFirmwarePermanent);
-    if (EFI_ERROR(Status)) {
-        print_error("add_mapping", Status);
-        return Status;
+    // map first physical page, if not already done so
+    if (first_map->pa) {
+        Status = add_mapping(bs, mappings, 0, 0, 1, LoaderFirmwarePermanent);
+        if (EFI_ERROR(Status)) {
+            print_error("add_mapping", Status);
+            return Status;
+        }
     }
 
     // identity map our stack
