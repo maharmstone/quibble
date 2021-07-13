@@ -696,6 +696,9 @@ static void randomize_security_cookie(pe_image* img, IMAGE_NT_HEADERS* nt_header
 
         cookie = (uint32_t*)((uint8_t*)img->public.Data + config->SecurityCookie - (uint8_t*)img->va);
         *cookie = tinymt32_generate_uint32(&mt);
+
+        // XP wants the top 16 bits to be clear
+        *cookie &= 0xffff;
     }
 }
 
