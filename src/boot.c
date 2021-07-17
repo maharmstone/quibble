@@ -1791,6 +1791,9 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
     static const WCHAR reg_prefix[] = L"\\Registry\\Machine\\System\\CurrentControlSet\\Services\\";
     static const WCHAR system_root[] = L"\\SystemRoot\\";
 
+    if (!fs_driver)
+        fs_driver = L"fastfat";
+
     InitializeListHead(&drivers);
 
     Status = hive->FindKey(hive, ccs, L"Services", &services);
@@ -1829,7 +1832,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
             continue;
         }
 
-        is_fs_driver = fs_driver && !wcsicmp(name, fs_driver);
+        is_fs_driver = !wcsicmp(name, fs_driver);
 
         length = sizeof(start);
 
