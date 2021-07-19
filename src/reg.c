@@ -283,13 +283,13 @@ static EFI_STATUS find_child_key(hive* h, HKEY parent, const WCHAR* namebit, UIN
 
     lh = (CM_KEY_FAST_INDEX*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
 
-    if (lh->Signature != CM_KEY_HASH_LEAF)
+    if (lh->Signature != CM_KEY_HASH_LEAF && lh->Signature != CM_KEY_FAST_LEAF)
         return EFI_INVALID_PARAMETER;
 
     if ((uint32_t)size < sizeof(int32_t) + offsetof(CM_KEY_FAST_INDEX, List[0]) + (lh->Count * sizeof(CM_INDEX)))
         return EFI_INVALID_PARAMETER;
 
-    // FIXME - check against hashes
+    // FIXME - check against hashes if CM_KEY_HASH_LEAF
 
     for (unsigned int i = 0; i < lh->Count; i++) {
         CM_KEY_NODE* nk2;
