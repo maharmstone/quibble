@@ -26,6 +26,7 @@
 #define HFILE_TYPE_PRIMARY 0
 #define HBASE_FORMAT_MEMORY 1
 
+#define CM_KEY_FAST_LEAF        0x666c  // "lf"
 #define CM_KEY_HASH_LEAF        0x686c  // "lh"
 #define CM_KEY_INDEX_ROOT       0x6972  // "ri"
 #define CM_KEY_NODE_SIGNATURE   0x6b6e  // "nk"

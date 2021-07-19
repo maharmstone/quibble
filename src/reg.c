@@ -695,7 +695,7 @@ static void clear_volatile(hive* h, HKEY key) {
 
     sig = *(uint16_t*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
 
-    if (sig == CM_KEY_HASH_LEAF) {
+    if (sig == CM_KEY_HASH_LEAF || sig == CM_KEY_FAST_LEAF) {
         CM_KEY_FAST_INDEX* lh = (CM_KEY_FAST_INDEX*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
 
         for (unsigned int i = 0; i < lh->Count; i++) {
