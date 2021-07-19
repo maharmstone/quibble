@@ -3287,8 +3287,6 @@ static void parse_options(const char* options, command_line* cmdline) {
     const char* s;
     const char* t;
 
-    memset(cmdline, 0, sizeof(command_line));
-
     s = options;
     t = s;
 
@@ -5388,6 +5386,8 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
 
         bs->CloseProtocol(fs_handle, &quibble_guid, image_handle, NULL);
     }
+
+    memset(&cmdline, 0, sizeof(command_line));
 
     if (opt->options)
         parse_options(opt->options, &cmdline);
