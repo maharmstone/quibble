@@ -853,19 +853,19 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                     dec_to_str(s, timer);
                     draw_text_ft(s, &p, 0x000000, 0xffffff);
                 } else {
-                    Status = con->SetCursorPosition(con, (sizeof(timeout_message) - sizeof(WCHAR)) / sizeof(WCHAR), rows - 1);
+                    Status = con->SetCursorPosition(con, (sizeof(timeout_messagew) - sizeof(WCHAR)) / sizeof(WCHAR), rows - 1);
                     if (EFI_ERROR(Status)) {
                         print_error("SetCursorPosition", Status);
                         return Status;
                     }
 
-                    Status = print_spaces(con, cols - (sizeof(timeout_message) - sizeof(WCHAR)) / sizeof(WCHAR) - 1);
+                    Status = print_spaces(con, cols - (sizeof(timeout_messagew) - sizeof(WCHAR)) / sizeof(WCHAR) - 1);
                     if (EFI_ERROR(Status)) {
                         print_error("print_spaces", Status);
                         return Status;
                     }
 
-                    Status = con->SetCursorPosition(con, (sizeof(timeout_message) - sizeof(WCHAR)) / sizeof(WCHAR), rows - 1);
+                    Status = con->SetCursorPosition(con, (sizeof(timeout_messagew) - sizeof(WCHAR)) / sizeof(WCHAR), rows - 1);
                     if (EFI_ERROR(Status)) {
                         print_error("SetCursorPosition", Status);
                         return Status;
