@@ -124,7 +124,8 @@ static EFI_STATUS add_ccd(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* p
     return EFI_SUCCESS;
 }
 
-static EFI_STATUS add_acpi_config_data(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* parent, void** va, LIST_ENTRY* mappings) {
+static EFI_STATUS add_acpi_config_data(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* parent, void** va,
+                                       LIST_ENTRY* mappings, uint16_t version) {
     EFI_STATUS Status;
     EFI_GUID acpi1_guid = ACPI_TABLE_GUID;
     EFI_GUID acpi2_guid = ACPI_20_TABLE_GUID;
@@ -154,7 +155,7 @@ static EFI_STATUS add_acpi_config_data(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMP
     if (!rsdp)
         return EFI_SUCCESS;
 
-    if (rsdp->revision == 0) // ACPI 1.0
+    if (rsdp->revision == 0 || (rsdp->revision == 2 && version < _WIN32_WINNT_WINXP)) // ACPI 1.0
         addr = rsdp->rsdt_physical_address;
     else if (rsdp->revision == 2) // ACPI 2.0
         addr = rsdp->xsdt_physical_address;
@@ -357,7 +358,7 @@ EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_BLOCK1C* block1, void** v
         return Status;
     }
 
-    Status = add_acpi_config_data(bs, system_key, va, mappings);
+    Status = add_acpi_config_data(bs, system_key, va, mappings, version);
     if (EFI_ERROR(Status)) {
         print_error("add_acpi_config_data", Status);
         return Status;
