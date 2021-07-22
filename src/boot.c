@@ -3802,8 +3802,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     build = version_ls >> 16;
     revision = version_ls & 0xffff;
 
-    // Some checked builds have the wrong version number
-    if (build == 9200)
+    // Some builds have the wrong version number
+    if (build == 2600)
+        version = _WIN32_WINNT_WINXP;
+    else if (build == 9200)
         version = _WIN32_WINNT_WIN8;
     else if (build == 9600)
         version = _WIN32_WINNT_WINBLUE;
