@@ -1195,3 +1195,23 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
     return EFI_SUCCESS;
 }
+
+void merge_mappings(LIST_ENTRY* mappings) {
+    LIST_ENTRY* le = mappings->Flink;
+
+    while (le != mappings) {
+        if (le->Flink == mappings)
+            break;
+
+        mapping* m = _CR(le, mapping, list_entry);
+        mapping* m2 = _CR(le->Flink, mapping, list_entry);
+
+        if (m->type == LoaderFree && m2->type == LoaderFree && !m->va && !m2->va && m2->pa == (uint8_t*)m->pa + (m->pages * EFI_PAGE_SIZE)) {
+            m->pages += m2->pages;
+            RemoveEntryList(&m2->list_entry);
+            continue;
+        }
+
+        le = le->Flink;
+    }
+}

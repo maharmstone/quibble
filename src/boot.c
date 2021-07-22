@@ -4563,6 +4563,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         }
     }
 
+    merge_mappings(&mappings);
+
     print_string("Booting Windows...\n");
 
     fix_store_mapping(store, store_va, &mappings, version, build);
