@@ -4413,10 +4413,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         goto end;
     }
 
-    Status = load_drvdb(bs, windir, &va, &mappings, extblock1b);
-    if (EFI_ERROR(Status)) {
-        print_error("load_drvdb", Status);
-        goto end;
+    if (version >= _WIN32_WINNT_WINXP) {
+        Status = load_drvdb(bs, windir, &va, &mappings, extblock1b);
+        if (EFI_ERROR(Status)) {
+            print_error("load_drvdb", Status);
+            goto end;
+        }
     }
 
     if (errata_inf) {
