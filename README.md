@@ -147,13 +147,13 @@ indicator, just a few seconds of blackness.
 There's a race condition in the latest version of WinBtrfs, which manifests itself on some hardware.
 Try adding /ONECPU to your boot options, to see if that makes a difference.
 
-Licences and Thanks
+Licenses and Thanks
 -------------------
 
 This is released under the LGPL. The Mersenne Twister code is by Mutsuo Saito and Makoto Matsumoto -
-see the header of tinymt32.c. The GNU-EFI headers are under the BSD licence.
+see the header of tinymt32.c. The GNU-EFI headers are under the BSD license.
 
-This code incorporates FreeType, licensed under the [FreeType Licence](https://github.com/freetype/freetype2/blob/master/docs/LICENSE.TXT).
+This code incorporates FreeType, licensed under the [FreeType License](https://github.com/freetype/freetype2/blob/master/docs/LICENSE.TXT).
 
 The included font is [Jost*](https://indestructibletype.com/Jost.html), from Indestructible Type.
 
