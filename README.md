@@ -107,8 +107,7 @@ from booting.
 * Which versions of Windows does this work on?
 
 With the Btrfs driver, this should work on XP, Vista, Windows 7, Windows 8, Windows 8.1,
-and Windows 10 versions 1507 to 2009. Earlier versions _ought_ to work, as the boot
-structures were backwards-compatible at that point, but the Btrfs driver won't work.
+and Windows 10 versions 1507 to 2009.
 
 * Which filesystems does this support?
 
