@@ -140,8 +140,6 @@ int strnicmp(const char* s1, const char* s2, int n) {
 
         if (c1 != c2)
             return c1 > c2 ? 1 : -1;
-
-        i++;
     }
 
     return 0;
