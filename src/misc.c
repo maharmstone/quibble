@@ -799,8 +799,6 @@ int strncmp(const char* s1, const char* s2, size_t n) {
 
         if (c1 != c2)
             return c1 > c2 ? 1 : -1;
-
-        i++;
     }
 
     return 0;
