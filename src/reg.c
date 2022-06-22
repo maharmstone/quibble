@@ -609,7 +609,9 @@ static EFI_STATUS EFIAPI query_value_no_copy(EFI_REGISTRY_HIVE* This, HKEY Key, 
                 ptr = (uint8_t*)&vk->Data + 2;
             else if (datalen == 1)
                 ptr = (uint8_t*)&vk->Data + 3;
-            else if (datalen != 0)
+            else if (datalen == 0)
+                ptr = NULL;
+            else
                 return EFI_INVALID_PARAMETER;
 
             *Data = ptr;
