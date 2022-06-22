@@ -53,7 +53,7 @@ EFI_STATUS pe_register(EFI_BOOT_SERVICES* BootServices, uint32_t seed) {
 EFI_STATUS pe_unregister() {
     EFI_GUID pe_guid = PE_LOADER_PROTOCOL;
 
-    return bs->UninstallProtocolInterface(&pe_handle, &pe_guid, EFI_NATIVE_INTERFACE);
+    return bs->UninstallProtocolInterface(&pe_handle, &pe_guid, &proto);
 }
 
 static bool check_header(uint8_t* data, size_t size, IMAGE_NT_HEADERS** nth) {
