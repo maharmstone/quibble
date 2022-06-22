@@ -48,7 +48,7 @@ EFI_STATUS reg_register(EFI_BOOT_SERVICES* BootServices) {
 EFI_STATUS reg_unregister() {
     EFI_GUID reg_guid = WINDOWS_REGISTRY_PROTOCOL;
 
-    return bs->UninstallProtocolInterface(&reg_handle, &reg_guid, EFI_NATIVE_INTERFACE);
+    return bs->UninstallProtocolInterface(&reg_handle, &reg_guid, &proto);
 }
 
 static bool check_header(hive* h) {
