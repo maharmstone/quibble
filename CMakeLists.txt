@@ -45,7 +45,7 @@ add_subdirectory(freetype)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(freetype/include)
 
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     target_link_libraries(quibble libgcc.a)
 endif()
 
@@ -123,7 +123,7 @@ set(SRC_FILES src/btrfs/btrfs.c
 
 add_executable(btrfs ${SRC_FILES})
 
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     target_link_libraries(btrfs libgcc.a)
 endif()
 
