@@ -45,10 +45,6 @@ add_subdirectory(freetype)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(freetype/include)
 
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
-    target_link_libraries(quibble libgcc.a)
-endif()
-
 set_target_properties(quibble PROPERTIES SUFFIX ".efi")
 
 include_directories(gnu-efi)
@@ -76,9 +72,8 @@ target_compile_options(quibble PRIVATE "-fno-stack-protector")
 target_compile_options(quibble PRIVATE "-fno-stack-check")
 target_compile_options(quibble PRIVATE "-mno-stack-arg-probe")
 
-target_link_options(quibble PRIVATE "-nostdlib")
+target_link_options(quibble PRIVATE "-nostartfiles")
 target_link_options(quibble PRIVATE "-shared")
-target_link_options(quibble PRIVATE "-nodefaultlibs")
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
     target_link_options(quibble PRIVATE "-Wl,--subsystem,efi_application")
@@ -123,10 +118,6 @@ set(SRC_FILES src/btrfs/btrfs.c
 
 add_executable(btrfs ${SRC_FILES})
 
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
-    target_link_libraries(btrfs libgcc.a)
-endif()
-
 set_target_properties(btrfs PROPERTIES SUFFIX ".efi")
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
@@ -136,7 +127,7 @@ target_compile_options(btrfs PRIVATE "-fno-stack-check")
 target_compile_options(btrfs PRIVATE "-mno-stack-arg-probe")
 target_compile_options(btrfs PRIVATE "-Werror-implicit-function-declaration")
 
-target_link_options(btrfs PRIVATE "-nostdlib")
+target_link_options(btrfs PRIVATE "-nostartfiles")
 target_link_options(btrfs PRIVATE "-shared")
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
