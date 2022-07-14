@@ -230,3 +230,8 @@ To-do list
 * Add RAID support for Btrfs
 * Hibernation, etc.
 * Get kdnet working with Windows 8.1
+
+Compatible and incompatible Hardware
+-------
+* ThinkPad X230 Tablet - incompatible
+* MSI 970A-G43 with Radeon R9 GPU - incompatible
