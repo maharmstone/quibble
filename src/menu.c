@@ -651,10 +651,20 @@ static void draw_box_gop(unsigned int x, unsigned int y, unsigned int w, unsigne
     }
 }
 
+static __inline unsigned int min(unsigned int a, unsigned int b) {
+    if (a < b)
+        return a;
+    else
+        return b;
+}
+
 static void draw_rect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint32_t colour) {
     uint32_t* base;
 
     base = (uint32_t*)framebuffer + (y * gop_info.PixelsPerScanLine) + x;
+
+    w = min(w, gop_info.HorizontalResolution - x);
+    h = min(h, gop_info.VerticalResolution - y);
 
     for (unsigned int i = 0; i < h; i++) {
         for (unsigned int j = 0; j < w; j++) {
