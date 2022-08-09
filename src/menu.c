@@ -848,7 +848,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                     p.x = timer_pos;
                     p.y = gop_info.VerticalResolution - (font_height * 3 / 4);
 
-                    draw_rect(p.x, p.y - font_height, font_height * 5, (font_height * 3 / 4) + font_height, 0x000000);
+                    draw_rect(p.x, p.y - font_height, font_height * 5, font_height * 7 / 4, 0x000000);
 
                     dec_to_str(s, timer);
                     draw_text_ft(s, &p, 0x000000, 0xffffff);
@@ -897,7 +897,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
 
                     if (gop_console) {
                         draw_rect(font_height, gop_info.VerticalResolution - (font_height * 7 / 4),
-                                  timer_pos + (font_height * 5), font_height * 2, 0x000000);
+                                  timer_pos + (font_height * 5), font_height * 7 / 4, 0x000000);
                     } else {
                         Status = con->SetCursorPosition(con, 0, rows - 1);
                         if (EFI_ERROR(Status)) {
