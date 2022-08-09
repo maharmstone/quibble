@@ -464,7 +464,7 @@ FT_BEGIN_HEADER
 #ifdef FT2_BUILD_LIBRARY
 
 #if defined( _WIN32 ) && ( defined( _DLL ) || defined( DLL_EXPORT ) )
-#define FT_EXPORT( x )  __declspec( dllexport )  x
+#define FT_EXPORT( x )  /*__declspec( dllexport )*/  x
 #elif defined( __GNUC__ ) && __GNUC__ >= 4
 #define FT_EXPORT( x )  __attribute__(( visibility( "default" ) ))  x
 #elif defined( __cplusplus )
