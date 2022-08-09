@@ -58,7 +58,7 @@ target_compile_options(quibble PRIVATE
      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
           -Wall -Wextra -Werror-implicit-function-declaration -Wno-address-of-packed-member -Werror=pointer-arith>
      $<$<CXX_COMPILER_ID:MSVC>:
-          /W4>)
+          /W4 /Oi->)
 
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     add_definitions(-D__x86_64__)
@@ -144,4 +144,5 @@ endif()
 
 elseif(MSVC)
 target_link_options(btrfs PRIVATE "/SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER")
+target_compile_options(btrfs PRIVATE "/Oi-")
 endif()

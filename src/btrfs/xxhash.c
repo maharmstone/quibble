@@ -229,6 +229,10 @@ static U64 XXH_read64(const void* memPtr)
 ******************************************/
 #define GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__)
 
+#ifdef _MSC_VER
+#pragma intrinsic(_byteswap_ulong, _byteswap_uint64, _rotl, _rotl64)
+#endif
+
 /* Note : although _rotl exists for minGW (GCC under windows), performance seems poor */
 #if defined(_MSC_VER)
 #  define XXH_rotl32(x,r) _rotl(x,r)
