@@ -651,20 +651,10 @@ static void draw_box_gop(unsigned int x, unsigned int y, unsigned int w, unsigne
     }
 }
 
-static __inline unsigned int min(unsigned int a, unsigned int b) {
-    if (a < b)
-        return a;
-    else
-        return b;
-}
-
 static void draw_rect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint32_t colour) {
     uint32_t* base;
 
     base = (uint32_t*)framebuffer + (y * gop_info.PixelsPerScanLine) + x;
-
-    w = min(w, gop_info.HorizontalResolution - x);
-    h = min(h, gop_info.VerticalResolution - y);
 
     for (unsigned int i = 0; i < h; i++) {
         for (unsigned int j = 0; j < w; j++) {
@@ -858,7 +848,7 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                     p.x = timer_pos;
                     p.y = gop_info.VerticalResolution - (font_height * 3 / 4);
 
-                    draw_rect(p.x, p.y - font_height, font_height * 5, font_height * 2, 0x000000);
+                    draw_rect(p.x, p.y - font_height, font_height * 5, (font_height * 3 / 4) + font_height, 0x000000);
 
                     dec_to_str(s, timer);
                     draw_text_ft(s, &p, 0x000000, 0xffffff);
