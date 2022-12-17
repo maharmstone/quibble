@@ -447,6 +447,14 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
     for (unsigned int i = 0; i < count; i++) {
         TYPE_OF_MEMORY memory_type = map_memory_type(desc->Type);
 
+#ifdef _X86_
+        if (desc->PhysicalStart > 0xffffffff)
+            continue;
+
+        if (desc->PhysicalStart + (desc->NumberOfPages << EFI_PAGE_SHIFT) > 0xffffffff)
+            desc->NumberOfPages = (0x100000000 - desc->PhysicalStart) >> EFI_PAGE_SHIFT;
+#endif
+
         if (memory_type != LoaderFree) {
             Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)desc->PhysicalStart,
                                  desc->NumberOfPages, memory_type);
