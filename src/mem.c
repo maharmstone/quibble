@@ -448,8 +448,10 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
         TYPE_OF_MEMORY memory_type = map_memory_type(desc->Type);
 
 #ifdef _X86_
-        if (desc->PhysicalStart > 0xffffffff)
+        if (desc->PhysicalStart > 0xffffffff) {
+            desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc + map_desc_size);
             continue;
+        }
 
         if (desc->PhysicalStart + (desc->NumberOfPages << EFI_PAGE_SHIFT) > 0xffffffff)
             desc->NumberOfPages = (0x100000000 - desc->PhysicalStart) >> EFI_PAGE_SHIFT;
