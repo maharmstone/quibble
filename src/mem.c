@@ -41,7 +41,6 @@ extern void* apic;
 
 static TYPE_OF_MEMORY map_memory_type(UINTN memory_type) {
     switch (memory_type) {
-        case EfiReservedMemoryType:
         case EfiACPIReclaimMemory:
         case EfiACPIMemoryNVS:
         case EfiPalCode:
@@ -456,6 +455,12 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
         if (desc->PhysicalStart + (desc->NumberOfPages << EFI_PAGE_SHIFT) > 0xffffffff)
             desc->NumberOfPages = (0x100000000 - desc->PhysicalStart) >> EFI_PAGE_SHIFT;
 #endif
+
+        // skip addresses not intended to be mapped, e.g. PCI BAR on qemu q35
+        if (desc->Type == EfiReservedMemoryType) {
+            desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc + map_desc_size);
+            continue;
+        }
 
         if (memory_type != LoaderFree) {
             Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)desc->PhysicalStart,
