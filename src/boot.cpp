@@ -2686,8 +2686,8 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
     return EFI_SUCCESS;
 }
 
-EFI_STATUS load_image(image* img, wchar_t* name, EFI_PE_LOADER_PROTOCOL* pe, void* va, EFI_FILE_HANDLE dir,
-                      command_line* cmdline, uint16_t build) {
+EFI_STATUS load_image(image* img, const wchar_t* name, EFI_PE_LOADER_PROTOCOL* pe, void* va,
+                      EFI_FILE_HANDLE dir, command_line* cmdline, uint16_t build) {
     EFI_STATUS Status;
     EFI_FILE_HANDLE file;
     bool is_kdstub = false;
