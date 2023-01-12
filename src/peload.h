@@ -106,7 +106,7 @@ typedef EFI_STATUS (EFIAPI* EFI_PE_IMAGE_GET_VERSION) (
 
 typedef EFI_STATUS (EFIAPI* EFI_PE_IMAGE_FIND_EXPORT) (
     IN EFI_PE_IMAGE* This,
-    IN char* Function,
+    IN const char* Function,
     OUT UINT64* Address,
     IN EFI_PE_IMAGE_RESOLVE_FORWARD ResolveForward
 );

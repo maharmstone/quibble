@@ -909,7 +909,7 @@ static EFI_STATUS EFIAPI get_version(EFI_PE_IMAGE* This, UINT32* VersionMS, UINT
     return EFI_NOT_FOUND;
 }
 
-static EFI_STATUS EFIAPI find_export(EFI_PE_IMAGE* This, char* Function, UINT64* Address,
+static EFI_STATUS EFIAPI find_export(EFI_PE_IMAGE* This, const char* Function, UINT64* Address,
                                      EFI_PE_IMAGE_RESOLVE_FORWARD ResolveForward) {
     pe_image* img = _CR(This, pe_image, pub);
     IMAGE_DOS_HEADER* dos_header = (IMAGE_DOS_HEADER*)img->pub.Data;
