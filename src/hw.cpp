@@ -53,7 +53,7 @@ LIST_ENTRY block_devices;
 
 static EFI_STATUS add_ccd(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* parent, CONFIGURATION_CLASS cclass,
                           CONFIGURATION_TYPE type, IDENTIFIER_FLAG flags, uint32_t key, uint32_t affinity,
-                          char* identifier_string, CM_PARTIAL_RESOURCE_LIST* resource_list, uint32_t resource_list_size,
+                          const char* identifier_string, CM_PARTIAL_RESOURCE_LIST* resource_list, uint32_t resource_list_size,
                           void** va, LIST_ENTRY* mappings, CONFIGURATION_COMPONENT_DATA** pccd) {
     EFI_STATUS Status;
     CONFIGURATION_COMPONENT_DATA* ccd;
