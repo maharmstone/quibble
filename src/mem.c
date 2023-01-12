@@ -406,7 +406,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
     UINTN key, count;
     UINT32 version;
     EFI_MEMORY_DESCRIPTOR* desc = NULL;
-    uint8_t* va2 = *va;
+    uint8_t* va2 = (uint8_t*)*va;
     bool map_video_ram = true;
 
     efi_map_size = 0;
@@ -563,18 +563,18 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LOADER_BLOC
         if (le->Flink == &block1->MemoryDescriptorListHead)
             le->Flink = block1->MemoryDescriptorListHead.Flink->Blink;
         else
-            le->Flink = fix_address_mapping(le->Flink, pa, va);
+            le->Flink = (LIST_ENTRY*)fix_address_mapping(le->Flink, pa, va);
 
         if (le->Blink == &block1->MemoryDescriptorListHead)
-            le->Blink = find_virtual_address(le->Blink, mappings);
+            le->Blink = (LIST_ENTRY*)find_virtual_address(le->Blink, mappings);
         else
-            le->Blink = fix_address_mapping(le->Blink, pa, va);
+            le->Blink = (LIST_ENTRY*)fix_address_mapping(le->Blink, pa, va);
 
         le = le2;
     }
 
-    block1->MemoryDescriptorListHead.Flink = fix_address_mapping(block1->MemoryDescriptorListHead.Flink, pa, va);
-    block1->MemoryDescriptorListHead.Blink = fix_address_mapping(block1->MemoryDescriptorListHead.Blink, pa, va);
+    block1->MemoryDescriptorListHead.Flink = (LIST_ENTRY*)fix_address_mapping(block1->MemoryDescriptorListHead.Flink, pa, va);
+    block1->MemoryDescriptorListHead.Blink = (LIST_ENTRY*)fix_address_mapping(block1->MemoryDescriptorListHead.Blink, pa, va);
 
     return EFI_SUCCESS;
 }

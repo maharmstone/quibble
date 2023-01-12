@@ -506,7 +506,7 @@ static EFI_STATUS draw_box(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int x, un
 
         s[w] = 0;
 
-        Status = con->OutputString(con, s);
+        Status = con->OutputString(con, (CHAR16*)s);
         if (EFI_ERROR(Status)) {
             con->SetCursorPosition(con, col, row);
             print_error("OutputString", Status);
@@ -561,7 +561,7 @@ static EFI_STATUS draw_option(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int po
 
     // FIXME - add ellipsis if truncated?
 
-    Status = con->OutputString(con, s);
+    Status = con->OutputString(con, (CHAR16*)s);
     if (EFI_ERROR(Status)) {
         print_error("OutputString", Status);
         bs->FreePool(s);
@@ -602,7 +602,7 @@ static EFI_STATUS print_spaces(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int n
     EFI_STATUS Status;
 
     for (unsigned int i = 0; i < num; i++) {
-        Status = con->OutputString(con, L" ");
+        Status = con->OutputString(con, (CHAR16*)L" ");
         if (EFI_ERROR(Status)) {
             print_error("OutputString", Status);
             return Status;
@@ -732,13 +732,13 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
             return Status;
         }
 
-        Status = con->OutputString(con, VERSIONW L"\r\n");
+        Status = con->OutputString(con, (CHAR16*)(VERSIONW L"\r\n"));
         if (EFI_ERROR(Status)) {
             print_error("OutputString", Status);
             return Status;
         }
 
-        Status = con->OutputString(con, URLW L"\r\n");
+        Status = con->OutputString(con, (CHAR16*)(URLW L"\r\n"));
         if (EFI_ERROR(Status)) {
             print_error("OutputString", Status);
             return Status;

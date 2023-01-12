@@ -138,7 +138,7 @@ static EFI_STATUS add_acpi_config_data(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMP
 
     for (unsigned int i = 0; i < systable->NumberOfTableEntries; i++) {
         if (!memcmp(&systable->ConfigurationTable[i].VendorGuid, &acpi2_guid, sizeof(EFI_GUID))) {
-            rsdp = systable->ConfigurationTable[i].VendorTable;
+            rsdp = (RSDP_DESCRIPTOR*)systable->ConfigurationTable[i].VendorTable;
             break;
         }
     }
@@ -146,7 +146,7 @@ static EFI_STATUS add_acpi_config_data(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMP
     if (!rsdp) {
         for (unsigned int i = 0; i < systable->NumberOfTableEntries; i++) {
             if (!memcmp(&systable->ConfigurationTable[i].VendorGuid, &acpi1_guid, sizeof(EFI_GUID))) {
-                rsdp = systable->ConfigurationTable[i].VendorTable;
+                rsdp = (RSDP_DESCRIPTOR*)systable->ConfigurationTable[i].VendorTable;
                 break;
             }
         }
@@ -211,7 +211,7 @@ static EFI_STATUS add_acpi_config_data(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMP
 
     // FIXME - copy memory map into abd->MemoryMap
 
-    Status = add_ccd(bs, parent, AdapterClass, MultiFunctionAdapter, 0, 0, 0xffffffff, "ACPI BIOS",
+    Status = add_ccd(bs, parent, AdapterClass, MultiFunctionAdapter, (IDENTIFIER_FLAG)0, 0, 0xffffffff, "ACPI BIOS",
                      prl, sizeof(CM_PARTIAL_RESOURCE_LIST) + table_size, va, mappings, NULL);
 
     bs->FreePool(prl);
@@ -279,7 +279,7 @@ static EFI_STATUS create_system_key(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONE
         params[i].NumberDrives = disk_count;
     }
 
-    Status = add_ccd(bs, NULL, SystemClass, MaximumType, 0, 0, 0xffffffff, NULL, prl, size,
+    Status = add_ccd(bs, NULL, SystemClass, MaximumType, (IDENTIFIER_FLAG)0, 0, 0xffffffff, NULL, prl, size,
                      va, mappings, system_key);
     if (EFI_ERROR(Status)) {
         print_error("add_ccd", Status);
@@ -515,13 +515,13 @@ static void int_to_string(char** addr, unsigned int n) {
 
 static EFI_STATUS add_isa_key(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* parent, void** va,
                               LIST_ENTRY* mappings, CONFIGURATION_COMPONENT_DATA** ret) {
-    return add_ccd(bs, parent, AdapterClass, MultiFunctionAdapter, 0, 0, 0xffffffff, "ISA", NULL, 0,
+    return add_ccd(bs, parent, AdapterClass, MultiFunctionAdapter, (IDENTIFIER_FLAG)0, 0, 0xffffffff, "ISA", NULL, 0,
                    va, mappings, ret);
 }
 
 static EFI_STATUS add_disk_controller(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* parent, void** va,
                                       LIST_ENTRY* mappings, CONFIGURATION_COMPONENT_DATA** ret) {
-    return add_ccd(bs, parent, ControllerClass, DiskController, 0, 0, 0xffffffff, NULL, NULL, 0,
+    return add_ccd(bs, parent, ControllerClass, DiskController, (IDENTIFIER_FLAG)0, 0, 0xffffffff, NULL, NULL, 0,
                    va, mappings, ret);
 }
 
@@ -599,7 +599,7 @@ EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** v
 
                 pa = (uint8_t*)pa + sizeof(ARC_DISK_SIGNATURE_WIN7);
 
-                arc->ArcName = pa;
+                arc->ArcName = (char*)pa;
 
                 memcpy(pa, arc_prefix, sizeof(arc_prefix) - 1);
                 pa = (uint8_t*)pa + sizeof(arc_prefix) - 1;
@@ -619,7 +619,7 @@ EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** v
                 memcpy(arc, &bd->arc, sizeof(ARC_DISK_SIGNATURE));
                 pa = (uint8_t*)pa + sizeof(ARC_DISK_SIGNATURE);
 
-                arc->ArcName = pa;
+                arc->ArcName = (char*)pa;
 
                 memcpy(pa, arc_prefix, sizeof(arc_prefix) - 1);
                 pa = (uint8_t*)pa + sizeof(arc_prefix) - 1;
@@ -692,7 +692,7 @@ EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** v
 
             // FIXME - put "geometry" into partial resource list?
 
-            Status = add_ccd(bs, diskcon, PeripheralClass, DiskPeripheral, IdentifierFlag_Input | IdentifierFlag_Output,
+            Status = add_ccd(bs, diskcon, PeripheralClass, DiskPeripheral, (IDENTIFIER_FLAG)(IdentifierFlag_Input | IdentifierFlag_Output),
                             0, 0xffffffff, identifier, NULL, 0, va, mappings, NULL);
             if (EFI_ERROR(Status)) {
                 print_error("add_ccd", Status);

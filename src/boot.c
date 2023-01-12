@@ -749,21 +749,21 @@ static void fix_list_mapping(LIST_ENTRY* list, LIST_ENTRY* mappings) {
     while (le != list) {
         LIST_ENTRY* le2 = le->Flink;
 
-        le->Flink = find_virtual_address(le->Flink, mappings);
-        le->Blink = find_virtual_address(le->Blink, mappings);
+        le->Flink = (LIST_ENTRY*)find_virtual_address(le->Flink, mappings);
+        le->Blink = (LIST_ENTRY*)find_virtual_address(le->Blink, mappings);
 
         le = le2;
     }
 
-    list->Flink = find_virtual_address(list->Flink, mappings);
-    list->Blink = find_virtual_address(list->Blink, mappings);
+    list->Flink = (LIST_ENTRY*)find_virtual_address(list->Flink, mappings);
+    list->Blink = (LIST_ENTRY*)find_virtual_address(list->Blink, mappings);
 }
 
 static void fix_config_mapping(CONFIGURATION_COMPONENT_DATA* ccd, LIST_ENTRY* mappings, void* parent_va, void** va) {
     void* new_va = find_virtual_address(ccd, mappings);
 
     if (ccd->ComponentEntry.Identifier)
-        ccd->ComponentEntry.Identifier = fix_address_mapping(ccd->ComponentEntry.Identifier, ccd, new_va);
+        ccd->ComponentEntry.Identifier = (char*)fix_address_mapping(ccd->ComponentEntry.Identifier, ccd, new_va);
 
     if (ccd->ConfigurationData)
         ccd->ConfigurationData = fix_address_mapping(ccd->ConfigurationData, ccd, new_va);
@@ -772,17 +772,17 @@ static void fix_config_mapping(CONFIGURATION_COMPONENT_DATA* ccd, LIST_ENTRY* ma
         void* child_va;
 
         fix_config_mapping(ccd->Child, mappings, new_va, &child_va);
-        ccd->Child = child_va;
+        ccd->Child = (CONFIGURATION_COMPONENT_DATA*)child_va;
     }
 
     if (ccd->Sibling) {
         void* sibling_va;
 
         fix_config_mapping(ccd->Sibling, mappings, parent_va, &sibling_va);
-        ccd->Sibling = sibling_va;
+        ccd->Sibling = (CONFIGURATION_COMPONENT_DATA*)sibling_va;
     }
 
-    ccd->Parent = parent_va;
+    ccd->Parent = (CONFIGURATION_COMPONENT_DATA*)parent_va;
 
     *va = new_va;
 }
@@ -794,8 +794,8 @@ static void fix_image_list_mapping(LOADER_BLOCK1A* block1, LIST_ENTRY* mappings)
     while (le != &block1->LoadOrderListHead) {
         KLDR_DATA_TABLE_ENTRY* dte = _CR(le, KLDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
 
-        dte->BaseDllName.Buffer = find_virtual_address(dte->BaseDllName.Buffer, mappings);
-        dte->FullDllName.Buffer = find_virtual_address(dte->FullDllName.Buffer, mappings);
+        dte->BaseDllName.Buffer = (wchar_t*)find_virtual_address(dte->BaseDllName.Buffer, mappings);
+        dte->FullDllName.Buffer = (wchar_t*)find_virtual_address(dte->FullDllName.Buffer, mappings);
 
         le = le->Flink;
     }
@@ -810,9 +810,9 @@ static void fix_driver_list_mapping(LIST_ENTRY* list, LIST_ENTRY* mappings) {
     while (le != list) {
         BOOT_DRIVER_LIST_ENTRY* bdle = _CR(le, BOOT_DRIVER_LIST_ENTRY, Link);
 
-        bdle->FilePath.Buffer = find_virtual_address(bdle->FilePath.Buffer, mappings);
-        bdle->RegistryPath.Buffer = find_virtual_address(bdle->RegistryPath.Buffer, mappings);
-        bdle->LdrEntry = find_virtual_address(bdle->LdrEntry, mappings);
+        bdle->FilePath.Buffer = (wchar_t*)find_virtual_address(bdle->FilePath.Buffer, mappings);
+        bdle->RegistryPath.Buffer = (wchar_t*)find_virtual_address(bdle->RegistryPath.Buffer, mappings);
+        bdle->LdrEntry = (KLDR_DATA_TABLE_ENTRY*)find_virtual_address(bdle->LdrEntry, mappings);
 
         le = le->Flink;
     }
@@ -828,11 +828,11 @@ static void fix_arc_disk_mapping(LOADER_BLOCK1C* block1, LIST_ENTRY* mappings, b
         if (new_disk_format) {
             ARC_DISK_SIGNATURE_WIN7* arc = _CR(le, ARC_DISK_SIGNATURE_WIN7, ListEntry);
 
-            arc->ArcName = find_virtual_address(arc->ArcName, mappings);
+            arc->ArcName = (char*)find_virtual_address(arc->ArcName, mappings);
         } else {
             ARC_DISK_SIGNATURE* arc = _CR(le, ARC_DISK_SIGNATURE, ListEntry);
 
-            arc->ArcName = find_virtual_address(arc->ArcName, mappings);
+            arc->ArcName = (char*)find_virtual_address(arc->ArcName, mappings);
         }
 
         le = le->Flink;
@@ -875,7 +875,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             find_virtual_address(&systable->RuntimeServices->GetTime, mappings);
 
         store->extension_vista.LoaderPerformanceData =
-            find_virtual_address(store->extension_vista.LoaderPerformanceData, mappings);
+            (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_vista.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WIN7) {
         block1a = &store->loader_block_win7.Block1a;
         block1c = &store->loader_block_win7.Block1c;
@@ -890,7 +890,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             find_virtual_address(&systable->RuntimeServices->GetTime, mappings);
 
         store->extension_win7.LoaderPerformanceData =
-            find_virtual_address(store->extension_win7.LoaderPerformanceData, mappings);
+            (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win7.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WIN8) {
         block1a = &store->loader_block_win8.Block1a;
         block1c = &store->loader_block_win8.Block1c;
@@ -911,7 +911,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         fix_list_mapping(&store->loader_block_win8.FirmwareInformation.EfiInformation.FirmwareResourceList, mappings);
 
         store->extension_win8.LoaderPerformanceData =
-            find_virtual_address(store->extension_win8.LoaderPerformanceData, mappings);
+            (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win8.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WINBLUE) {
         block1a = &store->loader_block_win81.Block1a;
         block1c = &store->loader_block_win81.Block1c;
@@ -934,10 +934,10 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         fix_list_mapping(&store->loader_block_win81.FirmwareInformation.EfiInformation.FirmwareResourceList, mappings);
 
         store->extension_win81.LoaderPerformanceData =
-            find_virtual_address(store->extension_win81.LoaderPerformanceData, mappings);
+            (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win81.LoaderPerformanceData, mappings);
 
         if (store->extension_win81.KdDebugDevice)
-            store->extension_win81.KdDebugDevice = find_virtual_address(store->extension_win81.KdDebugDevice, mappings);
+            store->extension_win81.KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(store->extension_win81.KdDebugDevice, mappings);
     } else if (version == _WIN32_WINNT_WIN10) {
         LOADER_EXTENSION_BLOCK6* extblock6;
 
@@ -995,7 +995,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             extblock6 = &store->extension_win10_1703.Block6;
 
             store->extension_win10_1703.LoaderPerformanceData =
-                find_virtual_address(store->extension_win10_1703.LoaderPerformanceData, mappings);
+                (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10_1703.LoaderPerformanceData, mappings);
         } else if (build >= WIN10_BUILD_1607) {
             extblock1c = &store->extension_win10_1607.Block1c;
             extblock2b = &store->extension_win10_1607.Block2b;
@@ -1005,7 +1005,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             extblock6 = &store->extension_win10_1607.Block6;
 
             store->extension_win10_1607.LoaderPerformanceData =
-                find_virtual_address(store->extension_win10_1607.LoaderPerformanceData, mappings);
+                (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10_1607.LoaderPerformanceData, mappings);
         } else {
             extblock1c = &store->extension_win10.Block1c;
             extblock2b = &store->extension_win10.Block2b;
@@ -1015,11 +1015,11 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             extblock6 = &store->extension_win10.Block6;
 
             store->extension_win10.LoaderPerformanceData =
-                find_virtual_address(store->extension_win10.LoaderPerformanceData, mappings);
+                (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10.LoaderPerformanceData, mappings);
         }
 
         if (extblock6->KdDebugDevice)
-            extblock6->KdDebugDevice = find_virtual_address(extblock6->KdDebugDevice, mappings);
+            extblock6->KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(extblock6->KdDebugDevice, mappings);
     } else {
         print_string("Unsupported Windows version.\n");
         return;
@@ -1030,28 +1030,28 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
     fix_driver_list_mapping(&block1a->BootDriverListHead, mappings);
 
     fix_config_mapping(block1c->ConfigurationRoot, mappings, NULL, &ccd_va);
-    block1c->ConfigurationRoot = ccd_va;
+    block1c->ConfigurationRoot = (CONFIGURATION_COMPONENT_DATA*)ccd_va;
 
     block2->Extension = fix_address_mapping(block2->Extension, store, va);
-    block1c->NlsData = fix_address_mapping(block1c->NlsData, store, va);
+    block1c->NlsData = (NLS_DATA_BLOCK*)fix_address_mapping(block1c->NlsData, store, va);
 
     fix_arc_disk_mapping(block1c, mappings, version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
-    block1c->ArcDiskInformation = fix_address_mapping(block1c->ArcDiskInformation, store, va);
+    block1c->ArcDiskInformation = (ARC_DISK_INFORMATION*)fix_address_mapping(block1c->ArcDiskInformation, store, va);
 
     if (block1c->ArcBootDeviceName)
-        block1c->ArcBootDeviceName = find_virtual_address(block1c->ArcBootDeviceName, mappings);
+        block1c->ArcBootDeviceName = (char*)find_virtual_address(block1c->ArcBootDeviceName, mappings);
 
     if (block1c->ArcHalDeviceName)
-        block1c->ArcHalDeviceName = find_virtual_address(block1c->ArcHalDeviceName, mappings);
+        block1c->ArcHalDeviceName = (char*)find_virtual_address(block1c->ArcHalDeviceName, mappings);
 
     if (block1c->NtBootPathName)
-        block1c->NtBootPathName = find_virtual_address(block1c->NtBootPathName, mappings);
+        block1c->NtBootPathName = (char*)find_virtual_address(block1c->NtBootPathName, mappings);
 
     if (block1c->NtHalPathName)
-        block1c->NtHalPathName = find_virtual_address(block1c->NtHalPathName, mappings);
+        block1c->NtHalPathName = (char*)find_virtual_address(block1c->NtHalPathName, mappings);
 
     if (block1c->LoadOptions)
-        block1c->LoadOptions = find_virtual_address(block1c->LoadOptions, mappings);
+        block1c->LoadOptions = (char*)find_virtual_address(block1c->LoadOptions, mappings);
 
     fix_list_mapping(&extblock1c->FirmwareDescriptorListHead, mappings);
 
@@ -1074,7 +1074,7 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
     for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
         if (store->debug_device_descriptor.BaseAddress[i].Valid && store->debug_device_descriptor.BaseAddress[i].Type == CmResourceTypeMemory) {
             store->debug_device_descriptor.BaseAddress[i].TranslatedAddress =
-                find_virtual_address(store->debug_device_descriptor.BaseAddress[i].TranslatedAddress, mappings);
+                (uint8_t*)find_virtual_address(store->debug_device_descriptor.BaseAddress[i].TranslatedAddress, mappings);
         }
     }
 
@@ -1453,7 +1453,7 @@ static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, wchar_t** pnam
     memcpy(tmp, name, bs * sizeof(wchar_t));
     tmp[bs] = 0;
 
-    Status = dir->Open(dir, h, tmp, EFI_FILE_MODE_READ, 0);
+    Status = dir->Open(dir, h, (CHAR16*)tmp, EFI_FILE_MODE_READ, 0);
     if (Status != EFI_NOT_FOUND) {
         if (name[bs] == 0)
             *pname = &name[bs];
@@ -1484,7 +1484,7 @@ static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, wchar_t** pnam
         if (size == 0)
             break;
 
-        fn = ((EFI_FILE_INFO*)buf)->FileName;
+        fn = (wchar_t*)((EFI_FILE_INFO*)buf)->FileName;
 
         if (!wcsicmp(tmp, fn)) {
             if (name[bs] == 0)
@@ -1492,7 +1492,7 @@ static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, wchar_t** pnam
             else
                 *pname = &name[bs + 1];
 
-            return dir->Open(dir, h, fn, EFI_FILE_MODE_READ, 0);
+            return dir->Open(dir, h, (CHAR16*)fn, EFI_FILE_MODE_READ, 0);
         }
     } while (true);
 
@@ -1503,7 +1503,7 @@ EFI_STATUS open_file(EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* h, const wchar_t* nam
     EFI_FILE_HANDLE orig_dir = dir;
     EFI_STATUS Status;
 
-    Status = dir->Open(dir, h, (wchar_t*)name, EFI_FILE_MODE_READ, 0);
+    Status = dir->Open(dir, h, (CHAR16*)name, EFI_FILE_MODE_READ, 0);
     if (Status != EFI_NOT_FOUND)
         return Status;
 
@@ -2135,7 +2135,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
             pa = (uint8_t*)pa + sizeof(BOOT_DRIVER_LIST_ENTRY);
 
             bdle->FilePath.Length = bdle->FilePath.MaximumLength = (wcslen(d->dir) + 1 + wcslen(d->file)) * sizeof(wchar_t);
-            bdle->FilePath.Buffer = pa;
+            bdle->FilePath.Buffer = (wchar_t*)pa;
 
             memcpy(pa, d->dir, wcslen(d->dir) * sizeof(wchar_t));
             pa = (uint8_t*)pa + (wcslen(d->dir) * sizeof(wchar_t));
@@ -2147,7 +2147,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
             pa = (uint8_t*)pa + (wcslen(d->file) * sizeof(wchar_t));
 
             bdle->RegistryPath.Length = bdle->RegistryPath.MaximumLength = sizeof(reg_prefix) - sizeof(wchar_t) + (wcslen(d->name) * sizeof(wchar_t));
-            bdle->RegistryPath.Buffer = pa;
+            bdle->RegistryPath.Buffer = (wchar_t*)pa;
 
             memcpy(pa, reg_prefix, sizeof(reg_prefix) - sizeof(wchar_t));
             pa = (uint8_t*)pa + sizeof(reg_prefix) - sizeof(wchar_t);
@@ -4332,7 +4332,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 #endif
 
-    gdt = initialize_gdt(bs, tss, nmitss, dftss, mctss, version, pcrva);
+    gdt = (gdt_entry*)initialize_gdt(bs, tss, nmitss, dftss, mctss, version, pcrva);
     if (!gdt) {
         print_string("initialize_gdt failed\n");
         Status = EFI_OUT_OF_RESOURCES;
@@ -4348,7 +4348,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     gdt = (gdt_entry*)va;
     va = (uint8_t*)va + (GDT_PAGES * EFI_PAGE_SIZE);
 
-    idt = initialize_idt(bs);
+    idt = (idt_entry*)initialize_idt(bs);
     if (!gdt) {
         print_string("initialize_idt failed\n");
         Status = EFI_OUT_OF_RESOURCES;
@@ -4886,7 +4886,7 @@ EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, FILEPATH_DEVICE_PATH* dp, 
         return Status;
     }
 
-    Status = root->Open(root, dir, name, EFI_FILE_MODE_READ, 0);
+    Status = root->Open(root, dir, (CHAR16*)name, EFI_FILE_MODE_READ, 0);
 
     systable->BootServices->FreePool(name);
     root->Close(root);
@@ -4937,7 +4937,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
         goto end;
     }
 
-    Status = dir->Open(dir, &drivers, (wchar_t*)drivers_dir, EFI_FILE_MODE_READ, 0);
+    Status = dir->Open(dir, &drivers, (CHAR16*)drivers_dir, EFI_FILE_MODE_READ, 0);
 
     dir->Close(dir);
 
@@ -4971,7 +4971,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
         if (size == 0)
             break;
 
-        fn = ((EFI_FILE_INFO*)buf)->FileName;
+        fn = (wchar_t*)((EFI_FILE_INFO*)buf)->FileName;
 
         len = wcslen(fn);
 
@@ -5378,7 +5378,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
                 return;
             }
 
-            Status = quib->GetWindowsDriverName(quib, fs_driver, &len);
+            Status = quib->GetWindowsDriverName(quib, (CHAR16*)fs_driver, &len);
         }
 
         if (EFI_ERROR(Status) && Status != EFI_UNSUPPORTED) {

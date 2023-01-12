@@ -251,7 +251,7 @@ EFI_STATUS load_font() {
         return EFI_INVALID_PARAMETER;
     }
 
-    error = FT_New_Memory_Face(ft, font_data, font_size, 0, &face);
+    error = FT_New_Memory_Face(ft, (const FT_Byte*)font_data, font_size, 0, &face);
     if (error) {
         char s[255], *p;
 
