@@ -1778,7 +1778,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 }
 
 static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, HKEY ccs, LIST_ENTRY* images, LIST_ENTRY* boot_drivers,
-                               LIST_ENTRY* mappings, void** va, LIST_ENTRY* core_drivers, int32_t hwconfig, wchar_t* fs_driver) {
+                               LIST_ENTRY* mappings, void** va, LIST_ENTRY* core_drivers, int32_t hwconfig, const wchar_t* fs_driver) {
     EFI_STATUS Status;
     HKEY services, sgokey;
     wchar_t name[255], group[255], *sgo;
