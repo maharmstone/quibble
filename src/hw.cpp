@@ -334,7 +334,7 @@ static EFI_STATUS add_pci_config(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_
     reslist.reg_info.NoBuses = count;
     reslist.reg_info.HardwareMechanism = 1;
 
-    Status = add_ccd(bs, parent, AdapterClass, MultiFunctionAdapter, 0, 0, 0xffffffff, "PCI", &reslist.prl,
+    Status = add_ccd(bs, parent, AdapterClass, MultiFunctionAdapter, (IDENTIFIER_FLAG)0, 0, 0xffffffff, "PCI", &reslist.prl,
                      sizeof(reslist), va, mappings, NULL);
     if (EFI_ERROR(Status)) {
         print_error("add_ccd", Status);
