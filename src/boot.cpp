@@ -5513,6 +5513,7 @@ static void get_edid(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle) {
     bs->FreePool(handles);
 }
 
+extern "C"
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
     EFI_STATUS Status;
 

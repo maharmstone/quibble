@@ -382,6 +382,7 @@ void ft_free(FT_Memory memory, void* block) {
     systable->BootServices->FreePool(block);
 }
 
+extern "C"
 FT_Memory FT_New_Memory() {
     EFI_STATUS Status;
     FT_Memory memory;
@@ -398,6 +399,7 @@ FT_Memory FT_New_Memory() {
     return memory;
 }
 
+extern "C"
 void FT_Done_Memory(FT_Memory memory) {
     UNUSED(memory);
 }

@@ -18,17 +18,17 @@ else()
     add_compile_options(-fno-stack-check -fno-stack-protector -mno-stack-arg-probe)
 endif()
 
-set(SRC_FILES src/apiset.c
-    src/boot.c
-    src/debug.c
-    src/hw.c
-    src/mem.c
-    src/menu.c
-    src/misc.c
-    src/peload.c
-    src/reg.c
-    src/tinymt32.c
-    src/print.c)
+set(SRC_FILES src/apiset.cpp
+    src/boot.cpp
+    src/debug.cpp
+    src/hw.cpp
+    src/mem.cpp
+    src/menu.cpp
+    src/misc.cpp
+    src/peload.cpp
+    src/reg.cpp
+    src/tinymt32.cpp
+    src/print.cpp)
 
 if(MSVC)
     enable_language(ASM_MASM)
@@ -56,7 +56,7 @@ endif()
 
 target_compile_options(quibble PRIVATE
      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-          -Wall -Wextra -Werror-implicit-function-declaration -Wno-address-of-packed-member -Werror=pointer-arith>
+          -Wall -Wextra -Wno-address-of-packed-member -Werror=pointer-arith -fno-exceptions>
      $<$<CXX_COMPILER_ID:MSVC>:
           /W4 /Oi->)
 
@@ -97,7 +97,7 @@ target_link_libraries(quibble freetype)
 
 set(SRC_FILES src/btrfs/btrfs.c
     src/btrfs/crc32c.c
-    src/misc.c
+    src/misc.cpp
     src/btrfs/zlib/adler32.c
     src/btrfs/zlib/deflate.c
     src/btrfs/zlib/inffast.c
