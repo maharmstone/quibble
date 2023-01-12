@@ -23,7 +23,7 @@
 #include "print.h"
 
 typedef struct {
-    EFI_REGISTRY_HIVE public;
+    EFI_REGISTRY_HIVE pub;
     size_t size;
     UINTN pages;
     void* data;
@@ -122,7 +122,7 @@ static bool check_header(hive* h) {
 }
 
 static EFI_STATUS EFIAPI close_hive(EFI_REGISTRY_HIVE* This) {
-    hive* h = _CR(This, hive, public);
+    hive* h = _CR(This, hive, pub);
 
     if (h->data)
         bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)h->data, h->pages);
@@ -133,7 +133,7 @@ static EFI_STATUS EFIAPI close_hive(EFI_REGISTRY_HIVE* This) {
 }
 
 static EFI_STATUS EFIAPI find_root(EFI_REGISTRY_HIVE* This, HKEY* Key) {
-    hive* h = _CR(This, hive, public);
+    hive* h = _CR(This, hive, pub);
     HBASE_BLOCK* base_block = (HBASE_BLOCK*)h->data;
 
     *Key = 0x1000 + base_block->RootCell;
@@ -142,7 +142,7 @@ static EFI_STATUS EFIAPI find_root(EFI_REGISTRY_HIVE* This, HKEY* Key) {
 }
 
 static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Index, wchar_t* Name, UINT32 NameLength) {
-    hive* h = _CR(This, hive, public);
+    hive* h = _CR(This, hive, pub);
     int32_t size;
     CM_KEY_NODE* nk;
     CM_KEY_FAST_INDEX* lh;
@@ -373,7 +373,7 @@ static EFI_STATUS find_child_key(hive* h, HKEY parent, const wchar_t* namebit, U
 
 static EFI_STATUS EFIAPI find_key(EFI_REGISTRY_HIVE* This, HKEY Parent, const wchar_t* Path, HKEY* Key) {
     EFI_STATUS Status;
-    hive* h = _CR(This, hive, public);
+    hive* h = _CR(This, hive, pub);
     UINTN nblen;
     HKEY k;
 
@@ -398,7 +398,7 @@ static EFI_STATUS EFIAPI find_key(EFI_REGISTRY_HIVE* This, HKEY Parent, const wc
 }
 
 static EFI_STATUS EFIAPI enum_values(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Index, wchar_t* Name, UINT32 NameLength, UINT32* Type) {
-    hive* h = _CR(This, hive, public);
+    hive* h = _CR(This, hive, pub);
     int32_t size;
     CM_KEY_NODE* nk;
     uint32_t* list;
@@ -492,7 +492,7 @@ static EFI_STATUS EFIAPI enum_values(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 I
 
 static EFI_STATUS EFIAPI query_value_no_copy(EFI_REGISTRY_HIVE* This, HKEY Key, const wchar_t* Name, void** Data,
                                              UINT32* DataLength, UINT32* Type) {
-    hive* h = _CR(This, hive, public);
+    hive* h = _CR(This, hive, pub);
     int32_t size;
     CM_KEY_NODE* nk;
     uint32_t* list;
@@ -658,7 +658,7 @@ static EFI_STATUS EFIAPI query_value(EFI_REGISTRY_HIVE* This, HKEY Key, const wc
 }
 
 static EFI_STATUS steal_data(EFI_REGISTRY_HIVE* This, void** Data, UINT32* Size) {
-    hive* h = _CR(This, hive, public);
+    hive* h = _CR(This, hive, pub);
 
     *Data = h->data;
     *Size = h->size;
@@ -801,16 +801,16 @@ static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive
 
     clear_volatile(h, 0x1000 + ((HBASE_BLOCK*)h->data)->RootCell);
 
-    h->public.Close = close_hive;
-    h->public.FindRoot = find_root;
-    h->public.EnumKeys = enum_keys;
-    h->public.FindKey = find_key;
-    h->public.EnumValues = enum_values;
-    h->public.QueryValue = query_value;
-    h->public.StealData = steal_data;
-    h->public.QueryValueNoCopy = query_value_no_copy;
+    h->pub.Close = close_hive;
+    h->pub.FindRoot = find_root;
+    h->pub.EnumKeys = enum_keys;
+    h->pub.FindKey = find_key;
+    h->pub.EnumValues = enum_values;
+    h->pub.QueryValue = query_value;
+    h->pub.StealData = steal_data;
+    h->pub.QueryValueNoCopy = query_value_no_copy;
 
-    *Hive = &h->public;
+    *Hive = &h->pub;
 
     return EFI_SUCCESS;
 }
