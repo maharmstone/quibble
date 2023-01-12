@@ -64,7 +64,7 @@ typedef struct {
     uint32_t RootCell;
     uint32_t Length;
     uint32_t Cluster;
-    WCHAR FileName[HIVE_FILENAME_MAXLEN + 1];
+    wchar_t FileName[HIVE_FILENAME_MAXLEN + 1];
     uint32_t Reserved1[99];
     uint32_t CheckSum;
     uint32_t Reserved2[0x37E];
@@ -93,7 +93,7 @@ typedef struct {
     uint32_t WorkVar;
     uint16_t NameLength;
     uint16_t ClassLength;
-    WCHAR Name[1];
+    wchar_t Name[1];
 } CM_KEY_NODE;
 
 typedef struct {
@@ -115,7 +115,7 @@ typedef struct {
     uint32_t Type;
     uint16_t Flags;
     uint16_t Spare;
-    WCHAR Name[1];
+    wchar_t Name[1];
 } CM_KEY_VALUE;
 
 typedef struct {

@@ -33,10 +33,10 @@
 
 typedef struct {
     LIST_ENTRY list_entry;
-    WCHAR* name;
-    WCHAR* file;
-    WCHAR* dir;
-    WCHAR* group;
+    wchar_t* name;
+    wchar_t* file;
+    wchar_t* dir;
+    wchar_t* group;
     uint32_t tag;
 } driver;
 
@@ -85,8 +85,8 @@ typedef struct {
 
 typedef struct _command_line {
     char* debug_type;
-    WCHAR* hal;
-    WCHAR* kernel;
+    wchar_t* hal;
+    wchar_t* kernel;
     uint64_t subvol;
 #ifdef _X86_
     unsigned int pae;
@@ -126,12 +126,12 @@ typedef void (EFIAPI* change_stack_cb) (
     EFI_HANDLE image_handle
 );
 
-static const WCHAR system_root[] = L"\\SystemRoot\\";
+static const wchar_t system_root[] = L"\\SystemRoot\\";
 
 // FIXME - calls to protocols should include pointer to callback to display any errors (and also TRACE etc.?)
 
-EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const WCHAR* name, TYPE_OF_MEMORY memory_type,
-                     const WCHAR* dir, bool dll, BOOT_DRIVER_LIST_ENTRY* bdle, unsigned int order,
+EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const wchar_t* name, TYPE_OF_MEMORY memory_type,
+                     const wchar_t* dir, bool dll, BOOT_DRIVER_LIST_ENTRY* bdle, unsigned int order,
                      bool no_reloc) {
     EFI_STATUS Status;
     image* img;
@@ -144,8 +144,8 @@ EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const WCHAR* nam
 
     // FIXME - show error if name too long?
 
-    wcsncpy(img->name, name, sizeof(img->name) / sizeof(WCHAR));
-    wcsncpy(img->dir, dir, sizeof(img->dir) / sizeof(WCHAR));
+    wcsncpy(img->name, name, sizeof(img->name) / sizeof(wchar_t));
+    wcsncpy(img->dir, dir, sizeof(img->dir) / sizeof(wchar_t));
     InsertTailList(images, &img->list_entry);
 
     img->img = NULL;
@@ -1433,12 +1433,12 @@ static void find_apic() {
     apic = (void*)((uintptr_t)apic & 0xfffff000);
 }
 
-static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, WCHAR** pname, EFI_FILE_HANDLE* h) {
+static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, wchar_t** pname, EFI_FILE_HANDLE* h) {
     EFI_STATUS Status;
     unsigned int len, bs;
     UINTN size;
-    WCHAR* name = *pname;
-    WCHAR tmp[MAX_PATH];
+    wchar_t* name = *pname;
+    wchar_t tmp[MAX_PATH];
 
     len = wcslen(name);
     bs = len;
@@ -1450,7 +1450,7 @@ static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, WCHAR** pname,
         }
     }
 
-    memcpy(tmp, name, bs * sizeof(WCHAR));
+    memcpy(tmp, name, bs * sizeof(wchar_t));
     tmp[bs] = 0;
 
     Status = dir->Open(dir, h, tmp, EFI_FILE_MODE_READ, 0);
@@ -1470,8 +1470,8 @@ static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, WCHAR** pname,
     }
 
     do {
-        WCHAR* fn;
-        WCHAR buf[1024];
+        wchar_t* fn;
+        wchar_t buf[1024];
 
         size = sizeof(buf);
 
@@ -1499,16 +1499,16 @@ static EFI_STATUS open_file_case_insensitive(EFI_FILE_HANDLE dir, WCHAR** pname,
     return EFI_NOT_FOUND;
 }
 
-EFI_STATUS open_file(EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* h, const WCHAR* name) {
+EFI_STATUS open_file(EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* h, const wchar_t* name) {
     EFI_FILE_HANDLE orig_dir = dir;
     EFI_STATUS Status;
 
-    Status = dir->Open(dir, h, (WCHAR*)name, EFI_FILE_MODE_READ, 0);
+    Status = dir->Open(dir, h, (wchar_t*)name, EFI_FILE_MODE_READ, 0);
     if (Status != EFI_NOT_FOUND)
         return Status;
 
     while (name[0] != 0) {
-        Status = open_file_case_insensitive(dir, (WCHAR**)&name, h);
+        Status = open_file_case_insensitive(dir, (wchar_t**)&name, h);
         if (EFI_ERROR(Status)) {
             if (dir != orig_dir)
                 dir->Close(dir);
@@ -1528,7 +1528,7 @@ EFI_STATUS open_file(EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* h, const WCHAR* name)
     return EFI_INVALID_PARAMETER;
 }
 
-EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const WCHAR* name, void** data, size_t* size) {
+EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const wchar_t* name, void** data, size_t* size) {
     EFI_STATUS Status;
     EFI_FILE_HANDLE file;
     size_t file_size, pages;
@@ -1613,7 +1613,7 @@ EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const WCHAR* na
 static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_REGISTRY_HIVE* hive, HKEY ccs, uint16_t build) {
     EFI_STATUS Status;
     HKEY key;
-    WCHAR s[255], acp[MAX_PATH], oemcp[MAX_PATH], lang[MAX_PATH];
+    wchar_t s[255], acp[MAX_PATH], oemcp[MAX_PATH], lang[MAX_PATH];
     uint32_t length, type;
 
     Status = hive->FindKey(hive, ccs, L"Control\\Nls\\CodePage", &key);
@@ -1683,7 +1683,7 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
     }
 
     if (build >= WIN10_BUILD_1803)
-        wcsncpy(lang, L"l_intl.nls", sizeof(lang) / sizeof(WCHAR));
+        wcsncpy(lang, L"l_intl.nls", sizeof(lang) / sizeof(wchar_t));
     else {
         // query CCS\Control\Nls\Language\Default
 
@@ -1778,18 +1778,18 @@ static EFI_STATUS load_nls(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_
 }
 
 static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, HKEY ccs, LIST_ENTRY* images, LIST_ENTRY* boot_drivers,
-                               LIST_ENTRY* mappings, void** va, LIST_ENTRY* core_drivers, int32_t hwconfig, WCHAR* fs_driver) {
+                               LIST_ENTRY* mappings, void** va, LIST_ENTRY* core_drivers, int32_t hwconfig, wchar_t* fs_driver) {
     EFI_STATUS Status;
     HKEY services, sgokey;
-    WCHAR name[255], group[255], *sgo;
+    wchar_t name[255], group[255], *sgo;
     unsigned int i;
     LIST_ENTRY drivers;
     LIST_ENTRY* le;
     uint32_t length, reg_type;
     size_t boot_list_size;
 
-    static const WCHAR reg_prefix[] = L"\\Registry\\Machine\\System\\CurrentControlSet\\Services\\";
-    static const WCHAR system_root[] = L"\\SystemRoot\\";
+    static const wchar_t reg_prefix[] = L"\\Registry\\Machine\\System\\CurrentControlSet\\Services\\";
+    static const wchar_t system_root[] = L"\\SystemRoot\\";
 
     if (!fs_driver)
         fs_driver = L"fastfat";
@@ -1807,12 +1807,12 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
     do {
         HKEY key;
         uint32_t type, start, tag;
-        WCHAR image_path[MAX_PATH], dir[MAX_PATH], *image_name;
+        wchar_t image_path[MAX_PATH], dir[MAX_PATH], *image_name;
         size_t pos;
         driver* d;
         bool is_fs_driver;
 
-        Status = hive->EnumKeys(hive, services, i, name, sizeof(name) / sizeof(WCHAR));
+        Status = hive->EnumKeys(hive, services, i, name, sizeof(name) / sizeof(wchar_t));
 
         if (Status == EFI_NOT_FOUND)
             break;
@@ -1847,7 +1847,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
             Status = hive->FindKey(hive, key, L"StartOverride", &sokey);
             if (!EFI_ERROR(Status)) {
-                WCHAR soname[12];
+                wchar_t soname[12];
                 uint32_t soval;
 
                 itow(hwconfig, soname);
@@ -1871,21 +1871,21 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
         Status = hive->QueryValue(hive, key, L"ImagePath", image_path, &length, &reg_type);
 
         if (EFI_ERROR(Status) || (reg_type != REG_SZ && reg_type != REG_EXPAND_SZ)) {
-            wcsncpy(image_path, L"system32\\drivers\\", sizeof(image_path) / sizeof(WCHAR));
-            wcsncat(image_path, name, sizeof(image_path) / sizeof(WCHAR));
-            wcsncat(image_path, L".sys", sizeof(image_path) / sizeof(WCHAR));
+            wcsncpy(image_path, L"system32\\drivers\\", sizeof(image_path) / sizeof(wchar_t));
+            wcsncat(image_path, name, sizeof(image_path) / sizeof(wchar_t));
+            wcsncat(image_path, L".sys", sizeof(image_path) / sizeof(wchar_t));
         } else
-            image_path[length / sizeof(WCHAR)] = 0;
+            image_path[length / sizeof(wchar_t)] = 0;
 
         // remove \SystemRoot\ prefix if present
-        if (wcslen(image_path) > (sizeof(system_root) / sizeof(WCHAR)) - 1 && !memcmp(image_path, system_root, (sizeof(system_root) / sizeof(WCHAR)) - 1))
-            memcpy(image_path, &image_path[(sizeof(system_root) / sizeof(WCHAR)) - 1], (wcslen(image_path) * sizeof(WCHAR)) - sizeof(system_root) + (2*sizeof(WCHAR)));
+        if (wcslen(image_path) > (sizeof(system_root) / sizeof(wchar_t)) - 1 && !memcmp(image_path, system_root, (sizeof(system_root) / sizeof(wchar_t)) - 1))
+            memcpy(image_path, &image_path[(sizeof(system_root) / sizeof(wchar_t)) - 1], (wcslen(image_path) * sizeof(wchar_t)) - sizeof(system_root) + (2*sizeof(wchar_t)));
 
         pos = wcslen(image_path) - 1;
         while (true) {
             if (image_path[pos] == '\\') {
                 image_path[pos] = 0;
-                wcsncpy(dir, image_path, sizeof(dir) / sizeof(WCHAR));
+                wcsncpy(dir, image_path, sizeof(dir) / sizeof(wchar_t));
 
                 image_name = &image_path[pos + 1];
                 break;
@@ -1905,16 +1905,16 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
             goto end;
         }
 
-        Status = bs->AllocatePool(EfiLoaderData, (wcslen(name) + 1) * sizeof(WCHAR), (void**)&d->name);
+        Status = bs->AllocatePool(EfiLoaderData, (wcslen(name) + 1) * sizeof(wchar_t), (void**)&d->name);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePool", Status);
             bs->FreePool(d);
             goto end;
         }
 
-        memcpy(d->name, name, (wcslen(name) + 1) * sizeof(WCHAR));
+        memcpy(d->name, name, (wcslen(name) + 1) * sizeof(wchar_t));
 
-        Status = bs->AllocatePool(EfiLoaderData, (wcslen(image_name) + 1) * sizeof(WCHAR), (void**)&d->file);
+        Status = bs->AllocatePool(EfiLoaderData, (wcslen(image_name) + 1) * sizeof(wchar_t), (void**)&d->file);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePool", Status);
             bs->FreePool(d->name);
@@ -1922,9 +1922,9 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
             goto end;
         }
 
-        memcpy(d->file, image_name, (wcslen(image_name) + 1) * sizeof(WCHAR));
+        memcpy(d->file, image_name, (wcslen(image_name) + 1) * sizeof(wchar_t));
 
-        Status = bs->AllocatePool(EfiLoaderData, (wcslen(dir) + 1) * sizeof(WCHAR), (void**)&d->dir);
+        Status = bs->AllocatePool(EfiLoaderData, (wcslen(dir) + 1) * sizeof(wchar_t), (void**)&d->dir);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePool", Status);
             bs->FreePool(d->file);
@@ -1933,7 +1933,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
             goto end;
         }
 
-        memcpy(d->dir, dir, (wcslen(dir) + 1) * sizeof(WCHAR));
+        memcpy(d->dir, dir, (wcslen(dir) + 1) * sizeof(wchar_t));
 
         d->group = NULL;
 
@@ -1942,9 +1942,9 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
         Status = hive->QueryValue(hive, key, L"Group", group, &length, &reg_type);
 
         if (!EFI_ERROR(Status) && reg_type == REG_SZ) {
-            group[length / sizeof(WCHAR)] = 0;
+            group[length / sizeof(wchar_t)] = 0;
 
-            Status = bs->AllocatePool(EfiLoaderData, (wcslen(group) + 1) * sizeof(WCHAR), (void**)&d->group);
+            Status = bs->AllocatePool(EfiLoaderData, (wcslen(group) + 1) * sizeof(wchar_t), (void**)&d->group);
             if (EFI_ERROR(Status)) {
                 print_error("AllocatePool", Status);
                 bs->FreePool(d->dir);
@@ -1954,7 +1954,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
                 goto end;
             }
 
-            memcpy(d->group, group, (wcslen(group) + 1) * sizeof(WCHAR));
+            memcpy(d->group, group, (wcslen(group) + 1) * sizeof(wchar_t));
         }
 
         length = sizeof(tag);
@@ -2002,7 +2002,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
     {
         LIST_ENTRY drivers2;
-        WCHAR* s = sgo;
+        wchar_t* s = sgo;
         HKEY golkey = 0;
 
         Status = hive->FindKey(hive, ccs, L"Control\\GroupOrderList", &golkey);
@@ -2104,8 +2104,8 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
         driver* d = _CR(le, driver, list_entry);
 
         boot_list_size += sizeof(BOOT_DRIVER_LIST_ENTRY);
-        boot_list_size += (wcslen(d->dir) + 1 + wcslen(d->file)) * sizeof(WCHAR);
-        boot_list_size += sizeof(reg_prefix) - sizeof(WCHAR) + (wcslen(d->name) * sizeof(WCHAR)) + sizeof(WCHAR);
+        boot_list_size += (wcslen(d->dir) + 1 + wcslen(d->file)) * sizeof(wchar_t);
+        boot_list_size += sizeof(reg_prefix) - sizeof(wchar_t) + (wcslen(d->name) * sizeof(wchar_t)) + sizeof(wchar_t);
 
         le = le->Flink;
     }
@@ -2134,29 +2134,29 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
 
             pa = (uint8_t*)pa + sizeof(BOOT_DRIVER_LIST_ENTRY);
 
-            bdle->FilePath.Length = bdle->FilePath.MaximumLength = (wcslen(d->dir) + 1 + wcslen(d->file)) * sizeof(WCHAR);
+            bdle->FilePath.Length = bdle->FilePath.MaximumLength = (wcslen(d->dir) + 1 + wcslen(d->file)) * sizeof(wchar_t);
             bdle->FilePath.Buffer = pa;
 
-            memcpy(pa, d->dir, wcslen(d->dir) * sizeof(WCHAR));
-            pa = (uint8_t*)pa + (wcslen(d->dir) * sizeof(WCHAR));
+            memcpy(pa, d->dir, wcslen(d->dir) * sizeof(wchar_t));
+            pa = (uint8_t*)pa + (wcslen(d->dir) * sizeof(wchar_t));
 
-            *(WCHAR*)pa = '\\';
-            pa = (uint8_t*)pa + sizeof(WCHAR);
+            *(wchar_t*)pa = '\\';
+            pa = (uint8_t*)pa + sizeof(wchar_t);
 
-            memcpy(pa, d->file, wcslen(d->file) * sizeof(WCHAR));
-            pa = (uint8_t*)pa + (wcslen(d->file) * sizeof(WCHAR));
+            memcpy(pa, d->file, wcslen(d->file) * sizeof(wchar_t));
+            pa = (uint8_t*)pa + (wcslen(d->file) * sizeof(wchar_t));
 
-            bdle->RegistryPath.Length = bdle->RegistryPath.MaximumLength = sizeof(reg_prefix) - sizeof(WCHAR) + (wcslen(d->name) * sizeof(WCHAR));
+            bdle->RegistryPath.Length = bdle->RegistryPath.MaximumLength = sizeof(reg_prefix) - sizeof(wchar_t) + (wcslen(d->name) * sizeof(wchar_t));
             bdle->RegistryPath.Buffer = pa;
 
-            memcpy(pa, reg_prefix, sizeof(reg_prefix) - sizeof(WCHAR));
-            pa = (uint8_t*)pa + sizeof(reg_prefix) - sizeof(WCHAR);
+            memcpy(pa, reg_prefix, sizeof(reg_prefix) - sizeof(wchar_t));
+            pa = (uint8_t*)pa + sizeof(reg_prefix) - sizeof(wchar_t);
 
-            memcpy(pa, d->name, bdle->RegistryPath.Length - sizeof(reg_prefix) + sizeof(WCHAR));
-            pa = (uint8_t*)pa + bdle->RegistryPath.Length - sizeof(reg_prefix) + sizeof(WCHAR);
+            memcpy(pa, d->name, bdle->RegistryPath.Length - sizeof(reg_prefix) + sizeof(wchar_t));
+            pa = (uint8_t*)pa + bdle->RegistryPath.Length - sizeof(reg_prefix) + sizeof(wchar_t);
 
-            *(WCHAR*)pa = 0;
-            pa = (uint8_t*)pa + sizeof(WCHAR);
+            *(wchar_t*)pa = 0;
+            pa = (uint8_t*)pa + sizeof(wchar_t);
 
             bdle->LdrEntry = NULL;
 
@@ -2220,10 +2220,10 @@ static EFI_STATUS load_errata_inf(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive
                                   uint16_t version) {
     EFI_STATUS Status;
     HKEY key;
-    WCHAR name[MAX_PATH];
+    wchar_t name[MAX_PATH];
     uint32_t length, type;
 
-    static WCHAR infdir[] = L"inf\\";
+    static wchar_t infdir[] = L"inf\\";
 
     if (version >= _WIN32_WINNT_VISTA)
         Status = hive->FindKey(hive, ccs, L"Control\\Errata", &key);
@@ -2237,9 +2237,9 @@ static EFI_STATUS load_errata_inf(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive
 
     memcpy(name, infdir, sizeof(infdir));
 
-    length = sizeof(name) - sizeof(infdir) + sizeof(WCHAR);
+    length = sizeof(name) - sizeof(infdir) + sizeof(wchar_t);
 
-    Status = hive->QueryValue(hive, key, L"InfName", &name[(sizeof(infdir) / sizeof(WCHAR)) - 1], &length, &type);
+    Status = hive->QueryValue(hive, key, L"InfName", &name[(sizeof(infdir) / sizeof(wchar_t)) - 1], &length, &type);
     if (EFI_ERROR(Status)) {
         print_error("hive->QueryValueNoCopy", Status);
         return Status;
@@ -2285,13 +2285,13 @@ static EFI_STATUS load_errata_inf(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive
 static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32, EFI_REGISTRY_PROTOCOL* reg,
                                 void** data, uint32_t* size, LIST_ENTRY* images, LIST_ENTRY* drivers, LIST_ENTRY* mappings,
                                 void** va, uint16_t version, uint16_t build, EFI_FILE_HANDLE windir, LIST_ENTRY* core_drivers,
-                                WCHAR* fs_driver) {
+                                wchar_t* fs_driver) {
     EFI_STATUS Status;
     EFI_FILE_HANDLE file = NULL;
     EFI_REGISTRY_HIVE* hive;
     uint32_t set, length, type;
     HKEY rootkey, key, ccs;
-    WCHAR ccs_name[14];
+    wchar_t ccs_name[14];
     int32_t hwconfig = -1;
 
     Status = open_file(system32, &file, L"config\\SYSTEM");
@@ -2346,7 +2346,7 @@ static EFI_STATUS load_registry(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE system32,
         goto end;
     }
 
-    wcsncpy(ccs_name, L"ControlSet00x", sizeof(ccs_name) / sizeof(WCHAR));
+    wcsncpy(ccs_name, L"ControlSet00x", sizeof(ccs_name) / sizeof(wchar_t));
     ccs_name[12] = (set % 10) + '0';
 
     Status = hive->FindKey(hive, rootkey, ccs_name, &ccs);
@@ -2507,23 +2507,23 @@ static void add_loader_entry(image* img, LOADER_BLOCK1A* block1, void** pa, bool
     img->img->GetEntryPoint(img->img, &dte->EntryPoint);
     dte->CheckSum = img->img->GetCheckSum(img->img);
 
-    dte->BaseDllName.Length = dte->BaseDllName.MaximumLength = wcslen(img->name) * sizeof(WCHAR);
-    dte->BaseDllName.Buffer = (WCHAR*)pa2;
-    pa2 = (uint8_t*)pa2 + dte->BaseDllName.MaximumLength + sizeof(WCHAR);
+    dte->BaseDllName.Length = dte->BaseDllName.MaximumLength = wcslen(img->name) * sizeof(wchar_t);
+    dte->BaseDllName.Buffer = (wchar_t*)pa2;
+    pa2 = (uint8_t*)pa2 + dte->BaseDllName.MaximumLength + sizeof(wchar_t);
 
-    memcpy(dte->BaseDllName.Buffer, img->name, dte->BaseDllName.Length + sizeof(WCHAR));
+    memcpy(dte->BaseDllName.Buffer, img->name, dte->BaseDllName.Length + sizeof(wchar_t));
 
     dir_len = wcslen(img->dir);
 
     dte->FullDllName.Length = dte->FullDllName.MaximumLength =
-        sizeof(system_root) - sizeof(WCHAR) + (dir_len * sizeof(WCHAR)) + sizeof(WCHAR) + dte->BaseDllName.Length;
-    dte->FullDllName.Buffer = (WCHAR*)pa2;
-    pa2 = (uint8_t*)pa2 + dte->FullDllName.MaximumLength + sizeof(WCHAR);
+        sizeof(system_root) - sizeof(wchar_t) + (dir_len * sizeof(wchar_t)) + sizeof(wchar_t) + dte->BaseDllName.Length;
+    dte->FullDllName.Buffer = (wchar_t*)pa2;
+    pa2 = (uint8_t*)pa2 + dte->FullDllName.MaximumLength + sizeof(wchar_t);
 
-    wcsncpy(dte->FullDllName.Buffer, system_root, dte->FullDllName.Length / sizeof(WCHAR));
-    wcsncat(dte->FullDllName.Buffer, img->dir, dte->FullDllName.Length / sizeof(WCHAR));
-    wcsncat(dte->FullDllName.Buffer, L"\\", dte->FullDllName.Length / sizeof(WCHAR));
-    wcsncat(dte->FullDllName.Buffer, img->name, dte->FullDllName.Length / sizeof(WCHAR));
+    wcsncpy(dte->FullDllName.Buffer, system_root, dte->FullDllName.Length / sizeof(wchar_t));
+    wcsncat(dte->FullDllName.Buffer, img->dir, dte->FullDllName.Length / sizeof(wchar_t));
+    wcsncat(dte->FullDllName.Buffer, L"\\", dte->FullDllName.Length / sizeof(wchar_t));
+    wcsncat(dte->FullDllName.Buffer, img->name, dte->FullDllName.Length / sizeof(wchar_t));
 
     dte->EntryProcessed = 1;
     dte->LoadCount = 1;
@@ -2561,8 +2561,8 @@ static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images
         size += sizeof(KLDR_DATA_TABLE_ENTRY);
 
         name_len = wcslen(img->name);
-        size += (name_len + 1) * sizeof(WCHAR);
-        size += sizeof(system_root) - sizeof(WCHAR) + ((wcslen(img->dir) + name_len + 1 + 1) * sizeof(WCHAR));
+        size += (name_len + 1) * sizeof(wchar_t);
+        size += sizeof(system_root) - sizeof(wchar_t) + ((wcslen(img->dir) + name_len + 1 + 1) * sizeof(wchar_t));
 
         le = le->Flink;
     }
@@ -2686,7 +2686,7 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
     return EFI_SUCCESS;
 }
 
-EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void* va, EFI_FILE_HANDLE dir,
+EFI_STATUS load_image(image* img, wchar_t* name, EFI_PE_LOADER_PROTOCOL* pe, void* va, EFI_FILE_HANDLE dir,
                       command_line* cmdline, uint16_t build) {
     EFI_STATUS Status;
     EFI_FILE_HANDLE file;
@@ -2695,7 +2695,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
     if (!wcsicmp(name, L"kdcom.dll") && cmdline->debug_type && strcmp(cmdline->debug_type, "com")) {
         unsigned int len = strlen(cmdline->debug_type);
         unsigned int wlen;
-        WCHAR* newfile;
+        wchar_t* newfile;
 
         Status = utf8_to_utf16(NULL, 0, &wlen, cmdline->debug_type, len);
         if (EFI_ERROR(Status)) {
@@ -2703,7 +2703,7 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
             return Status;
         }
 
-        Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + (7 * sizeof(WCHAR)), (void**)&newfile);
+        Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + (7 * sizeof(wchar_t)), (void**)&newfile);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePool", Status);
             return Status;
@@ -2719,11 +2719,11 @@ EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void*
             return Status;
         }
 
-        newfile[(wlen / sizeof(WCHAR)) + 2] = '.';
-        newfile[(wlen / sizeof(WCHAR)) + 3] = 'd';
-        newfile[(wlen / sizeof(WCHAR)) + 4] = 'l';
-        newfile[(wlen / sizeof(WCHAR)) + 5] = 'l';
-        newfile[(wlen / sizeof(WCHAR)) + 6] = 0;
+        newfile[(wlen / sizeof(wchar_t)) + 2] = '.';
+        newfile[(wlen / sizeof(wchar_t)) + 3] = 'd';
+        newfile[(wlen / sizeof(wchar_t)) + 4] = 'l';
+        newfile[(wlen / sizeof(wchar_t)) + 5] = 'l';
+        newfile[(wlen / sizeof(wchar_t)) + 6] = 0;
 
         {
             char s[255], *p;
@@ -2933,12 +2933,12 @@ static void fix_image_order(LIST_ENTRY* images) {
 }
 
 static EFI_STATUS resolve_forward(char* name, uint64_t* address) {
-    WCHAR dll[MAX_PATH];
+    wchar_t dll[MAX_PATH];
     LIST_ENTRY* le;
     char* func;
 
     {
-        WCHAR* s;
+        wchar_t* s;
         char* c;
 
         c = name;
@@ -2963,12 +2963,12 @@ static EFI_STATUS resolve_forward(char* name, uint64_t* address) {
     le = images.Flink;
     while (le != &images) {
         image* img = _CR(le, image, list_entry);
-        WCHAR name[MAX_PATH];
+        wchar_t name[MAX_PATH];
 
-        wcsncpy(name, img->name, sizeof(name) / sizeof(WCHAR));
+        wcsncpy(name, img->name, sizeof(name) / sizeof(wchar_t));
 
         {
-            WCHAR* s = name;
+            wchar_t* s = name;
 
             while (*s != 0) {
                 if (*s == '.') {
@@ -3159,7 +3159,7 @@ static void parse_option(const char* option, size_t len, command_line* cmdline) 
             return;
         }
 
-        Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + sizeof(WCHAR), (void**)&cmdline->hal);
+        Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + sizeof(wchar_t), (void**)&cmdline->hal);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePool", Status);
             return;
@@ -3173,7 +3173,7 @@ static void parse_option(const char* option, size_t len, command_line* cmdline) 
             return;
         }
 
-        cmdline->hal[wlen / sizeof(WCHAR)] = 0;
+        cmdline->hal[wlen / sizeof(wchar_t)] = 0;
     } else if (len > sizeof(kernel) - 1 && !strnicmp(option, kernel, sizeof(kernel) - 1)) {
         unsigned int wlen;
 
@@ -3183,7 +3183,7 @@ static void parse_option(const char* option, size_t len, command_line* cmdline) 
             return;
         }
 
-        Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + sizeof(WCHAR), (void**)&cmdline->kernel);
+        Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + sizeof(wchar_t), (void**)&cmdline->kernel);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePool", Status);
             return;
@@ -3197,7 +3197,7 @@ static void parse_option(const char* option, size_t len, command_line* cmdline) 
             return;
         }
 
-        cmdline->kernel[wlen / sizeof(WCHAR)] = 0;
+        cmdline->kernel[wlen / sizeof(wchar_t)] = 0;
     } else if (len > sizeof(subvol) - 1 && !strnicmp(option, subvol, sizeof(subvol) - 1)) {
         uint64_t sn = 0;
         const char* s = &option[sizeof(subvol) - 1];
@@ -3661,7 +3661,7 @@ void call_startup(void* stack, void* loader_block, void* KiSystemStartup);
 
 static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE root, char* options,
                        char* path, char* arc_name, EFI_PE_LOADER_PROTOCOL* pe, EFI_REGISTRY_PROTOCOL* reg,
-                       command_line* cmdline, WCHAR* fs_driver) {
+                       command_line* cmdline, wchar_t* fs_driver) {
     EFI_STATUS Status;
     EFI_FILE_HANDLE windir = NULL, system32 = NULL, drivers_dir = NULL;
     LIST_ENTRY mappings;
@@ -3697,11 +3697,11 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     LOADER_EXTENSION_BLOCK3* extblock3;
     uintptr_t* loader_pages_spanned;
     unsigned int pathlen, pathwlen;
-    WCHAR* pathw;
+    wchar_t* pathw;
     KPCR* pcrva = NULL;
     bool kdstub_export_loaded = false;
 
-    static const WCHAR drivers_dir_path[] = L"system32\\drivers";
+    static const wchar_t drivers_dir_path[] = L"system32\\drivers";
 
     pathlen = strlen(path);
 
@@ -3711,7 +3711,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         return Status;
     }
 
-    Status = bs->AllocatePool(EfiLoaderData, pathwlen + sizeof(WCHAR), (void**)&pathw);
+    Status = bs->AllocatePool(EfiLoaderData, pathwlen + sizeof(wchar_t), (void**)&pathw);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePool", Status);
         return Status;
@@ -3723,7 +3723,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         return Status;
     }
 
-    pathw[pathwlen / sizeof(WCHAR)] = 0;
+    pathw[pathwlen / sizeof(wchar_t)] = 0;
 
     // check if \\Windows exists
     Status = open_file(root, &windir, pathw);
@@ -3883,12 +3883,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
                 is_driver_dir = true;
 
-                if (name_len != (sizeof(drivers_dir_path) / sizeof(WCHAR)) - 1)
+                if (name_len != (sizeof(drivers_dir_path) / sizeof(wchar_t)) - 1)
                     is_driver_dir = false;
                 else {
-                    for (unsigned int i = 0; i < (sizeof(drivers_dir_path) / sizeof(WCHAR)) - 1; i++) {
-                        WCHAR c1 = drivers_dir_path[i];
-                        WCHAR c2 = img->dir[i];
+                    for (unsigned int i = 0; i < (sizeof(drivers_dir_path) / sizeof(wchar_t)) - 1; i++) {
+                        wchar_t c1 = drivers_dir_path[i];
+                        wchar_t c2 = img->dir[i];
 
                         if (c1 >= 'A' && c1 <= 'Z')
                             c1 = c1 - 'A' + 'a';
@@ -3966,7 +3966,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                 }
 
                 for (unsigned int i = 0; i < img->import_list->NumberOfImports; i++) {
-                    WCHAR s[MAX_PATH];
+                    wchar_t s[MAX_PATH];
                     unsigned int j;
                     char* name = (char*)((uint8_t*)img->import_list + img->import_list->Imports[i]);
 
@@ -3983,7 +3983,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                     // API set DLLs
                     if (version >= _WIN32_WINNT_WIN8 && (s[0] == 'E' || s[0] == 'e') && (s[1] == 'X' || s[1] == 'x') &&
                         (s[2] == 'T' || s[2] == 't') && s[3] == '-') {
-                        WCHAR newname[MAX_PATH];
+                        wchar_t newname[MAX_PATH];
 
                         if (!search_api_set(s, newname, version))
                             continue;
@@ -4000,7 +4000,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                             print_string(t);
                         }
 
-                        wcsncpy(s, newname, sizeof(s) / sizeof(WCHAR));
+                        wcsncpy(s, newname, sizeof(s) / sizeof(wchar_t));
                     }
 
                     {
@@ -4066,7 +4066,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         }
 
         for (unsigned int i = 0; i < img->import_list->NumberOfImports; i++) {
-            WCHAR s[MAX_PATH];
+            wchar_t s[MAX_PATH];
             unsigned int j;
             char* name = (char*)((uint8_t*)img->import_list + img->import_list->Imports[i]);
 
@@ -4080,12 +4080,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
             if (version >= _WIN32_WINNT_WIN8 && (s[0] == 'E' || s[0] == 'e') && (s[1] == 'X' || s[1] == 'x') &&
                 (s[2] == 'T' || s[2] == 't') && s[3] == '-') {
-                WCHAR newname[MAX_PATH];
+                wchar_t newname[MAX_PATH];
 
                 if (!search_api_set(s, newname, version))
                     continue;
 
-                wcsncpy(s, newname, sizeof(s) / sizeof(WCHAR));
+                wcsncpy(s, newname, sizeof(s) / sizeof(wchar_t));
             }
 
             {
@@ -4794,7 +4794,7 @@ static EFI_STATUS change_stack(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle, c
     return EFI_SUCCESS;
 }
 
-static EFI_STATUS create_file_device_path(EFI_BOOT_SERVICES* bs, EFI_DEVICE_PATH* fs, const WCHAR* path,
+static EFI_STATUS create_file_device_path(EFI_BOOT_SERVICES* bs, EFI_DEVICE_PATH* fs, const wchar_t* path,
                                           EFI_DEVICE_PATH_PROTOCOL** pdp) {
     EFI_STATUS Status;
     size_t path_len, fslen, fplen;
@@ -4802,8 +4802,8 @@ static EFI_STATUS create_file_device_path(EFI_BOOT_SERVICES* bs, EFI_DEVICE_PATH
     EFI_DEVICE_PATH_PROTOCOL* dp;
     EFI_DEVICE_PATH_PROTOCOL* end_dp;
 
-    path_len = wcslen(path) * sizeof(WCHAR);
-    fplen = offsetof(FILEPATH_DEVICE_PATH, PathName[0]) + path_len + sizeof(WCHAR);
+    path_len = wcslen(path) * sizeof(wchar_t);
+    fplen = offsetof(FILEPATH_DEVICE_PATH, PathName[0]) + path_len + sizeof(wchar_t);
 
     {
         EFI_DEVICE_PATH_PROTOCOL* dpbit = fs;
@@ -4832,9 +4832,9 @@ static EFI_STATUS create_file_device_path(EFI_BOOT_SERVICES* bs, EFI_DEVICE_PATH
     fp->Header.SubType = MEDIA_FILEPATH_DP;
     *(uint16_t*)fp->Header.Length = fplen;
 
-    memcpy(fp->PathName, path, path_len + sizeof(WCHAR));
+    memcpy(fp->PathName, path, path_len + sizeof(wchar_t));
 
-    end_dp = (EFI_DEVICE_PATH_PROTOCOL*)&fp->PathName[(path_len / sizeof(WCHAR)) + 1];
+    end_dp = (EFI_DEVICE_PATH_PROTOCOL*)&fp->PathName[(path_len / sizeof(wchar_t)) + 1];
     SetDevicePathEndNode(end_dp);
 
     *pdp = dp;
@@ -4845,7 +4845,7 @@ static EFI_STATUS create_file_device_path(EFI_BOOT_SERVICES* bs, EFI_DEVICE_PATH
 EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, FILEPATH_DEVICE_PATH* dp, EFI_FILE_HANDLE* dir) {
     EFI_STATUS Status;
     unsigned int len;
-    WCHAR* name;
+    wchar_t* name;
     EFI_FILE_HANDLE root;
 
     if (dp->Header.Type != MEDIA_DEVICE_PATH || dp->Header.SubType != MEDIA_FILEPATH_DP)
@@ -4870,13 +4870,13 @@ EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, FILEPATH_DEVICE_PATH* dp, 
             return EFI_INVALID_PARAMETER;
     }
 
-    Status = systable->BootServices->AllocatePool(EfiLoaderData, (len + 1) * sizeof(WCHAR), (void**)&name);
+    Status = systable->BootServices->AllocatePool(EfiLoaderData, (len + 1) * sizeof(wchar_t), (void**)&name);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePool", Status);
         return Status;
     }
 
-    memcpy(name, dp->PathName, len * sizeof(WCHAR));
+    memcpy(name, dp->PathName, len * sizeof(wchar_t));
     name[len] = 0;
 
     Status = fs->OpenVolume(fs, &root);
@@ -4906,7 +4906,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
     bool drivers_loaded = false;
     char buf[1024];
 
-    static const WCHAR drivers_dir[] = L"drivers";
+    static const wchar_t drivers_dir[] = L"drivers";
 
     Status = bs->OpenProtocol(image_handle, &guid, (void**)&image, image_handle, NULL,
                               EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
@@ -4937,7 +4937,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
         goto end;
     }
 
-    Status = dir->Open(dir, &drivers, (WCHAR*)drivers_dir, EFI_FILE_MODE_READ, 0);
+    Status = dir->Open(dir, &drivers, (wchar_t*)drivers_dir, EFI_FILE_MODE_READ, 0);
 
     dir->Close(dir);
 
@@ -4952,12 +4952,12 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
     }
 
     do {
-        WCHAR* fn;
+        wchar_t* fn;
         UINTN size;
         size_t len;
         EFI_HANDLE h;
         EFI_DEVICE_PATH_PROTOCOL* dp;
-        WCHAR path[MAX_PATH];
+        wchar_t path[MAX_PATH];
 
         size = sizeof(buf);
 
@@ -4991,18 +4991,18 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
         }
 
         memcpy(path, ((FILEPATH_DEVICE_PATH*)image->FilePath)->PathName, *(uint16_t*)image->FilePath->Length);
-        path[*(uint16_t*)image->FilePath->Length / sizeof(WCHAR)] = 0;
+        path[*(uint16_t*)image->FilePath->Length / sizeof(wchar_t)] = 0;
 
-        for (int i = *(uint16_t*)image->FilePath->Length / sizeof(WCHAR); i >= 0; i--) {
+        for (int i = *(uint16_t*)image->FilePath->Length / sizeof(wchar_t); i >= 0; i--) {
             if (path[i] == '\\') {
                 path[i+1] = 0;
                 break;
             }
         }
 
-        wcsncat(path, drivers_dir, sizeof(path) / sizeof(WCHAR));
-        wcsncat(path, L"\\", sizeof(path) / sizeof(WCHAR));
-        wcsncat(path, fn, sizeof(path) / sizeof(WCHAR));
+        wcsncat(path, drivers_dir, sizeof(path) / sizeof(wchar_t));
+        wcsncat(path, L"\\", sizeof(path) / sizeof(wchar_t));
+        wcsncat(path, fn, sizeof(path) / sizeof(wchar_t));
 
         Status = create_file_device_path(bs, device_path, path, &dp);
         if (EFI_ERROR(Status)) {
@@ -5271,7 +5271,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
     char* arc_name;
     command_line cmdline;
     EFI_FILE_HANDLE root = NULL;
-    WCHAR* fs_driver = NULL;
+    wchar_t* fs_driver = NULL;
 
     Status = show_menu(systable, &opt);
     if (Status == EFI_ABORTED)

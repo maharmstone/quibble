@@ -61,8 +61,8 @@ typedef struct _EFI_PE_LOADER_PROTOCOL EFI_PE_LOADER_PROTOCOL;
 #define MAX_PATH 260
 
 typedef struct {
-    WCHAR name[MAX_PATH];
-    WCHAR dir[MAX_PATH];
+    wchar_t name[MAX_PATH];
+    wchar_t dir[MAX_PATH];
     EFI_PE_IMAGE* img;
     void* va;
     EFI_IMPORT_LIST* import_list;
@@ -76,7 +76,7 @@ typedef struct {
 
 typedef struct {
     char* name;
-    WCHAR* namew;
+    wchar_t* namew;
     char* system_path;
     char* options;
 } boot_option;
@@ -95,13 +95,13 @@ typedef struct _command_line command_line;
 extern void* stack;
 extern EFI_HANDLE image_handle;
 extern uint64_t cpu_frequency;
-EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const WCHAR* name, TYPE_OF_MEMORY memory_type,
-                     const WCHAR* dir, bool dll, BOOT_DRIVER_LIST_ENTRY* bdle, unsigned int order,
+EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const wchar_t* name, TYPE_OF_MEMORY memory_type,
+                     const wchar_t* dir, bool dll, BOOT_DRIVER_LIST_ENTRY* bdle, unsigned int order,
                      bool no_reloc);
-EFI_STATUS load_image(image* img, WCHAR* name, EFI_PE_LOADER_PROTOCOL* pe, void* va, EFI_FILE_HANDLE dir,
+EFI_STATUS load_image(image* img, wchar_t* name, EFI_PE_LOADER_PROTOCOL* pe, void* va, EFI_FILE_HANDLE dir,
                       command_line* cmdline, uint16_t build);
-EFI_STATUS open_file(EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* h, const WCHAR* name);
-EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const WCHAR* name, void** data, size_t* size);
+EFI_STATUS open_file(EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* h, const wchar_t* name);
+EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const wchar_t* name, void** data, size_t* size);
 EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, FILEPATH_DEVICE_PATH* dp, EFI_FILE_HANDLE* dir);
 
 // mem.c
@@ -135,7 +135,7 @@ extern void* apisetva;
 extern unsigned int apisetsize;
 EFI_STATUS load_api_set(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, EFI_PE_LOADER_PROTOCOL* pe, EFI_FILE_HANDLE dir,
                         void** va, uint16_t version, LIST_ENTRY* mappings, command_line* cmdline);
-bool search_api_set(WCHAR* dll, WCHAR* newname, uint16_t version);
+bool search_api_set(wchar_t* dll, wchar_t* newname, uint16_t version);
 
 // menu.c
 EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** opt);

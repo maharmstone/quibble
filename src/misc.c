@@ -18,7 +18,7 @@
 #include "misc.h"
 #include <stdbool.h>
 
-void wcsncpy(WCHAR* dest, const WCHAR* src, size_t n) {
+void wcsncpy(wchar_t* dest, const wchar_t* src, size_t n) {
     size_t i = 0;
 
     while (src[i] != 0) {
@@ -34,7 +34,7 @@ void wcsncpy(WCHAR* dest, const WCHAR* src, size_t n) {
     dest[i] = 0;
 }
 
-void wcsncat(WCHAR* dest, const WCHAR* src, size_t n) {
+void wcsncat(wchar_t* dest, const wchar_t* src, size_t n) {
     while (*dest != 0) {
         if (n == 0)
             return;
@@ -46,7 +46,7 @@ void wcsncat(WCHAR* dest, const WCHAR* src, size_t n) {
     wcsncpy(dest, src, n);
 }
 
-size_t wcslen(const WCHAR* s) {
+size_t wcslen(const wchar_t* s) {
     size_t i = 0;
 
     while (s[i] != 0) {
@@ -66,12 +66,12 @@ size_t strlen(const char* s) {
     return i;
 }
 
-int wcsicmp(const WCHAR* s1, const WCHAR* s2) {
+int wcsicmp(const wchar_t* s1, const wchar_t* s2) {
     size_t i = 0;
 
     while (true) {
-        WCHAR c1 = s1[i];
-        WCHAR c2 = s2[i];
+        wchar_t c1 = s1[i];
+        wchar_t c2 = s2[i];
 
         if (c1 == 0 && c2 == 0)
             return 0;
@@ -311,8 +311,8 @@ char* strcpy(char* dest, const char* src) {
     return orig_dest;
 }
 
-void itow(int v, WCHAR* w) {
-    WCHAR s[12], *p;
+void itow(int v, wchar_t* w) {
+    wchar_t s[12], *p;
     bool neg = false;
 
     if (v == 0) {
@@ -351,7 +351,7 @@ void itow(int v, WCHAR* w) {
     *w = 0;
 }
 
-EFI_STATUS utf8_to_utf16(WCHAR* dest, unsigned int dest_max, unsigned int* dest_len, const char* src, unsigned int src_len) {
+EFI_STATUS utf8_to_utf16(wchar_t* dest, unsigned int dest_max, unsigned int* dest_len, const char* src, unsigned int src_len) {
     EFI_STATUS Status = EFI_SUCCESS;
     uint8_t* in = (uint8_t*)src;
     uint16_t* out = (uint16_t*)dest;
@@ -433,7 +433,7 @@ EFI_STATUS utf8_to_utf16(WCHAR* dest, unsigned int dest_max, unsigned int* dest_
     return Status;
 }
 
-EFI_STATUS utf16_to_utf8(char* dest, unsigned int dest_max, unsigned int* dest_len, const WCHAR* src, unsigned int src_len) {
+EFI_STATUS utf16_to_utf8(char* dest, unsigned int dest_max, unsigned int* dest_len, const wchar_t* src, unsigned int src_len) {
     EFI_STATUS Status = EFI_SUCCESS;
     uint16_t* in = (uint16_t*)src;
     uint8_t* out = (uint8_t*)dest;
@@ -727,7 +727,7 @@ const char* error_string(EFI_STATUS Status) {
     }
 }
 
-char* stpcpy_utf16(char* dest, const WCHAR* src) {
+char* stpcpy_utf16(char* dest, const wchar_t* src) {
     while (*src) {
         uint32_t cp = *src;
 

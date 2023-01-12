@@ -129,7 +129,7 @@ typedef struct {
     void* KdReadCycleCounter;
     void* KdNetPringDbgLog;
     NTSTATUS* KdNetErrorStatus;
-    WCHAR** KdNetErrorString;
+    wchar_t** KdNetErrorString;
     uint32_t* KdNetHardwareId;
 } kdnet_exports2;
 
@@ -157,7 +157,7 @@ typedef NTSTATUS (__stdcall *KD_INITIALIZE_LIBRARY) (
 );
 
 NTSTATUS net_error_status = STATUS_SUCCESS;
-WCHAR* net_error_string = NULL;
+wchar_t* net_error_string = NULL;
 uint32_t net_hardware_id = 0;
 
 static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports,

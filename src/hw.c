@@ -888,7 +888,7 @@ EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs) {
     return EFI_SUCCESS;
 }
 
-static inline WCHAR hex_digit(uint8_t v) {
+static inline wchar_t hex_digit(uint8_t v) {
     if (v >= 0xa)
         return v + 'a' - 0xa;
     else
@@ -901,13 +901,13 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
     EFI_HANDLE* handles = NULL;
     UINTN count;
 
-    static const WCHAR dll_prefix[] = L"kd_02_";
-    static const WCHAR dll_suffix[] = L".dll";
+    static const wchar_t dll_prefix[] = L"kd_02_";
+    static const wchar_t dll_suffix[] = L".dll";
 
-    WCHAR dll[(sizeof(dll_prefix) / sizeof(WCHAR)) - 1 + (sizeof(dll_suffix) / sizeof(WCHAR)) - 1 + 4 + 1];
+    wchar_t dll[(sizeof(dll_prefix) / sizeof(wchar_t)) - 1 + (sizeof(dll_suffix) / sizeof(wchar_t)) - 1 + 4 + 1];
 
-    memcpy(dll, dll_prefix, sizeof(dll_prefix) - sizeof(WCHAR));
-    memcpy(dll + (sizeof(dll_prefix) / sizeof(WCHAR)) - 1 + 4, dll_suffix, sizeof(dll_suffix));
+    memcpy(dll, dll_prefix, sizeof(dll_prefix) - sizeof(wchar_t));
+    memcpy(dll + (sizeof(dll_prefix) / sizeof(wchar_t)) - 1 + 4, dll_suffix, sizeof(dll_suffix));
 
     Status = bs->LocateHandleBuffer(ByProtocol, &guid, NULL, &count, &handles);
 
@@ -919,7 +919,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
     for (unsigned int i = 0; i < count; i++) {
         EFI_PCI_IO_PROTOCOL* io;
         PCI_TYPE00 pci;
-        WCHAR* ptr;
+        wchar_t* ptr;
         EFI_GUID guid2 = EFI_DEVICE_PATH_PROTOCOL_GUID;
         EFI_DEVICE_PATH_PROTOCOL* device_path;
         ACPI_HID_DEVICE_PATH* acpi_dp;
@@ -981,7 +981,7 @@ EFI_STATUS kdnet_init(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, EFI_FILE_HANDL
             continue;
         }
 
-        ptr = &dll[(sizeof(dll_prefix) / sizeof(WCHAR)) - 1];
+        ptr = &dll[(sizeof(dll_prefix) / sizeof(wchar_t)) - 1];
 
         *ptr = hex_digit(pci.Hdr.VendorId >> 12); ptr++;
         *ptr = hex_digit((pci.Hdr.VendorId >> 8) & 0xf); ptr++;

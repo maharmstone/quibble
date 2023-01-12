@@ -141,7 +141,7 @@ static EFI_STATUS EFIAPI find_root(EFI_REGISTRY_HIVE* This, HKEY* Key) {
     return EFI_SUCCESS;
 }
 
-static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Index, WCHAR* Name, UINT32 NameLength) {
+static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Index, wchar_t* Name, UINT32 NameLength) {
     hive* h = _CR(This, hive, public);
     int32_t size;
     CM_KEY_NODE* nk;
@@ -230,7 +230,7 @@ static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Ind
     } else {
         unsigned int i = 0;
 
-        for (i = 0; i < nk2->NameLength / sizeof(WCHAR); i++) {
+        for (i = 0; i < nk2->NameLength / sizeof(wchar_t); i++) {
             if (i >= NameLength) {
                 overflow = true;
                 break;
@@ -245,7 +245,7 @@ static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Ind
     return overflow ? EFI_BUFFER_TOO_SMALL : EFI_SUCCESS;
 }
 
-static EFI_STATUS find_child_key(hive* h, HKEY parent, const WCHAR* namebit, UINTN nblen, HKEY* key) {
+static EFI_STATUS find_child_key(hive* h, HKEY parent, const wchar_t* namebit, UINTN nblen, HKEY* key) {
     int32_t size;
     CM_KEY_NODE* nk;
     CM_KEY_FAST_INDEX* lh;
@@ -320,8 +320,8 @@ static EFI_STATUS find_child_key(hive* h, HKEY parent, const WCHAR* namebit, UIN
                 continue;
 
             for (j = 0; j < nk2->NameLength; j++) {
-                WCHAR c1 = name[j];
-                WCHAR c2 = namebit[j];
+                wchar_t c1 = name[j];
+                wchar_t c2 = namebit[j];
 
                 if (c1 >= 'A' && c1 <= 'Z')
                     c1 = c1 - 'A' + 'a';
@@ -342,12 +342,12 @@ static EFI_STATUS find_child_key(hive* h, HKEY parent, const WCHAR* namebit, UIN
         } else {
             unsigned int j;
 
-            if (nk2->NameLength / sizeof(WCHAR) != nblen)
+            if (nk2->NameLength / sizeof(wchar_t) != nblen)
                 continue;
 
-            for (j = 0; j < nk2->NameLength / sizeof(WCHAR); j++) {
-                WCHAR c1 = nk2->Name[j];
-                WCHAR c2 = namebit[j];
+            for (j = 0; j < nk2->NameLength / sizeof(wchar_t); j++) {
+                wchar_t c1 = nk2->Name[j];
+                wchar_t c2 = namebit[j];
 
                 if (c1 >= 'A' && c1 <= 'Z')
                     c1 = c1 - 'A' + 'a';
@@ -359,7 +359,7 @@ static EFI_STATUS find_child_key(hive* h, HKEY parent, const WCHAR* namebit, UIN
                     break;
             }
 
-            if (j != nk2->NameLength / sizeof(WCHAR))
+            if (j != nk2->NameLength / sizeof(wchar_t))
                 continue;
 
             *key = 0x1000 + lh->List[i].Cell;
@@ -371,7 +371,7 @@ static EFI_STATUS find_child_key(hive* h, HKEY parent, const WCHAR* namebit, UIN
     return EFI_NOT_FOUND;
 }
 
-static EFI_STATUS EFIAPI find_key(EFI_REGISTRY_HIVE* This, HKEY Parent, const WCHAR* Path, HKEY* Key) {
+static EFI_STATUS EFIAPI find_key(EFI_REGISTRY_HIVE* This, HKEY Parent, const wchar_t* Path, HKEY* Key) {
     EFI_STATUS Status;
     hive* h = _CR(This, hive, public);
     UINTN nblen;
@@ -397,7 +397,7 @@ static EFI_STATUS EFIAPI find_key(EFI_REGISTRY_HIVE* This, HKEY Parent, const WC
     } while (true);
 }
 
-static EFI_STATUS EFIAPI enum_values(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Index, WCHAR* Name, UINT32 NameLength, UINT32* Type) {
+static EFI_STATUS EFIAPI enum_values(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Index, wchar_t* Name, UINT32 NameLength, UINT32* Type) {
     hive* h = _CR(This, hive, public);
     int32_t size;
     CM_KEY_NODE* nk;
@@ -473,7 +473,7 @@ static EFI_STATUS EFIAPI enum_values(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 I
     } else {
         unsigned int i = 0;
 
-        for (i = 0; i < vk->NameLength / sizeof(WCHAR); i++) {
+        for (i = 0; i < vk->NameLength / sizeof(wchar_t); i++) {
             if (i >= NameLength) {
                 overflow = true;
                 break;
@@ -490,7 +490,7 @@ static EFI_STATUS EFIAPI enum_values(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 I
     return overflow ? EFI_BUFFER_TOO_SMALL : EFI_SUCCESS;
 }
 
-static EFI_STATUS EFIAPI query_value_no_copy(EFI_REGISTRY_HIVE* This, HKEY Key, const WCHAR* Name, void** Data,
+static EFI_STATUS EFIAPI query_value_no_copy(EFI_REGISTRY_HIVE* This, HKEY Key, const wchar_t* Name, void** Data,
                                              UINT32* DataLength, UINT32* Type) {
     hive* h = _CR(This, hive, public);
     int32_t size;
@@ -560,8 +560,8 @@ static EFI_STATUS EFIAPI query_value_no_copy(EFI_REGISTRY_HIVE* This, HKEY Key, 
                 continue;
 
             for (j = 0; j < vk->NameLength; j++) {
-                WCHAR c1 = valname[j];
-                WCHAR c2 = Name[j];
+                wchar_t c1 = valname[j];
+                wchar_t c2 = Name[j];
 
                 if (c1 >= 'A' && c1 <= 'Z')
                     c1 = c1 - 'A' + 'a';
@@ -578,12 +578,12 @@ static EFI_STATUS EFIAPI query_value_no_copy(EFI_REGISTRY_HIVE* This, HKEY Key, 
         } else {
             unsigned int j;
 
-            if (vk->NameLength / sizeof(WCHAR) != namelen)
+            if (vk->NameLength / sizeof(wchar_t) != namelen)
                 continue;
 
-            for (j = 0; j < vk->NameLength / sizeof(WCHAR); j++) {
-                WCHAR c1 = vk->Name[j];
-                WCHAR c2 = Name[j];
+            for (j = 0; j < vk->NameLength / sizeof(wchar_t); j++) {
+                wchar_t c1 = vk->Name[j];
+                wchar_t c2 = Name[j];
 
                 if (c1 >= 'A' && c1 <= 'Z')
                     c1 = c1 - 'A' + 'a';
@@ -595,7 +595,7 @@ static EFI_STATUS EFIAPI query_value_no_copy(EFI_REGISTRY_HIVE* This, HKEY Key, 
                     break;
             }
 
-            if (j != vk->NameLength / sizeof(WCHAR))
+            if (j != vk->NameLength / sizeof(wchar_t))
                 continue;
         }
 
@@ -635,7 +635,7 @@ static EFI_STATUS EFIAPI query_value_no_copy(EFI_REGISTRY_HIVE* This, HKEY Key, 
     return EFI_NOT_FOUND;
 }
 
-static EFI_STATUS EFIAPI query_value(EFI_REGISTRY_HIVE* This, HKEY Key, const WCHAR* Name, void* Data,
+static EFI_STATUS EFIAPI query_value(EFI_REGISTRY_HIVE* This, HKEY Key, const wchar_t* Name, void* Data,
                                      UINT32* DataLength, UINT32* Type) {
     EFI_STATUS Status;
     void* out;

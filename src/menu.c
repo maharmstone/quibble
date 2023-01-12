@@ -50,7 +50,7 @@ extern unsigned int font_height;
 extern text_pos console_pos;
 
 static const char timeout_message[] = "Time until selected option is chosen: ";
-static const WCHAR timeout_messagew[] = L"Time until selected option is chosen: ";
+static const wchar_t timeout_messagew[] = L"Time until selected option is chosen: ";
 
 static EFI_STATUS parse_ini_file(char* data, LIST_ENTRY* ini_sections) {
     EFI_STATUS Status;
@@ -290,7 +290,7 @@ static EFI_STATUS populate_options_from_ini(LIST_ENTRY* ini_sections, unsigned i
                     return Status;
                 }
 
-                Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + sizeof(WCHAR), (void**)&opt->namew);
+                Status = systable->BootServices->AllocatePool(EfiLoaderData, wlen + sizeof(wchar_t), (void**)&opt->namew);
                 if (EFI_ERROR(Status)) {
                     print_error("AllocatePool", Status);
                     return Status;
@@ -302,7 +302,7 @@ static EFI_STATUS populate_options_from_ini(LIST_ENTRY* ini_sections, unsigned i
                     return Status;
                 }
 
-                opt->namew[wlen / sizeof(WCHAR)] = 0;
+                opt->namew[wlen / sizeof(wchar_t)] = 0;
             }
 
             // find matching section
@@ -459,9 +459,9 @@ static EFI_STATUS draw_box(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int x, un
     EFI_STATUS Status;
     EFI_BOOT_SERVICES* bs = systable->BootServices;
     INT32 col, row;
-    WCHAR* s;
+    wchar_t* s;
 
-    Status = bs->AllocatePool(EfiLoaderData, (w + 1) * sizeof(WCHAR), (void**)&s);
+    Status = bs->AllocatePool(EfiLoaderData, (w + 1) * sizeof(wchar_t), (void**)&s);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePool", Status);
         return Status;
@@ -523,10 +523,10 @@ static EFI_STATUS draw_box(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int x, un
 }
 
 static EFI_STATUS draw_option(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int pos, unsigned int width,
-                              WCHAR* text, bool selected) {
+                              wchar_t* text, bool selected) {
     EFI_BOOT_SERVICES* bs = systable->BootServices;
     EFI_STATUS Status;
-    WCHAR* s;
+    wchar_t* s;
     unsigned int len;
 
     Status = con->SetCursorPosition(con, 1, pos + 3);
@@ -543,7 +543,7 @@ static EFI_STATUS draw_option(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int po
         }
     }
 
-    Status = bs->AllocatePool(EfiLoaderData, (width + 1) * sizeof(WCHAR), (void**)&s);
+    Status = bs->AllocatePool(EfiLoaderData, (width + 1) * sizeof(wchar_t), (void**)&s);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePool", Status);
         return Status;
@@ -557,7 +557,7 @@ static EFI_STATUS draw_option(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int po
 
     s[width] = 0;
 
-    memcpy(s, text, (len < width ? len : width) * sizeof(WCHAR));
+    memcpy(s, text, (len < width ? len : width) * sizeof(wchar_t));
 
     // FIXME - add ellipsis if truncated?
 
@@ -612,12 +612,12 @@ static EFI_STATUS print_spaces(EFI_SIMPLE_TEXT_OUT_PROTOCOL* con, unsigned int n
     return EFI_SUCCESS;
 }
 
-static void print(const WCHAR* s) {
+static void print(const wchar_t* s) {
     systable->ConOut->OutputString(systable->ConOut, (CHAR16*)s);
 }
 
 static void print_dec(uint32_t v) {
-    WCHAR s[12], *p;
+    wchar_t s[12], *p;
 
     if (v == 0) {
         print(L"0");
@@ -854,19 +854,19 @@ EFI_STATUS show_menu(EFI_SYSTEM_TABLE* systable, boot_option** ret) {
                     dec_to_str(s, timer);
                     draw_text_ft(s, &p, 0x000000, 0xffffff);
                 } else {
-                    Status = con->SetCursorPosition(con, (sizeof(timeout_messagew) - sizeof(WCHAR)) / sizeof(WCHAR), rows - 1);
+                    Status = con->SetCursorPosition(con, (sizeof(timeout_messagew) - sizeof(wchar_t)) / sizeof(wchar_t), rows - 1);
                     if (EFI_ERROR(Status)) {
                         print_error("SetCursorPosition", Status);
                         return Status;
                     }
 
-                    Status = print_spaces(con, cols - (sizeof(timeout_messagew) - sizeof(WCHAR)) / sizeof(WCHAR) - 1);
+                    Status = print_spaces(con, cols - (sizeof(timeout_messagew) - sizeof(wchar_t)) / sizeof(wchar_t) - 1);
                     if (EFI_ERROR(Status)) {
                         print_error("print_spaces", Status);
                         return Status;
                     }
 
-                    Status = con->SetCursorPosition(con, (sizeof(timeout_messagew) - sizeof(WCHAR)) / sizeof(WCHAR), rows - 1);
+                    Status = con->SetCursorPosition(con, (sizeof(timeout_messagew) - sizeof(wchar_t)) / sizeof(wchar_t), rows - 1);
                     if (EFI_ERROR(Status)) {
                         print_error("SetCursorPosition", Status);
                         return Status;

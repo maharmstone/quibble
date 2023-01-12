@@ -138,14 +138,14 @@ EFI_STATUS load_api_set(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, EFI_PE_LOADER
     return EFI_SUCCESS;
 }
 
-static bool search_api_set_80(WCHAR* dll, WCHAR* newname) {
+static bool search_api_set_80(wchar_t* dll, wchar_t* newname) {
     API_SET_NAMESPACE_ARRAY_80* arr = (API_SET_NAMESPACE_ARRAY_80*)apiset;
-    WCHAR n[MAX_PATH];
+    wchar_t n[MAX_PATH];
     unsigned int len = 0;
 
     {
-        WCHAR* s = &dll[4];
-        WCHAR* o = n;
+        wchar_t* s = &dll[4];
+        wchar_t* o = n;
 
         while (s) {
             if (*s == '.')
@@ -162,11 +162,11 @@ static bool search_api_set_80(WCHAR* dll, WCHAR* newname) {
     }
 
     for (unsigned int i = 0; i < arr->Count; i++) {
-        WCHAR* name = (WCHAR*)((uint8_t*)apiset + arr->Array[i].NameOffset);
+        wchar_t* name = (wchar_t*)((uint8_t*)apiset + arr->Array[i].NameOffset);
         bool found = true;
         API_SET_VALUE_ARRAY_80* val;
 
-        if (arr->Array[i].NameLength != len * sizeof(WCHAR))
+        if (arr->Array[i].NameLength != len * sizeof(wchar_t))
             continue;
 
         for (unsigned int j = 0; j < len; j++) {
@@ -192,7 +192,7 @@ static bool search_api_set_80(WCHAR* dll, WCHAR* newname) {
         for (unsigned int j = 0; j < val->Count; j++) {
             if (val->Array[j].ValueLength > 0) {
                 memcpy(newname, (uint8_t*)apiset + val->Array[j].ValueOffset, val->Array[j].ValueLength);
-                newname[val->Array[j].ValueLength / sizeof(WCHAR)] = 0;
+                newname[val->Array[j].ValueLength / sizeof(wchar_t)] = 0;
                 return true;
             }
         }
@@ -212,14 +212,14 @@ static bool search_api_set_80(WCHAR* dll, WCHAR* newname) {
     return false;
 }
 
-static bool search_api_set_81(WCHAR* dll, WCHAR* newname) {
+static bool search_api_set_81(wchar_t* dll, wchar_t* newname) {
     API_SET_NAMESPACE_ARRAY_81* arr = (API_SET_NAMESPACE_ARRAY_81*)apiset;
-    WCHAR n[MAX_PATH];
+    wchar_t n[MAX_PATH];
     unsigned int len = 0;
 
     {
-        WCHAR* s = &dll[4];
-        WCHAR* o = n;
+        wchar_t* s = &dll[4];
+        wchar_t* o = n;
 
         while (s) {
             if (*s == '.')
@@ -236,11 +236,11 @@ static bool search_api_set_81(WCHAR* dll, WCHAR* newname) {
     }
 
     for (unsigned int i = 0; i < arr->Count; i++) {
-        WCHAR* name = (WCHAR*)((uint8_t*)apiset + arr->Array[i].NameOffset);
+        wchar_t* name = (wchar_t*)((uint8_t*)apiset + arr->Array[i].NameOffset);
         bool found = true;
         API_SET_VALUE_ARRAY_81* val;
 
-        if (arr->Array[i].NameLength != len * sizeof(WCHAR))
+        if (arr->Array[i].NameLength != len * sizeof(wchar_t))
             continue;
 
         for (unsigned int j = 0; j < len; j++) {
@@ -266,7 +266,7 @@ static bool search_api_set_81(WCHAR* dll, WCHAR* newname) {
         for (unsigned int j = 0; j < val->Count; j++) {
             if (val->Array[j].ValueLength > 0) {
                 memcpy(newname, (uint8_t*)apiset + val->Array[j].ValueOffset, val->Array[j].ValueLength);
-                newname[val->Array[j].ValueLength / sizeof(WCHAR)] = 0;
+                newname[val->Array[j].ValueLength / sizeof(wchar_t)] = 0;
                 return true;
             }
         }
@@ -286,15 +286,15 @@ static bool search_api_set_81(WCHAR* dll, WCHAR* newname) {
     return false;
 }
 
-static bool search_api_set_10(WCHAR* dll, WCHAR* newname) {
+static bool search_api_set_10(wchar_t* dll, wchar_t* newname) {
     API_SET_NAMESPACE_HEADER_10* header = (API_SET_NAMESPACE_HEADER_10*)apiset;
     API_SET_NAMESPACE_ENTRY_10* arr = (API_SET_NAMESPACE_ENTRY_10*)((uint8_t*)apiset + header->ArrayOffset);
-    WCHAR n[MAX_PATH];
+    wchar_t n[MAX_PATH];
     unsigned int len = 0;
 
     {
-        WCHAR* s = dll;
-        WCHAR* o = n;
+        wchar_t* s = dll;
+        wchar_t* o = n;
 
         while (s) {
             if (*s == '.')
@@ -311,11 +311,11 @@ static bool search_api_set_10(WCHAR* dll, WCHAR* newname) {
     }
 
     for (unsigned int i = 0; i < header->Count; i++) {
-        WCHAR* name = (WCHAR*)((uint8_t*)apiset + arr[i].NameOffset);
+        wchar_t* name = (wchar_t*)((uint8_t*)apiset + arr[i].NameOffset);
         bool found = true;
         API_SET_VALUE_ENTRY_81* val;
 
-        if (arr[i].NameLength != len * sizeof(WCHAR))
+        if (arr[i].NameLength != len * sizeof(wchar_t))
             continue;
 
         for (unsigned int j = 0; j < len; j++) {
@@ -341,7 +341,7 @@ static bool search_api_set_10(WCHAR* dll, WCHAR* newname) {
         for (unsigned int j = 0; j < arr[i].NumberOfHosts; j++) {
             if (val[j].ValueLength > 0) {
                 memcpy(newname, (uint8_t*)apiset + val[j].ValueOffset, val[j].ValueLength);
-                newname[val[j].ValueLength / sizeof(WCHAR)] = 0;
+                newname[val[j].ValueLength / sizeof(wchar_t)] = 0;
                 return true;
             }
         }
@@ -361,7 +361,7 @@ static bool search_api_set_10(WCHAR* dll, WCHAR* newname) {
     return false;
 }
 
-bool search_api_set(WCHAR* dll, WCHAR* newname, uint16_t version) {
+bool search_api_set(wchar_t* dll, wchar_t* newname, uint16_t version) {
     if (version == _WIN32_WINNT_WIN8)
         return search_api_set_80(dll, newname);
     else if (version == _WIN32_WINNT_WINBLUE)

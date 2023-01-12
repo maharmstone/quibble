@@ -312,7 +312,7 @@ void print_string(const char* s) {
     if (face)
         draw_text_ft(s, &console_pos, 0x000000, 0xffffff);
     else {
-        WCHAR w[255], *t;
+        wchar_t w[255], *t;
 
         // FIXME - make sure no overflow
 

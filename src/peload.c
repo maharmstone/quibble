@@ -716,7 +716,7 @@ static EFI_STATUS EFIAPI move_address(EFI_PE_IMAGE* This, EFI_PHYSICAL_ADDRESS N
 }
 
 static EFI_STATUS get_version4(VS_VERSION_INFO* ver, uint32_t size, uint32_t* version_ms, uint32_t* version_ls) {
-    static const WCHAR key[] = L"VS_VERSION_INFO";
+    static const wchar_t key[] = L"VS_VERSION_INFO";
 
     if (ver->wLength > size) {
         char s[255], *p;

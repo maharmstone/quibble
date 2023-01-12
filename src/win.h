@@ -713,7 +713,7 @@ typedef struct {
 typedef struct {
     uint16_t Length;
     uint16_t MaximumLength;
-    WCHAR* Buffer;
+    wchar_t* Buffer;
 } UNICODE_STRING;
 
 typedef struct {
@@ -932,7 +932,7 @@ typedef struct {
     void* OemData;
     uint32_t OemDataLength;
     KD_NAMESPACE_ENUM NameSpace;
-    WCHAR* NameSpacePath;
+    wchar_t* NameSpacePath;
     uint32_t NameSpacePathLength;
     uint32_t TransportType;
     DEBUG_TRANSPORT_DATA TransportData;

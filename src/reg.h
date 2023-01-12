@@ -69,14 +69,14 @@ typedef EFI_STATUS (EFIAPI* EFI_REGISTRY_HIVE_ENUM_KEYS) (
     IN EFI_REGISTRY_HIVE* This,
     IN HKEY Key,
     IN UINT32 Index,
-    OUT WCHAR* Name,
+    OUT wchar_t* Name,
     IN UINT32 NameLength
 );
 
 typedef EFI_STATUS (EFIAPI* EFI_REGISTRY_HIVE_FIND_KEY) (
     IN EFI_REGISTRY_HIVE* This,
     IN HKEY Parent,
-    IN const WCHAR* Path,
+    IN const wchar_t* Path,
     OUT HKEY* Key
 );
 
@@ -84,7 +84,7 @@ typedef EFI_STATUS (EFIAPI* EFI_REGISTRY_HIVE_ENUM_VALUES) (
     IN EFI_REGISTRY_HIVE* This,
     IN HKEY Key,
     IN UINT32 Index,
-    OUT WCHAR* Name,
+    OUT wchar_t* Name,
     IN UINT32 NameLength,
     OUT UINT32* Type
 );
@@ -92,7 +92,7 @@ typedef EFI_STATUS (EFIAPI* EFI_REGISTRY_HIVE_ENUM_VALUES) (
 typedef EFI_STATUS (EFIAPI* EFI_REGISTRY_HIVE_QUERY_VALUE) (
     IN EFI_REGISTRY_HIVE* This,
     IN HKEY Key,
-    IN const WCHAR* Name,
+    IN const wchar_t* Name,
     OUT void* Data,
     IN OUT UINT32* DataLength,
     OUT UINT32* Type
@@ -101,7 +101,7 @@ typedef EFI_STATUS (EFIAPI* EFI_REGISTRY_HIVE_QUERY_VALUE) (
 typedef EFI_STATUS (EFIAPI* EFI_REGISTRY_HIVE_QUERY_VALUE_NO_COPY) (
     IN EFI_REGISTRY_HIVE* This,
     IN HKEY Key,
-    IN const WCHAR* Name,
+    IN const wchar_t* Name,
     OUT void** Data,
     OUT UINT32* DataLength,
     OUT UINT32* Type
