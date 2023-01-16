@@ -255,18 +255,8 @@ static std::optional<loader_block_variant> find_loader_block(loader_store* store
 template<typename T>
 static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* store, T& loader_block, char* options, char* path,
                                           char* arc_name, void** va, LIST_ENTRY* mappings, LIST_ENTRY* drivers, EFI_HANDLE image_handle,
-                                          uint16_t version, uint16_t build, uint16_t revision, LOADER_EXTENSION_BLOCK1A** pextblock1a,
-                                          LOADER_EXTENSION_BLOCK1B** pextblock1b, LOADER_EXTENSION_BLOCK3** pextblock3,
-                                          uintptr_t** ploader_pages_spanned, LIST_ENTRY* core_drivers) {
+                                          uint16_t version, uint16_t build, LIST_ENTRY* core_drivers) {
     EFI_STATUS Status;
-    LOADER_EXTENSION_BLOCK1A* extblock1a;
-    LOADER_EXTENSION_BLOCK1B* extblock1b;
-    LOADER_EXTENSION_BLOCK1C* extblock1c;
-    LOADER_EXTENSION_BLOCK2B* extblock2b;
-    LOADER_EXTENSION_BLOCK3* extblock3;
-    LOADER_EXTENSION_BLOCK4* extblock4;
-    LOADER_EXTENSION_BLOCK5A* extblock5a;
-    uintptr_t* loader_pages_spanned;
     char* str;
     unsigned int pathlen;
 
@@ -390,6 +380,21 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         print_error("find_disks", Status);
         return Status;
     }
+
+    return EFI_SUCCESS;
+}
+
+static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t version, uint16_t build, uint16_t revision,
+                                             LOADER_EXTENSION_BLOCK1A** pextblock1a, LOADER_EXTENSION_BLOCK1B** pextblock1b,
+                                             LOADER_EXTENSION_BLOCK3** pextblock3, uintptr_t** ploader_pages_spanned) {
+    LOADER_EXTENSION_BLOCK1A* extblock1a;
+    LOADER_EXTENSION_BLOCK1B* extblock1b;
+    LOADER_EXTENSION_BLOCK1C* extblock1c;
+    LOADER_EXTENSION_BLOCK2B* extblock2b;
+    LOADER_EXTENSION_BLOCK3* extblock3;
+    LOADER_EXTENSION_BLOCK4* extblock4;
+    LOADER_EXTENSION_BLOCK5A* extblock5a;
+    uintptr_t* loader_pages_spanned;
 
     if (version <= _WIN32_WINNT_WS03) {
         extblock1a = &store->extension_ws03.Block1a;
@@ -4086,12 +4091,20 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     loader_block = loader_block_opt.value();
 
     std::visit([&](auto&& b) {
-        Status = initialize_loader_block(bs, store, *b, options, path, arc_name, &va, &mappings, &drivers, image_handle, version, build,
-                                         revision, &extblock1a, &extblock1b, &extblock3, &loader_pages_spanned, &core_drivers);
+        Status = initialize_loader_block(bs, store, *b, options, path, arc_name, &va, &mappings, &drivers, image_handle,
+                                         version, build, &core_drivers);
     }, loader_block);
 
     if (EFI_ERROR(Status)) {
         print_error("initialize_loader_block", Status);
+        bs->FreePages((uintptr_t)store, PAGE_COUNT(sizeof(loader_store)));
+        goto end;
+    }
+
+    Status = initialize_extension_block(store, version, build, revision, &extblock1a, &extblock1b, &extblock3, &loader_pages_spanned);
+
+    if (EFI_ERROR(Status)) {
+        print_error("initialize_extension_block", Status);
         bs->FreePages((uintptr_t)store, PAGE_COUNT(sizeof(loader_store)));
         goto end;
     }
