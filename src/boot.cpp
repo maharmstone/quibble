@@ -469,59 +469,49 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     else
         loader_pages_spanned = NULL;
 
-    if (version <= _WIN32_WINNT_WS03) {
-        store->extension_ws03.Size = sizeof(LOADER_PARAMETER_EXTENSION_WS03);
-        store->extension_ws03.Profile.Status = 2;
-        store->extension_ws03.MajorVersion = version >> 8;
-        store->extension_ws03.MinorVersion = version & 0xff;
-    } else if (version == _WIN32_WINNT_VISTA) {
-        // FIXME - is x86 SP2 the same struct as amd64 SP2? Which does SP1 use?
-        if (build >= 6002) { // service pack 2
-            store->extension_vista_sp2.Size = sizeof(LOADER_PARAMETER_EXTENSION_VISTA_SP2);
-            store->extension_vista_sp2.Profile.Status = 2;
-            store->extension_vista_sp2.MajorVersion = version >> 8;
-            store->extension_vista_sp2.MinorVersion = version & 0xff;
+    if (version == _WIN32_WINNT_WINBLUE && revision < 18438)
+        extblock.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN81, padding4);
+    else if (version == _WIN32_WINNT_WIN10 && build >= WIN10_BUILD_1703 && build < WIN10_BUILD_1803)
+        extblock.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, MaxPciBusNumber);
+    else if (version == _WIN32_WINNT_WIN10 && build < WIN10_BUILD_1511)
+        extblock.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SystemHiveRecoveryInfo) + sizeof(uint32_t);
+    else
+        extblock.Size = sizeof(T);
 
-            store->extension_vista_sp2.LoaderPerformanceData = &store->loader_performance_data;
-        } else {
-            store->extension_vista.Size = sizeof(LOADER_PARAMETER_EXTENSION_VISTA);
-            store->extension_vista.Profile.Status = 2;
-            store->extension_vista.MajorVersion = version >> 8;
-            store->extension_vista.MinorVersion = version & 0xff;
+    extblock.Profile.Status = 2;
 
-            store->extension_vista.LoaderPerformanceData = &store->loader_performance_data;
+    if constexpr (requires { T::MajorVersion; })
+        extblock.MajorVersion = version >> 8;
+
+    if constexpr (requires { T::MinorVersion; })
+        extblock.MinorVersion = version & 0xff;
+
+    if constexpr (requires { T::LoaderPerformanceData; }) {
+        // FIXME - LOADER_PERFORMANCE_DATA_1809 and LOADER_PERFORMANCE_DATA_1903?
+        if constexpr (std::is_same_v<decltype(T::LoaderPerformanceData), LOADER_PERFORMANCE_DATA*>)
+            extblock.LoaderPerformanceData = &store->loader_performance_data;
+    }
+
+    if constexpr (requires { T::TpmBootEntropyResult; }) {
+        extblock.TpmBootEntropyResult.ResultCode = TpmBootEntropyNoTpmFound;
+        extblock.TpmBootEntropyResult.ResultStatus = STATUS_NOT_IMPLEMENTED;
+    } else if constexpr (requires { T::BootEntropyResult; }) {
+        if (version == _WIN32_WINNT_WIN8)
+            extblock.BootEntropyResult.maxEntropySources = 7;
+        else if (version == _WIN32_WINNT_WINBLUE)
+            extblock.BootEntropyResult.maxEntropySources = 8;
+        else if (version >= _WIN32_WINNT_WIN10) {
+            if (build < WIN10_BUILD_1809)
+                extblock.BootEntropyResult.maxEntropySources = 8;
+            else
+                extblock.BootEntropyResult.maxEntropySources = 10;
         }
-    } else if (version == _WIN32_WINNT_WIN7) {
-        store->extension_win7.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN7);
-        store->extension_win7.Profile.Status = 2;
+    }
 
-        store->extension_win7.TpmBootEntropyResult.ResultCode = TpmBootEntropyNoTpmFound;
-        store->extension_win7.TpmBootEntropyResult.ResultStatus = STATUS_NOT_IMPLEMENTED;
+    if constexpr (requires { T::ProcessorCounterFrequency; })
+        extblock.ProcessorCounterFrequency = cpu_frequency;
 
-        store->extension_win7.ProcessorCounterFrequency = cpu_frequency;
-
-        store->extension_win7.LoaderPerformanceData = &store->loader_performance_data;
-    } else if (version == _WIN32_WINNT_WIN8) {
-        store->extension_win8.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN8);
-        store->extension_win8.Profile.Status = 2;
-
-        store->extension_win8.BootEntropyResult.maxEntropySources = 7;
-
-        store->extension_win8.LoaderPerformanceData = &store->loader_performance_data;
-        store->extension_win8.ProcessorCounterFrequency = cpu_frequency;
-    } else if (version == _WIN32_WINNT_WINBLUE) {
-        if (revision >= 18438)
-            store->extension_win81.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN81);
-        else
-            store->extension_win81.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN81, padding4);
-
-        store->extension_win81.Profile.Status = 2;
-
-        store->extension_win81.BootEntropyResult.maxEntropySources = 8;
-
-        store->extension_win81.LoaderPerformanceData = &store->loader_performance_data;
-        store->extension_win81.ProcessorCounterFrequency = cpu_frequency;
-
+    if (version == _WIN32_WINNT_WINBLUE) {
         if (kdnet_loaded) {
             memcpy(&store->debug_device_descriptor, &debug_device_descriptor, sizeof(debug_device_descriptor));
             store->extension_win81.KdDebugDevice = &store->debug_device_descriptor;
@@ -531,49 +521,23 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
 
         if (build >= WIN10_BUILD_21H1) {
             extblock6 = &store->extension_win10_21H1.Block6;
-            store->extension_win10_21H1.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_21H1);
 
-            store->extension_win10_21H1.Profile.Status = 2;
-            store->extension_win10_21H1.BootEntropyResult.maxEntropySources = 10;
             store->extension_win10_21H1.Block7.MajorRelease = NTDDI_WIN10_20H1;
-            store->extension_win10_21H1.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_2004) {
             extblock6 = &store->extension_win10_2004.Block6;
-            store->extension_win10_2004.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_2004);
 
-            store->extension_win10_2004.Profile.Status = 2;
-            store->extension_win10_2004.BootEntropyResult.maxEntropySources = 10;
             store->extension_win10_2004.Block7.MajorRelease = NTDDI_WIN10_20H1;
-            store->extension_win10_2004.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_1903) {
             extblock6 = &store->extension_win10_1903.Block6;
-            store->extension_win10_1903.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1903);
-
-            store->extension_win10_1903.Profile.Status = 2;
-            store->extension_win10_1903.BootEntropyResult.maxEntropySources = 10;
 
             // contrary to what you might expect, both 1903 and 1909 use the same value here
             store->extension_win10_1903.MajorRelease = NTDDI_WIN10_19H1;
-            store->extension_win10_1903.ProcessorCounterFrequency = cpu_frequency;
         } else if (build == WIN10_BUILD_1809) {
             extblock6 = &store->extension_win10_1809.Block6;
-            store->extension_win10_1809.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1809);
 
-            store->extension_win10_1809.Profile.Status = 2;
-            store->extension_win10_1809.BootEntropyResult.maxEntropySources = 10;
             store->extension_win10_1809.MajorRelease = NTDDI_WIN10_RS5;
-            store->extension_win10_1809.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_1703) {
             extblock6 = &store->extension_win10_1703.Block6;
-
-            if (build >= WIN10_BUILD_1803)
-                store->extension_win10_1703.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1703);
-            else
-                store->extension_win10_1703.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, MaxPciBusNumber);
-
-            store->extension_win10_1703.Profile.Status = 2;
-
-            store->extension_win10_1703.BootEntropyResult.maxEntropySources = 8;
 
             if (build == WIN10_BUILD_1703)
                 store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS2;
@@ -581,35 +545,12 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
                 store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS3;
             else
                 store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS4;
-
-            store->extension_win10_1703.LoaderPerformanceData = &store->loader_performance_data;
-            store->extension_win10_1703.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_1607) {
             extblock6 = &store->extension_win10_1607.Block6;
-            store->extension_win10_1607.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1607);
-
-            store->extension_win10_1607.Profile.Status = 2;
-
-            store->extension_win10_1607.BootEntropyResult.maxEntropySources = 8;
 
             store->extension_win10_1607.MajorRelease = NTDDI_WIN10_RS1;
-
-            store->extension_win10_1607.LoaderPerformanceData = &store->loader_performance_data;
-            store->extension_win10_1607.ProcessorCounterFrequency = cpu_frequency;
         } else {
             extblock6 = &store->extension_win10.Block6;
-
-            if (build < WIN10_BUILD_1511)
-                store->extension_win10.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SystemHiveRecoveryInfo) + sizeof(uint32_t);
-            else
-                store->extension_win10.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10);
-
-            store->extension_win10.Profile.Status = 2;
-
-            store->extension_win10.BootEntropyResult.maxEntropySources = 8;
-
-            store->extension_win10.LoaderPerformanceData = &store->loader_performance_data;
-            store->extension_win10.ProcessorCounterFrequency = cpu_frequency;
         }
 
         if (kdnet_loaded) {
