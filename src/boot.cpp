@@ -252,16 +252,14 @@ static std::optional<loader_block_variant> find_loader_block(loader_store* store
     return std::nullopt;
 }
 
-static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* store, char* options, char* path, char* arc_name,
-                                          void** va, LIST_ENTRY* mappings, LIST_ENTRY* drivers, EFI_HANDLE image_handle,
-                                          uint16_t version, uint16_t build, uint16_t revision, LOADER_BLOCK1A** pblock1a,
-                                          LOADER_BLOCK1B** pblock1b, void*** registry_base, uint32_t** registry_length,
-                                          LOADER_BLOCK2** pblock2, LOADER_EXTENSION_BLOCK1A** pextblock1a,
-                                          LOADER_EXTENSION_BLOCK1B** pextblock1b, LOADER_EXTENSION_BLOCK3** pextblock3,
-                                          uintptr_t** ploader_pages_spanned, LIST_ENTRY* core_drivers) {
+template<typename T>
+static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* store, T& loader_block, char* options, char* path,
+                                          char* arc_name, void** va, LIST_ENTRY* mappings, LIST_ENTRY* drivers, EFI_HANDLE image_handle,
+                                          uint16_t version, uint16_t build, uint16_t revision, void*** registry_base, uint32_t** registry_length,
+                                          LOADER_EXTENSION_BLOCK1A** pextblock1a, LOADER_EXTENSION_BLOCK1B** pextblock1b,
+                                          LOADER_EXTENSION_BLOCK3** pextblock3, uintptr_t** ploader_pages_spanned, LIST_ENTRY* core_drivers) {
     EFI_STATUS Status;
     LOADER_BLOCK1A* block1a;
-    LOADER_BLOCK1B* block1b;
     LOADER_BLOCK1C* block1c;
     LOADER_BLOCK2* block2;
     LOADER_EXTENSION_BLOCK1A* extblock1a;
@@ -277,11 +275,19 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
     cpu_frequency = get_cpu_frequency(bs);
 
+    block1a = &loader_block.Block1a;
+    block1c = &loader_block.Block1c;
+    block2 = &loader_block.Block2;
+
+    InitializeListHead(&block1a->LoadOrderListHead);
+    InitializeListHead(&block1a->MemoryDescriptorListHead);
+
+    block1a->BootDriverListHead.Flink = drivers->Flink;
+    block1a->BootDriverListHead.Blink = drivers->Blink;
+    block1a->BootDriverListHead.Flink->Blink = &block1a->BootDriverListHead;
+    block1a->BootDriverListHead.Blink->Flink = &block1a->BootDriverListHead;
+
     if (version <= _WIN32_WINNT_WS03) {
-        block1a = &store->loader_block_ws03.Block1a;
-        block1b = &store->loader_block_ws03.Block1b;
-        block1c = &store->loader_block_ws03.Block1c;
-        block2 = &store->loader_block_ws03.Block2;
         extblock1a = &store->extension_ws03.Block1a;
         loader_pages_spanned = &store->extension_ws03.LoaderPagesSpanned;
         extblock1b = &store->extension_ws03.Block1b;
@@ -299,11 +305,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         *registry_base = &store->loader_block_ws03.RegistryBase;
         *registry_length = &store->loader_block_ws03.RegistryLength;
     } else if (version == _WIN32_WINNT_VISTA) {
-        block1a = &store->loader_block_vista.Block1a;
-        block1b = &store->loader_block_vista.Block1b;
-        block1c = &store->loader_block_vista.Block1c;
-        block2 = &store->loader_block_vista.Block2;
-
         extblock3 = NULL;
         extblock4 = NULL;
         extblock5a = NULL;
@@ -343,10 +344,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->loader_block_vista.FirmwareInformation.FirmwareTypeEfi = 1;
         store->loader_block_vista.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
     } else if (version == _WIN32_WINNT_WIN7) {
-        block1a = &store->loader_block_win7.Block1a;
-        block1b = &store->loader_block_win7.Block1b;
-        block1c = &store->loader_block_win7.Block1c;
-        block2 = &store->loader_block_win7.Block2;
         extblock1a = &store->extension_win7.Block1a;
         loader_pages_spanned = &store->extension_win7.LoaderPagesSpanned;
         extblock1b = &store->extension_win7.Block1b;
@@ -376,10 +373,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
         store->extension_win7.LoaderPerformanceData = &store->loader_performance_data;
     } else if (version == _WIN32_WINNT_WIN8) {
-        block1a = &store->loader_block_win8.Block1a;
-        block1b = &store->loader_block_win8.Block1b;
-        block1c = &store->loader_block_win8.Block1c;
-        block2 = &store->loader_block_win8.Block2;
         extblock1a = &store->extension_win8.Block1a;
         loader_pages_spanned = NULL;
         extblock1b = &store->extension_win8.Block1b;
@@ -418,10 +411,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->extension_win8.LoaderPerformanceData = &store->loader_performance_data;
         store->extension_win8.ProcessorCounterFrequency = cpu_frequency;
     } else if (version == _WIN32_WINNT_WINBLUE) {
-        block1a = &store->loader_block_win81.Block1a;
-        block1b = &store->loader_block_win81.Block1b;
-        block1c = &store->loader_block_win81.Block1c;
-        block2 = &store->loader_block_win81.Block2;
         extblock1a = &store->extension_win81.Block1a;
         loader_pages_spanned = NULL;
         extblock1b = &store->extension_win81.Block1b;
@@ -471,10 +460,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
     } else if (version == _WIN32_WINNT_WIN10) {
         LOADER_EXTENSION_BLOCK6* extblock6;
 
-        block1a = &store->loader_block_win10.Block1a;
-        block1b = &store->loader_block_win10.Block1b;
-        block1c = &store->loader_block_win10.Block1c;
-        block2 = &store->loader_block_win10.Block2;
         loader_pages_spanned = NULL;
 
         store->loader_block_win10.OsMajorVersion = version >> 8;
@@ -648,14 +633,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         return EFI_INVALID_PARAMETER;
     }
 
-    InitializeListHead(&block1a->LoadOrderListHead);
-    InitializeListHead(&block1a->MemoryDescriptorListHead);
-
-    block1a->BootDriverListHead.Flink = drivers->Flink;
-    block1a->BootDriverListHead.Blink = drivers->Blink;
-    block1a->BootDriverListHead.Flink->Blink = &block1a->BootDriverListHead;
-    block1a->BootDriverListHead.Blink->Flink = &block1a->BootDriverListHead;
-
     *va = (uint8_t*)*va + (STACK_SIZE * EFI_PAGE_SIZE);
 
     InitializeListHead(&extblock1c->FirmwareDescriptorListHead);
@@ -739,9 +716,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         InitializeListHead(&extblock5a->ApiSetSchemaExtensions);
     }
 
-    *pblock1a = block1a;
-    *pblock1b = block1b;
-    *pblock2 = block2;
     *pextblock1a = extblock1a;
     *pextblock1b = extblock1b;
     *pextblock3 = extblock3;
@@ -3693,11 +3667,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     uint32_t version_ms, version_ls;
     uint16_t version;
     uint16_t build, revision;
-    LOADER_BLOCK1A* block1a;
-    LOADER_BLOCK1B* block1b;
     void** registry_base;
     uint32_t* registry_length;
-    LOADER_BLOCK2* block2;
     LOADER_EXTENSION_BLOCK1A* extblock1a;
     LOADER_EXTENSION_BLOCK1B* extblock1b;
     LOADER_EXTENSION_BLOCK3* extblock3;
@@ -4178,10 +4149,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     loader_block = loader_block_opt.value();
 
-    std::visit([&](auto&&) {
-        Status = initialize_loader_block(bs, store, options, path, arc_name, &va, &mappings, &drivers, image_handle, version, build,
-                                         revision, &block1a, &block1b, &registry_base, &registry_length, &block2, &extblock1a, &extblock1b,
-                                         &extblock3, &loader_pages_spanned, &core_drivers);
+    std::visit([&](auto&& b) {
+        Status = initialize_loader_block(bs, store, *b, options, path, arc_name, &va, &mappings, &drivers, image_handle, version, build,
+                                         revision, &registry_base, &registry_length, &extblock1a, &extblock1b, &extblock3,
+                                         &loader_pages_spanned, &core_drivers);
     }, loader_block);
 
     if (EFI_ERROR(Status)) {
@@ -4252,7 +4223,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     store_va = (loader_store*)va;
     va = (uint8_t*)va + (PAGE_COUNT(sizeof(loader_store)) * EFI_PAGE_SIZE);
 
-    Status = generate_images_list(bs, &images, block1a, &va, &mappings);
+    std::visit([&](auto&& b) {
+        Status = generate_images_list(bs, &images, &b->Block1a, &va, &mappings);
+    }, loader_block);
+
     if (EFI_ERROR(Status)) {
         print_error("generate_images_list", Status);
         goto end;
@@ -4286,8 +4260,11 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 #endif
 
-    if (build >= WIN10_BUILD_1703)
-        block1b->Prcb = &pcrva->PrcbData;
+    if (build >= WIN10_BUILD_1703) {
+        std::visit([&](auto&& b) {
+            b->Block1b.Prcb = &pcrva->PrcbData;
+        }, loader_block);
+    }
 
     usd = allocate_page(bs);
     if (!usd) {
@@ -4434,7 +4411,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
             goto end;
         }
 
-        block1b->KernelStack = (uint8_t*)va + ((KERNEL_STACK_SIZE + 1) * EFI_PAGE_SIZE); // end of stack
+        std::visit([&](auto&& b) {
+            b->Block1b.KernelStack = (uint8_t*)va + ((KERNEL_STACK_SIZE + 1) * EFI_PAGE_SIZE); // end of stack
+        }, loader_block);
 
         va = (uint8_t*)va + (allocation * EFI_PAGE_SIZE);
     }
@@ -4603,7 +4582,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     fix_store_mapping(store, store_va, &mappings, version, build);
 
-    Status = enable_paging(image_handle, bs, &mappings, block1a, va, loader_pages_spanned);
+    std::visit([&](auto&& b) {
+        Status = enable_paging(image_handle, bs, &mappings, &b->Block1a, va, loader_pages_spanned);
+    }, loader_block);
+
     if (EFI_ERROR(Status)) {
         print_error("enable_paging", Status);
         goto end;
