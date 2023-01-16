@@ -384,6 +384,57 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
     return EFI_SUCCESS;
 }
 
+using extension_block_variant = std::variant<LOADER_PARAMETER_EXTENSION_WS03*,
+                                             LOADER_PARAMETER_EXTENSION_VISTA*,
+                                             LOADER_PARAMETER_EXTENSION_VISTA_SP2*,
+                                             LOADER_PARAMETER_EXTENSION_WIN7*,
+                                             LOADER_PARAMETER_EXTENSION_WIN8*,
+                                             LOADER_PARAMETER_EXTENSION_WIN81*,
+                                             LOADER_PARAMETER_EXTENSION_WIN10*,
+                                             LOADER_PARAMETER_EXTENSION_WIN10_1607*,
+                                             LOADER_PARAMETER_EXTENSION_WIN10_1703*,
+                                             LOADER_PARAMETER_EXTENSION_WIN10_1809*,
+                                             LOADER_PARAMETER_EXTENSION_WIN10_1903*,
+                                             LOADER_PARAMETER_EXTENSION_WIN10_2004*,
+                                             LOADER_PARAMETER_EXTENSION_WIN10_21H1*>;
+
+static std::optional<extension_block_variant> find_extension_block(loader_store* store, uint16_t version,
+                                                                   uint16_t build) {
+    if (version <= _WIN32_WINNT_WS03)
+        return &store->extension_ws03;
+    else if (version == _WIN32_WINNT_VISTA) {
+        // FIXME - is x86 SP2 the same struct as amd64 SP2? Which does SP1 use?
+        if (build >= 6002) // service pack 2
+            return &store->extension_vista_sp2;
+        else
+            return &store->extension_vista;
+    } else if (version == _WIN32_WINNT_WIN7)
+        return &store->extension_win7;
+    else if (version == _WIN32_WINNT_WIN8)
+        return &store->extension_win8;
+    else if (version == _WIN32_WINNT_WINBLUE)
+        return &store->extension_win81;
+    else if (version == _WIN32_WINNT_WIN10) {
+        if (build >= WIN10_BUILD_21H1)
+            return &store->extension_win10_21H1;
+        else if (build >= WIN10_BUILD_2004)
+            return &store->extension_win10_2004;
+        else if (build >= WIN10_BUILD_1903)
+            return &store->extension_win10_1903;
+        else if (build == WIN10_BUILD_1809)
+            return &store->extension_win10_1809;
+        else if (build >= WIN10_BUILD_1703)
+            return &store->extension_win10_1703;
+        else if (build >= WIN10_BUILD_1607)
+            return &store->extension_win10_1607;
+        else
+            return &store->extension_win10;
+    }
+
+    print_string("Unsupported Windows version.\n");
+    return std::nullopt;
+}
+
 static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t version, uint16_t build, uint16_t revision,
                                              LOADER_EXTENSION_BLOCK1A** pextblock1a, LOADER_EXTENSION_BLOCK1B** pextblock1b,
                                              LOADER_EXTENSION_BLOCK3** pextblock3, uintptr_t** ploader_pages_spanned) {
@@ -3620,6 +3671,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     bool kdstub_export_loaded = false;
     std::optional<loader_block_variant> loader_block_opt;
     loader_block_variant loader_block;
+    std::optional<extension_block_variant> extension_block_opt;
+    extension_block_variant extension_block;
 
     static const wchar_t drivers_dir_path[] = L"system32\\drivers";
 
@@ -4089,6 +4142,15 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     loader_block = loader_block_opt.value();
+
+    extension_block_opt = find_extension_block(store, version, build);
+
+    if (!extension_block_opt.has_value()) {
+        Status = EFI_INVALID_PARAMETER;
+        goto end;
+    }
+
+    extension_block = extension_block_opt.value();
 
     std::visit([&](auto&& b) {
         Status = initialize_loader_block(bs, store, *b, options, path, arc_name, &va, &mappings, &drivers, image_handle,
