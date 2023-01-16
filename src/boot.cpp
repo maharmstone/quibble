@@ -259,9 +259,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
                                           LOADER_EXTENSION_BLOCK1A** pextblock1a, LOADER_EXTENSION_BLOCK1B** pextblock1b,
                                           LOADER_EXTENSION_BLOCK3** pextblock3, uintptr_t** ploader_pages_spanned, LIST_ENTRY* core_drivers) {
     EFI_STATUS Status;
-    LOADER_BLOCK1A* block1a;
-    LOADER_BLOCK1C* block1c;
-    LOADER_BLOCK2* block2;
     LOADER_EXTENSION_BLOCK1A* extblock1a;
     LOADER_EXTENSION_BLOCK1B* extblock1b;
     LOADER_EXTENSION_BLOCK1C* extblock1c;
@@ -275,17 +272,13 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
     cpu_frequency = get_cpu_frequency(bs);
 
-    block1a = &loader_block.Block1a;
-    block1c = &loader_block.Block1c;
-    block2 = &loader_block.Block2;
+    InitializeListHead(&loader_block.Block1a.LoadOrderListHead);
+    InitializeListHead(&loader_block.Block1a.MemoryDescriptorListHead);
 
-    InitializeListHead(&block1a->LoadOrderListHead);
-    InitializeListHead(&block1a->MemoryDescriptorListHead);
-
-    block1a->BootDriverListHead.Flink = drivers->Flink;
-    block1a->BootDriverListHead.Blink = drivers->Blink;
-    block1a->BootDriverListHead.Flink->Blink = &block1a->BootDriverListHead;
-    block1a->BootDriverListHead.Blink->Flink = &block1a->BootDriverListHead;
+    loader_block.Block1a.BootDriverListHead.Flink = drivers->Flink;
+    loader_block.Block1a.BootDriverListHead.Blink = drivers->Blink;
+    loader_block.Block1a.BootDriverListHead.Flink->Blink = &loader_block.Block1a.BootDriverListHead;
+    loader_block.Block1a.BootDriverListHead.Blink->Flink = &loader_block.Block1a.BootDriverListHead;
 
     if (version <= _WIN32_WINNT_WS03) {
         extblock1a = &store->extension_ws03.Block1a;
@@ -638,26 +631,26 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
     InitializeListHead(&extblock1c->FirmwareDescriptorListHead);
     extblock1c->AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
 
-    block2->Extension = &store->extension;
-    block1c->NlsData = &store->nls;
+    loader_block.Block2.Extension = &store->extension;
+    loader_block.Block1c.NlsData = &store->nls;
 
-    block1c->NlsData->AnsiCodePageData = nls.AnsiCodePageData;
-    block1c->NlsData->OemCodePageData = nls.OemCodePageData;
-    block1c->NlsData->UnicodeCodePageData = nls.UnicodeCodePageData;
+    loader_block.Block1c.NlsData->AnsiCodePageData = nls.AnsiCodePageData;
+    loader_block.Block1c.NlsData->OemCodePageData = nls.OemCodePageData;
+    loader_block.Block1c.NlsData->UnicodeCodePageData = nls.UnicodeCodePageData;
 
-    block1c->ArcDiskInformation = &store->arc_disk_information;
-    InitializeListHead(&block1c->ArcDiskInformation->DiskSignatureListHead);
+    loader_block.Block1c.ArcDiskInformation = &store->arc_disk_information;
+    InitializeListHead(&loader_block.Block1c.ArcDiskInformation->DiskSignatureListHead);
 
     str = store->strings;
     strcpy(str, arc_name);
-    block1c->ArcBootDeviceName = str;
+    loader_block.Block1c.ArcBootDeviceName = str;
 
     str = &str[strlen(str) + 1];
     strcpy(str, arc_name);
-    block1c->ArcHalDeviceName = str;
+    loader_block.Block1c.ArcHalDeviceName = str;
 
     str = &str[strlen(str) + 1];
-    block1c->NtBootPathName = str;
+    loader_block.Block1c.NtBootPathName = str;
 
     pathlen = strlen(path);
 
@@ -671,7 +664,7 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
     str = &str[strlen(str) + 1];
     strcpy(str, "\\");
-    block1c->NtHalPathName = str;
+    loader_block.Block1c.NtHalPathName = str;
 
     str = &str[strlen(str) + 1];
 
@@ -680,15 +673,16 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
     else
         *str = 0;
 
-    block1c->LoadOptions = str;
+    loader_block.Block1c.LoadOptions = str;
 
-    Status = find_hardware(bs, block1c, va, mappings, image_handle, version);
+    Status = find_hardware(bs, &loader_block.Block1c, va, mappings, image_handle, version);
     if (EFI_ERROR(Status)) {
         print_error("find_hardware", Status);
         return Status;
     }
 
-    Status = find_disks(bs, &block1c->ArcDiskInformation->DiskSignatureListHead, va, mappings, block1c->ConfigurationRoot,
+    Status = find_disks(bs, &loader_block.Block1c.ArcDiskInformation->DiskSignatureListHead,
+                        va, mappings, loader_block.Block1c.ConfigurationRoot,
                         version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
     if (EFI_ERROR(Status)) {
         print_error("find_disks", Status);
