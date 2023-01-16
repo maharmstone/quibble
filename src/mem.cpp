@@ -510,7 +510,8 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
     return EFI_SUCCESS;
 }
 
-static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LOADER_BLOCK1A* block1, void* pa, void* va) {
+template<typename T>
+EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, T& loader_block, void* pa, void* va) {
     LIST_ENTRY* le;
     void* data;
 
@@ -527,7 +528,7 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LOADER_BLOC
         mad->BasePage = (uintptr_t)m->pa / EFI_PAGE_SIZE;
         mad->PageCount = m->pages;
 
-        InsertTailList(&block1->MemoryDescriptorListHead, &mad->ListEntry);
+        InsertTailList(&loader_block.Block1a.MemoryDescriptorListHead, &mad->ListEntry);
 
         data = (uint8_t*)data + sizeof(MEMORY_ALLOCATION_DESCRIPTOR);
 
@@ -536,12 +537,12 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LOADER_BLOC
 
     // merge together where we can
 
-    le = block1->MemoryDescriptorListHead.Flink;
-    while (le != &block1->MemoryDescriptorListHead) {
+    le = loader_block.Block1a.MemoryDescriptorListHead.Flink;
+    while (le != &loader_block.Block1a.MemoryDescriptorListHead) {
         MEMORY_ALLOCATION_DESCRIPTOR* mad = _CR(le, MEMORY_ALLOCATION_DESCRIPTOR, ListEntry);
         MEMORY_ALLOCATION_DESCRIPTOR* mad2 = _CR(le->Flink, MEMORY_ALLOCATION_DESCRIPTOR, ListEntry);
 
-        if (le->Flink == &block1->MemoryDescriptorListHead)
+        if (le->Flink == &loader_block.Block1a.MemoryDescriptorListHead)
             break;
 
         if (mad->BasePage + mad->PageCount == mad2->BasePage && mad->MemoryType == mad2->MemoryType) {
@@ -555,17 +556,17 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LOADER_BLOC
 
     // change to virtual addresses
 
-    le = block1->MemoryDescriptorListHead.Flink;
+    le = loader_block.Block1a.MemoryDescriptorListHead.Flink;
 
-    while (le != &block1->MemoryDescriptorListHead) {
+    while (le != &loader_block.Block1a.MemoryDescriptorListHead) {
         LIST_ENTRY* le2 = le->Flink;
 
-        if (le->Flink == &block1->MemoryDescriptorListHead)
-            le->Flink = block1->MemoryDescriptorListHead.Flink->Blink;
+        if (le->Flink == &loader_block.Block1a.MemoryDescriptorListHead)
+            le->Flink = loader_block.Block1a.MemoryDescriptorListHead.Flink->Blink;
         else
             le->Flink = (LIST_ENTRY*)fix_address_mapping(le->Flink, pa, va);
 
-        if (le->Blink == &block1->MemoryDescriptorListHead)
+        if (le->Blink == &loader_block.Block1a.MemoryDescriptorListHead)
             le->Blink = (LIST_ENTRY*)find_virtual_address(le->Blink, mappings);
         else
             le->Blink = (LIST_ENTRY*)fix_address_mapping(le->Blink, pa, va);
@@ -573,8 +574,8 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LOADER_BLOC
         le = le2;
     }
 
-    block1->MemoryDescriptorListHead.Flink = (LIST_ENTRY*)fix_address_mapping(block1->MemoryDescriptorListHead.Flink, pa, va);
-    block1->MemoryDescriptorListHead.Blink = (LIST_ENTRY*)fix_address_mapping(block1->MemoryDescriptorListHead.Blink, pa, va);
+    loader_block.Block1a.MemoryDescriptorListHead.Flink = (LIST_ENTRY*)fix_address_mapping(loader_block.Block1a.MemoryDescriptorListHead.Flink, pa, va);
+    loader_block.Block1a.MemoryDescriptorListHead.Blink = (LIST_ENTRY*)fix_address_mapping(loader_block.Block1a.MemoryDescriptorListHead.Blink, pa, va);
 
     return EFI_SUCCESS;
 }
@@ -1122,7 +1123,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
         return Status;
     }
 
-    Status = setup_memory_descriptor_list(mappings, &loader_block.Block1a, mdl_pa, va);
+    Status = setup_memory_descriptor_list(mappings, loader_block, mdl_pa, va);
     if (EFI_ERROR(Status)) {
         print_error("setup_memory_descriptor_list", Status);
         return Status;
