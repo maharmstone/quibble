@@ -762,11 +762,12 @@ static void fix_config_mapping(CONFIGURATION_COMPONENT_DATA* ccd, LIST_ENTRY* ma
     *va = new_va;
 }
 
-static void fix_image_list_mapping(LOADER_BLOCK1A* block1, LIST_ENTRY* mappings) {
+template<typename T>
+static void fix_image_list_mapping(T& loader_block, LIST_ENTRY* mappings) {
     LIST_ENTRY* le;
 
-    le = block1->LoadOrderListHead.Flink;
-    while (le != &block1->LoadOrderListHead) {
+    le = loader_block.Block1a.LoadOrderListHead.Flink;
+    while (le != &loader_block.Block1a.LoadOrderListHead) {
         KLDR_DATA_TABLE_ENTRY* dte = _CR(le, KLDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
 
         dte->BaseDllName.Buffer = (wchar_t*)find_virtual_address(dte->BaseDllName.Buffer, mappings);
@@ -775,7 +776,7 @@ static void fix_image_list_mapping(LOADER_BLOCK1A* block1, LIST_ENTRY* mappings)
         le = le->Flink;
     }
 
-    fix_list_mapping(&block1->LoadOrderListHead, mappings);
+    fix_list_mapping(&loader_block.Block1a.LoadOrderListHead, mappings);
 }
 
 static void fix_driver_list_mapping(LIST_ENTRY* list, LIST_ENTRY* mappings) {
@@ -985,7 +986,7 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         return;
     }
 
-    fix_image_list_mapping(block1a, mappings);
+    fix_image_list_mapping(loader_block, mappings);
 
     fix_driver_list_mapping(&block1a->BootDriverListHead, mappings);
 
