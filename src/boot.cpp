@@ -295,6 +295,13 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         }
     }
 
+    if constexpr (requires { T::Size; }) {
+        if (version == _WIN32_WINNT_WIN10 && build < WIN10_BUILD_1803)
+            loader_block.Size = offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsBootstatPathName);
+        else
+            loader_block.Size = sizeof(loader_block);
+    }
+
     if (version <= _WIN32_WINNT_WS03) {
         extblock1a = &store->extension_ws03.Block1a;
         loader_pages_spanned = &store->extension_ws03.LoaderPagesSpanned;
@@ -355,8 +362,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->extension_win7.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN7);
         store->extension_win7.Profile.Status = 2;
 
-        store->loader_block_win7.Size = sizeof(LOADER_PARAMETER_BLOCK_WIN7);
-
         store->extension_win7.TpmBootEntropyResult.ResultCode = TpmBootEntropyNoTpmFound;
         store->extension_win7.TpmBootEntropyResult.ResultStatus = STATUS_NOT_IMPLEMENTED;
 
@@ -375,8 +380,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
         store->extension_win8.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN8);
         store->extension_win8.Profile.Status = 2;
-
-        store->loader_block_win8.Size = sizeof(LOADER_PARAMETER_BLOCK_WIN8);
 
         InitializeListHead(&store->loader_block_win8.EarlyLaunchListHead);
         InitializeListHead(&store->loader_block_win8.CoreDriverListHead);
@@ -409,8 +412,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
         store->extension_win81.Profile.Status = 2;
 
-        store->loader_block_win81.Size = sizeof(LOADER_PARAMETER_BLOCK_WIN81);
-
         InitializeListHead(&store->loader_block_win81.EarlyLaunchListHead);
         InitializeListHead(&store->loader_block_win81.CoreDriverListHead);
 
@@ -434,11 +435,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         LOADER_EXTENSION_BLOCK6* extblock6;
 
         loader_pages_spanned = NULL;
-
-        if (build >= WIN10_BUILD_1803)
-            store->loader_block_win10.Size = sizeof(LOADER_PARAMETER_BLOCK_WIN10);
-        else
-            store->loader_block_win10.Size = offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsBootstatPathName);
 
         if (build >= WIN10_BUILD_1511)
             store->loader_block_win10.OsLoaderSecurityVersion = 1;
