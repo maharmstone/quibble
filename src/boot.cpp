@@ -517,27 +517,27 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
             store->extension_win81.KdDebugDevice = &store->debug_device_descriptor;
         }
     } else if (version == _WIN32_WINNT_WIN10) {
-        LOADER_EXTENSION_BLOCK6* extblock6;
+        DEBUG_DEVICE_DESCRIPTOR** ddd;
 
         if (build >= WIN10_BUILD_21H1) {
-            extblock6 = &store->extension_win10_21H1.Block6;
+            ddd = &store->extension_win10_21H1.KdDebugDevice;
 
             store->extension_win10_21H1.Block7.MajorRelease = NTDDI_WIN10_20H1;
         } else if (build >= WIN10_BUILD_2004) {
-            extblock6 = &store->extension_win10_2004.Block6;
+            ddd = &store->extension_win10_2004.KdDebugDevice;
 
             store->extension_win10_2004.Block7.MajorRelease = NTDDI_WIN10_20H1;
         } else if (build >= WIN10_BUILD_1903) {
-            extblock6 = &store->extension_win10_1903.Block6;
+            ddd = &store->extension_win10_1903.KdDebugDevice;
 
             // contrary to what you might expect, both 1903 and 1909 use the same value here
             store->extension_win10_1903.MajorRelease = NTDDI_WIN10_19H1;
         } else if (build == WIN10_BUILD_1809) {
-            extblock6 = &store->extension_win10_1809.Block6;
+            ddd = &store->extension_win10_1809.KdDebugDevice;
 
             store->extension_win10_1809.MajorRelease = NTDDI_WIN10_RS5;
         } else if (build >= WIN10_BUILD_1703) {
-            extblock6 = &store->extension_win10_1703.Block6;
+            ddd = &store->extension_win10_1703.KdDebugDevice;
 
             if (build == WIN10_BUILD_1703)
                 store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS2;
@@ -546,16 +546,16 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
             else
                 store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS4;
         } else if (build >= WIN10_BUILD_1607) {
-            extblock6 = &store->extension_win10_1607.Block6;
+            ddd = &store->extension_win10_1607.KdDebugDevice;
 
             store->extension_win10_1607.MajorRelease = NTDDI_WIN10_RS1;
         } else {
-            extblock6 = &store->extension_win10.Block6;
+            ddd = &store->extension_win10.KdDebugDevice;
         }
 
         if (kdnet_loaded) {
             memcpy(&store->debug_device_descriptor, &debug_device_descriptor, sizeof(debug_device_descriptor));
-            extblock6->KdDebugDevice = &store->debug_device_descriptor;
+            *ddd = &store->debug_device_descriptor;
         }
     } else {
         print_string("Unsupported Windows version.\n");
@@ -774,7 +774,7 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         if (store->extension_win81.KdDebugDevice)
             store->extension_win81.KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(store->extension_win81.KdDebugDevice, mappings);
     } else if (version == _WIN32_WINNT_WIN10) {
-        LOADER_EXTENSION_BLOCK6* extblock6;
+        DEBUG_DEVICE_DESCRIPTOR** ddd;
 
         fix_list_mapping(&store->loader_block_win10.EarlyLaunchListHead, mappings);
         fix_list_mapping(&store->loader_block_win10.CoreExtensionsDriverListHead, mappings);
@@ -795,35 +795,35 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
             extblock3 = &store->extension_win10_21H1.Block3;
             extblock4 = &store->extension_win10_21H1.Block4;
             extblock5a = &store->extension_win10_21H1.Block5a;
-            extblock6 = &store->extension_win10_21H1.Block6;
+            ddd = &store->extension_win10_21H1.KdDebugDevice;
         } else if (build >= WIN10_BUILD_2004) {
             extblock1c = &store->extension_win10_2004.Block1c;
             extblock2b = &store->extension_win10_2004.Block2b;
             extblock3 = &store->extension_win10_2004.Block3;
             extblock4 = &store->extension_win10_2004.Block4;
             extblock5a = &store->extension_win10_2004.Block5a;
-            extblock6 = &store->extension_win10_2004.Block6;
+            ddd = &store->extension_win10_2004.KdDebugDevice;
         } else if (build >= WIN10_BUILD_1903) {
             extblock1c = &store->extension_win10_1903.Block1c;
             extblock2b = &store->extension_win10_1903.Block2b;
             extblock3 = &store->extension_win10_1903.Block3;
             extblock4 = &store->extension_win10_1903.Block4;
             extblock5a = &store->extension_win10_1903.Block5a;
-            extblock6 = &store->extension_win10_1903.Block6;
+            ddd = &store->extension_win10_1903.KdDebugDevice;
         } else if (build == WIN10_BUILD_1809) {
             extblock1c = &store->extension_win10_1809.Block1c;
             extblock2b = &store->extension_win10_1809.Block2b;
             extblock3 = &store->extension_win10_1809.Block3;
             extblock4 = &store->extension_win10_1809.Block4;
             extblock5a = &store->extension_win10_1809.Block5a;
-            extblock6 = &store->extension_win10_1809.Block6;
+            ddd = &store->extension_win10_1809.KdDebugDevice;
         } else if (build >= WIN10_BUILD_1703) {
             extblock1c = &store->extension_win10_1703.Block1c;
             extblock2b = &store->extension_win10_1703.Block2b;
             extblock3 = &store->extension_win10_1703.Block3;
             extblock4 = &store->extension_win10_1703.Block4;
             extblock5a = &store->extension_win10_1703.Block5a;
-            extblock6 = &store->extension_win10_1703.Block6;
+            ddd = &store->extension_win10_1703.KdDebugDevice;
 
             store->extension_win10_1703.LoaderPerformanceData =
                 (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10_1703.LoaderPerformanceData, mappings);
@@ -833,7 +833,7 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
             extblock3 = &store->extension_win10_1607.Block3;
             extblock4 = &store->extension_win10_1607.Block4;
             extblock5a = &store->extension_win10_1607.Block5a;
-            extblock6 = &store->extension_win10_1607.Block6;
+            ddd = &store->extension_win10_1607.KdDebugDevice;
 
             store->extension_win10_1607.LoaderPerformanceData =
                 (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10_1607.LoaderPerformanceData, mappings);
@@ -843,14 +843,14 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
             extblock3 = &store->extension_win10.Block3;
             extblock4 = &store->extension_win10.Block4;
             extblock5a = &store->extension_win10.Block5a;
-            extblock6 = &store->extension_win10.Block6;
+            ddd = &store->extension_win10.KdDebugDevice;
 
             store->extension_win10.LoaderPerformanceData =
                 (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10.LoaderPerformanceData, mappings);
         }
 
-        if (extblock6->KdDebugDevice)
-            extblock6->KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(extblock6->KdDebugDevice, mappings);
+        if (*ddd)
+            *ddd = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(*ddd, mappings);
     } else {
         print_string("Unsupported Windows version.\n");
         return;
