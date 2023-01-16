@@ -331,6 +331,66 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
             loader_block.OsLoaderSecurityVersion = 1;
     }
 
+    loader_block.Extension = &store->extension;
+    loader_block.NlsData = &store->nls;
+
+    loader_block.NlsData->AnsiCodePageData = nls.AnsiCodePageData;
+    loader_block.NlsData->OemCodePageData = nls.OemCodePageData;
+    loader_block.NlsData->UnicodeCodePageData = nls.UnicodeCodePageData;
+
+    loader_block.ArcDiskInformation = &store->arc_disk_information;
+    InitializeListHead(&loader_block.ArcDiskInformation->DiskSignatureListHead);
+
+    str = store->strings;
+    strcpy(str, arc_name);
+    loader_block.ArcBootDeviceName = str;
+
+    str = &str[strlen(str) + 1];
+    strcpy(str, arc_name);
+    loader_block.ArcHalDeviceName = str;
+
+    str = &str[strlen(str) + 1];
+    loader_block.NtBootPathName = str;
+
+    pathlen = strlen(path);
+
+    *str = '\\'; str++;
+    strcpy(str, path);
+
+    if (path[pathlen] != '\\') { // add trailing backslash if not present
+        str[pathlen] = '\\';
+        str[pathlen + 1] = 0;
+    }
+
+    str = &str[strlen(str) + 1];
+    strcpy(str, "\\");
+    loader_block.NtHalPathName = str;
+
+    str = &str[strlen(str) + 1];
+
+    if (options)
+        strcpy(str, options);
+    else
+        *str = 0;
+
+    loader_block.LoadOptions = str;
+
+    *va = (uint8_t*)*va + (STACK_SIZE * EFI_PAGE_SIZE);
+
+    Status = find_hardware(bs, loader_block, va, mappings, image_handle, version);
+    if (EFI_ERROR(Status)) {
+        print_error("find_hardware", Status);
+        return Status;
+    }
+
+    Status = find_disks(bs, &loader_block.ArcDiskInformation->DiskSignatureListHead,
+                        va, mappings, loader_block.ConfigurationRoot,
+                        version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
+    if (EFI_ERROR(Status)) {
+        print_error("find_disks", Status);
+        return Status;
+    }
+
     if (version <= _WIN32_WINNT_WS03) {
         extblock1a = &store->extension_ws03.Block1a;
         loader_pages_spanned = &store->extension_ws03.LoaderPagesSpanned;
@@ -586,68 +646,8 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         return EFI_INVALID_PARAMETER;
     }
 
-    *va = (uint8_t*)*va + (STACK_SIZE * EFI_PAGE_SIZE);
-
     InitializeListHead(&extblock1c->FirmwareDescriptorListHead);
     extblock1c->AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
-
-    loader_block.Extension = &store->extension;
-    loader_block.NlsData = &store->nls;
-
-    loader_block.NlsData->AnsiCodePageData = nls.AnsiCodePageData;
-    loader_block.NlsData->OemCodePageData = nls.OemCodePageData;
-    loader_block.NlsData->UnicodeCodePageData = nls.UnicodeCodePageData;
-
-    loader_block.ArcDiskInformation = &store->arc_disk_information;
-    InitializeListHead(&loader_block.ArcDiskInformation->DiskSignatureListHead);
-
-    str = store->strings;
-    strcpy(str, arc_name);
-    loader_block.ArcBootDeviceName = str;
-
-    str = &str[strlen(str) + 1];
-    strcpy(str, arc_name);
-    loader_block.ArcHalDeviceName = str;
-
-    str = &str[strlen(str) + 1];
-    loader_block.NtBootPathName = str;
-
-    pathlen = strlen(path);
-
-    *str = '\\'; str++;
-    strcpy(str, path);
-
-    if (path[pathlen] != '\\') { // add trailing backslash if not present
-        str[pathlen] = '\\';
-        str[pathlen + 1] = 0;
-    }
-
-    str = &str[strlen(str) + 1];
-    strcpy(str, "\\");
-    loader_block.NtHalPathName = str;
-
-    str = &str[strlen(str) + 1];
-
-    if (options)
-        strcpy(str, options);
-    else
-        *str = 0;
-
-    loader_block.LoadOptions = str;
-
-    Status = find_hardware(bs, loader_block, va, mappings, image_handle, version);
-    if (EFI_ERROR(Status)) {
-        print_error("find_hardware", Status);
-        return Status;
-    }
-
-    Status = find_disks(bs, &loader_block.ArcDiskInformation->DiskSignatureListHead,
-                        va, mappings, loader_block.ConfigurationRoot,
-                        version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
-    if (EFI_ERROR(Status)) {
-        print_error("find_disks", Status);
-        return Status;
-    }
 
     if (extblock2b) {
         InitializeListHead(&extblock2b->BootApplicationPersistentData);
