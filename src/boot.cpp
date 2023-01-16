@@ -255,9 +255,9 @@ static std::optional<loader_block_variant> find_loader_block(loader_store* store
 template<typename T>
 static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* store, T& loader_block, char* options, char* path,
                                           char* arc_name, void** va, LIST_ENTRY* mappings, LIST_ENTRY* drivers, EFI_HANDLE image_handle,
-                                          uint16_t version, uint16_t build, uint16_t revision, void*** registry_base, uint32_t** registry_length,
-                                          LOADER_EXTENSION_BLOCK1A** pextblock1a, LOADER_EXTENSION_BLOCK1B** pextblock1b,
-                                          LOADER_EXTENSION_BLOCK3** pextblock3, uintptr_t** ploader_pages_spanned, LIST_ENTRY* core_drivers) {
+                                          uint16_t version, uint16_t build, uint16_t revision, LOADER_EXTENSION_BLOCK1A** pextblock1a,
+                                          LOADER_EXTENSION_BLOCK1B** pextblock1b, LOADER_EXTENSION_BLOCK3** pextblock3,
+                                          uintptr_t** ploader_pages_spanned, LIST_ENTRY* core_drivers) {
     EFI_STATUS Status;
     LOADER_EXTENSION_BLOCK1A* extblock1a;
     LOADER_EXTENSION_BLOCK1B* extblock1b;
@@ -294,9 +294,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->extension_ws03.Profile.Status = 2;
         store->extension_ws03.MajorVersion = version >> 8;
         store->extension_ws03.MinorVersion = version & 0xff;
-
-        *registry_base = &store->loader_block_ws03.RegistryBase;
-        *registry_length = &store->loader_block_ws03.RegistryLength;
     } else if (version == _WIN32_WINNT_VISTA) {
         extblock3 = NULL;
         extblock4 = NULL;
@@ -331,9 +328,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
             store->extension_vista.LoaderPerformanceData = &store->loader_performance_data;
         }
 
-        *registry_base = &store->loader_block_vista.RegistryBase;
-        *registry_length = &store->loader_block_vista.RegistryLength;
-
         store->loader_block_vista.FirmwareInformation.FirmwareTypeEfi = 1;
         store->loader_block_vista.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
     } else if (version == _WIN32_WINNT_WIN7) {
@@ -357,9 +351,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->extension_win7.TpmBootEntropyResult.ResultStatus = STATUS_NOT_IMPLEMENTED;
 
         store->extension_win7.ProcessorCounterFrequency = cpu_frequency;
-
-        *registry_base = &store->loader_block_win7.RegistryBase;
-        *registry_length = &store->loader_block_win7.RegistryLength;
 
         store->loader_block_win7.FirmwareInformation.FirmwareTypeEfi = 1;
         store->loader_block_win7.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
@@ -393,9 +384,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->loader_block_win8.CoreDriverListHead.Blink->Flink = &store->loader_block_win8.CoreDriverListHead;
 
         store->extension_win8.BootEntropyResult.maxEntropySources = 7;
-
-        *registry_base = &store->loader_block_win8.RegistryBase;
-        *registry_length = &store->loader_block_win8.RegistryLength;
 
         store->loader_block_win8.FirmwareInformation.FirmwareTypeEfi = 1;
         store->loader_block_win8.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
@@ -436,9 +424,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
         store->extension_win81.BootEntropyResult.maxEntropySources = 8;
 
-        *registry_base = &store->loader_block_win81.RegistryBase;
-        *registry_length = &store->loader_block_win81.RegistryLength;
-
         store->loader_block_win81.FirmwareInformation.FirmwareTypeEfi = 1;
         store->loader_block_win81.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
         InitializeListHead(&store->loader_block_win81.FirmwareInformation.EfiInformation.FirmwareResourceList);
@@ -477,9 +462,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->loader_block_win10.CoreDriverListHead.Blink = core_drivers->Blink;
         store->loader_block_win10.CoreDriverListHead.Flink->Blink = &store->loader_block_win10.CoreDriverListHead;
         store->loader_block_win10.CoreDriverListHead.Blink->Flink = &store->loader_block_win10.CoreDriverListHead;
-
-        *registry_base = &store->loader_block_win10.RegistryBase;
-        *registry_length = &store->loader_block_win10.RegistryLength;
 
         store->loader_block_win10.FirmwareInformation.FirmwareTypeEfi = 1;
         store->loader_block_win10.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
@@ -3645,8 +3627,6 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     uint32_t version_ms, version_ls;
     uint16_t version;
     uint16_t build, revision;
-    void** registry_base;
-    uint32_t* registry_length;
     LOADER_EXTENSION_BLOCK1A* extblock1a;
     LOADER_EXTENSION_BLOCK1B* extblock1b;
     LOADER_EXTENSION_BLOCK3* extblock3;
@@ -4129,8 +4109,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     std::visit([&](auto&& b) {
         Status = initialize_loader_block(bs, store, *b, options, path, arc_name, &va, &mappings, &drivers, image_handle, version, build,
-                                         revision, &registry_base, &registry_length, &extblock1a, &extblock1b, &extblock3,
-                                         &loader_pages_spanned, &core_drivers);
+                                         revision, &extblock1a, &extblock1b, &extblock3, &loader_pages_spanned, &core_drivers);
     }, loader_block);
 
     if (EFI_ERROR(Status)) {
@@ -4438,8 +4417,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     system32->Close(system32);
     system32 = NULL;
 
-    *registry_base = va;
-    *registry_length = reg_size;
+    std::visit([&](auto&& b) {
+        b->RegistryBase = va;
+        b->RegistryLength = reg_size;
+    }, loader_block);
 
     va = (uint8_t*)va + (PAGE_COUNT(reg_size) * EFI_PAGE_SIZE);
 
