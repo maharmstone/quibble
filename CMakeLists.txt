@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.14)
 
 project(quibble VERSION 20210111)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 if(MSVC)

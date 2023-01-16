@@ -280,6 +280,21 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
     loader_block.BootDriverListHead.Flink->Blink = &loader_block.BootDriverListHead;
     loader_block.BootDriverListHead.Blink->Flink = &loader_block.BootDriverListHead;
 
+    if constexpr (requires { T::OsMajorVersion; })
+        loader_block.OsMajorVersion = version >> 8;
+
+    if constexpr (requires { T::OsMinorVersion; })
+        loader_block.OsMinorVersion = version & 0xff;
+
+    if constexpr (requires { T::FirmwareInformation; }) {
+        loader_block.FirmwareInformation.FirmwareTypeEfi = 1;
+        loader_block.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
+
+        if constexpr (requires { decltype(decltype(T::FirmwareInformation)::EfiInformation)::FirmwareResourceList; }) {
+            InitializeListHead(&loader_block.FirmwareInformation.EfiInformation.FirmwareResourceList);
+        }
+    }
+
     if (version <= _WIN32_WINNT_WS03) {
         extblock1a = &store->extension_ws03.Block1a;
         loader_pages_spanned = &store->extension_ws03.LoaderPagesSpanned;
@@ -327,9 +342,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
             store->extension_vista.LoaderPerformanceData = &store->loader_performance_data;
         }
-
-        store->loader_block_vista.FirmwareInformation.FirmwareTypeEfi = 1;
-        store->loader_block_vista.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
     } else if (version == _WIN32_WINNT_WIN7) {
         extblock1a = &store->extension_win7.Block1a;
         loader_pages_spanned = &store->extension_win7.LoaderPagesSpanned;
@@ -343,17 +355,12 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->extension_win7.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN7);
         store->extension_win7.Profile.Status = 2;
 
-        store->loader_block_win7.OsMajorVersion = version >> 8;
-        store->loader_block_win7.OsMinorVersion = version & 0xff;
         store->loader_block_win7.Size = sizeof(LOADER_PARAMETER_BLOCK_WIN7);
 
         store->extension_win7.TpmBootEntropyResult.ResultCode = TpmBootEntropyNoTpmFound;
         store->extension_win7.TpmBootEntropyResult.ResultStatus = STATUS_NOT_IMPLEMENTED;
 
         store->extension_win7.ProcessorCounterFrequency = cpu_frequency;
-
-        store->loader_block_win7.FirmwareInformation.FirmwareTypeEfi = 1;
-        store->loader_block_win7.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
 
         store->extension_win7.LoaderPerformanceData = &store->loader_performance_data;
     } else if (version == _WIN32_WINNT_WIN8) {
@@ -369,8 +376,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->extension_win8.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN8);
         store->extension_win8.Profile.Status = 2;
 
-        store->loader_block_win8.OsMajorVersion = version >> 8;
-        store->loader_block_win8.OsMinorVersion = version & 0xff;
         store->loader_block_win8.Size = sizeof(LOADER_PARAMETER_BLOCK_WIN8);
 
         InitializeListHead(&store->loader_block_win8.EarlyLaunchListHead);
@@ -384,10 +389,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->loader_block_win8.CoreDriverListHead.Blink->Flink = &store->loader_block_win8.CoreDriverListHead;
 
         store->extension_win8.BootEntropyResult.maxEntropySources = 7;
-
-        store->loader_block_win8.FirmwareInformation.FirmwareTypeEfi = 1;
-        store->loader_block_win8.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
-        InitializeListHead(&store->loader_block_win8.FirmwareInformation.EfiInformation.FirmwareResourceList);
 
         store->extension_win8.LoaderPerformanceData = &store->loader_performance_data;
         store->extension_win8.ProcessorCounterFrequency = cpu_frequency;
@@ -408,8 +409,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
         store->extension_win81.Profile.Status = 2;
 
-        store->loader_block_win81.OsMajorVersion = version >> 8;
-        store->loader_block_win81.OsMinorVersion = version & 0xff;
         store->loader_block_win81.Size = sizeof(LOADER_PARAMETER_BLOCK_WIN81);
 
         InitializeListHead(&store->loader_block_win81.EarlyLaunchListHead);
@@ -424,10 +423,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
         store->extension_win81.BootEntropyResult.maxEntropySources = 8;
 
-        store->loader_block_win81.FirmwareInformation.FirmwareTypeEfi = 1;
-        store->loader_block_win81.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
-        InitializeListHead(&store->loader_block_win81.FirmwareInformation.EfiInformation.FirmwareResourceList);
-
         store->extension_win81.LoaderPerformanceData = &store->loader_performance_data;
         store->extension_win81.ProcessorCounterFrequency = cpu_frequency;
 
@@ -439,9 +434,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         LOADER_EXTENSION_BLOCK6* extblock6;
 
         loader_pages_spanned = NULL;
-
-        store->loader_block_win10.OsMajorVersion = version >> 8;
-        store->loader_block_win10.OsMinorVersion = version & 0xff;
 
         if (build >= WIN10_BUILD_1803)
             store->loader_block_win10.Size = sizeof(LOADER_PARAMETER_BLOCK_WIN10);
@@ -462,10 +454,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->loader_block_win10.CoreDriverListHead.Blink = core_drivers->Blink;
         store->loader_block_win10.CoreDriverListHead.Flink->Blink = &store->loader_block_win10.CoreDriverListHead;
         store->loader_block_win10.CoreDriverListHead.Blink->Flink = &store->loader_block_win10.CoreDriverListHead;
-
-        store->loader_block_win10.FirmwareInformation.FirmwareTypeEfi = 1;
-        store->loader_block_win10.FirmwareInformation.EfiInformation.FirmwareVersion = systable->Hdr.Revision;
-        InitializeListHead(&store->loader_block_win10.FirmwareInformation.EfiInformation.FirmwareResourceList);
 
         if (build >= WIN10_BUILD_21H1) {
             extblock1a = &store->extension_win10_21H1.Block1a;
