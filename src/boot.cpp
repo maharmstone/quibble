@@ -631,7 +631,7 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
     InitializeListHead(&extblock1c->FirmwareDescriptorListHead);
     extblock1c->AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
 
-    loader_block.Block2.Extension = &store->extension;
+    loader_block.Extension = &store->extension;
     loader_block.Block1c.NlsData = &store->nls;
 
     loader_block.Block1c.NlsData->AnsiCodePageData = nls.AnsiCodePageData;
@@ -822,7 +822,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
     void* ccd_va;
     LOADER_BLOCK1A* block1a;
     LOADER_BLOCK1C* block1c;
-    LOADER_BLOCK2* block2;
     LOADER_EXTENSION_BLOCK1C* extblock1c;
     LOADER_EXTENSION_BLOCK2B* extblock2b;
     LOADER_EXTENSION_BLOCK3* extblock3;
@@ -831,7 +830,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
 
     block1a = &loader_block.Block1a;
     block1c = &loader_block.Block1c;
-    block2 = &loader_block.Block2;
 
     if (version <= _WIN32_WINNT_WS03) {
         extblock1c = &store->extension_ws03.Block1c;
@@ -994,7 +992,7 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
     fix_config_mapping(block1c->ConfigurationRoot, mappings, NULL, &ccd_va);
     block1c->ConfigurationRoot = (CONFIGURATION_COMPONENT_DATA*)ccd_va;
 
-    block2->Extension = fix_address_mapping(block2->Extension, store, va);
+    loader_block.Extension = fix_address_mapping(loader_block.Extension, store, va);
     block1c->NlsData = (NLS_DATA_BLOCK*)fix_address_mapping(block1c->NlsData, store, va);
 
     fix_arc_disk_mapping(block1c, mappings, version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));

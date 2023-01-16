@@ -2661,13 +2661,6 @@ typedef struct {
 } LOADER_BLOCK1C;
 
 typedef struct {
-    void* Extension;
-    union {
-        I386_LOADER_BLOCK I386;
-    } u;
-} LOADER_BLOCK2;
-
-typedef struct {
     LOADER_BLOCK1A Block1a;
     LOADER_BLOCK1B Block1b;
     uint32_t RegistryLength;
@@ -2675,7 +2668,10 @@ typedef struct {
     LOADER_BLOCK1C Block1c;
     void* OemFontFile;
     SETUP_LOADER_BLOCK* SetupLdrBlock;
-    LOADER_BLOCK2 Block2;
+    void* Extension;
+    union {
+        I386_LOADER_BLOCK I386;
+    } u;
 } LOADER_PARAMETER_BLOCK_WS03;
 
 #ifdef _X86_
@@ -2699,8 +2695,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1c.NlsData) == 0x48, "L
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1c.ArcDiskInformation) == 0x4c, "LOADER_PARAMETER_BLOCK_WS03 ArcDiskInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, OemFontFile) == 0x50, "LOADER_PARAMETER_BLOCK_WS03 OemFontFile");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, SetupLdrBlock) == 0x54, "LOADER_PARAMETER_BLOCK_WS03 SetupLdrBlock");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block2.Extension) == 0x58, "LOADER_PARAMETER_BLOCK_WS03 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block2.u.I386) == 0x5c, "LOADER_PARAMETER_BLOCK_WS03 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Extension) == 0x58, "LOADER_PARAMETER_BLOCK_WS03 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, u.I386) == 0x5c, "LOADER_PARAMETER_BLOCK_WS03 I386");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_WS03) == 0xc8, "LOADER_PARAMETER_BLOCK_WS03 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1a.LoadOrderListHead) == 0x0, "LOADER_PARAMETER_BLOCK_WS03 LoadOrderListHead");
@@ -2722,8 +2718,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1c.NlsData) == 0x90, "L
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1c.ArcDiskInformation) == 0x98, "LOADER_PARAMETER_BLOCK_WS03 ArcDiskInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, OemFontFile) == 0xa0, "LOADER_PARAMETER_BLOCK_WS03 OemFontFile");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, SetupLdrBlock) == 0xa8, "LOADER_PARAMETER_BLOCK_WS03 SetupLdrBlock");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block2.Extension) == 0xb0, "LOADER_PARAMETER_BLOCK_WS03 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block2.u.I386) == 0xb8, "LOADER_PARAMETER_BLOCK_WS03 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Extension) == 0xb0, "LOADER_PARAMETER_BLOCK_WS03 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, u.I386) == 0xb8, "LOADER_PARAMETER_BLOCK_WS03 I386");
 #endif
 
 typedef struct {
@@ -2771,7 +2767,10 @@ typedef struct {
     LOADER_BLOCK1C Block1c;
     void* OemFontFile;
     SETUP_LOADER_BLOCK* SetupLdrBlock;
-    LOADER_BLOCK2 Block2;
+    void* Extension;
+    union {
+        I386_LOADER_BLOCK I386;
+    } u;
     FIRMWARE_INFORMATION_LOADER_BLOCK_WIN7 FirmwareInformation;
 } LOADER_PARAMETER_BLOCK_VISTA;
 
@@ -2796,8 +2795,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1c.NlsData) == 0x48, "
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1c.ArcDiskInformation) == 0x4c, "LOADER_PARAMETER_BLOCK_VISTA ArcDiskInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, OemFontFile) == 0x50, "LOADER_PARAMETER_BLOCK_VISTA OemFontFile");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, SetupLdrBlock) == 0x54, "LOADER_PARAMETER_BLOCK_VISTA SetupLdrBlock");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block2.Extension) == 0x58, "LOADER_PARAMETER_BLOCK_VISTA Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block2.u.I386) == 0x5c, "LOADER_PARAMETER_BLOCK_VISTA I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Extension) == 0x58, "LOADER_PARAMETER_BLOCK_VISTA Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, u.I386) == 0x5c, "LOADER_PARAMETER_BLOCK_VISTA I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, FirmwareInformation) == 0x68, "LOADER_PARAMETER_BLOCK_VISTA FirmwareInformation");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_VISTA) == 0xe8, "LOADER_PARAMETER_BLOCK_VISTA has incorrect size.");
@@ -2820,8 +2819,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1c.NlsData) == 0x90, "
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1c.ArcDiskInformation) == 0x98, "LOADER_PARAMETER_BLOCK_VISTA ArcDiskInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, OemFontFile) == 0xa0, "LOADER_PARAMETER_BLOCK_VISTA OemFontFile");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, SetupLdrBlock) == 0xa8, "LOADER_PARAMETER_BLOCK_VISTA SetupLdrBlock");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block2.Extension) == 0xb0, "LOADER_PARAMETER_BLOCK_VISTA Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block2.u.I386) == 0xb8, "LOADER_PARAMETER_BLOCK_VISTA I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Extension) == 0xb0, "LOADER_PARAMETER_BLOCK_VISTA Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, u.I386) == 0xb8, "LOADER_PARAMETER_BLOCK_VISTA I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, FirmwareInformation) == 0xc8, "LOADER_PARAMETER_BLOCK_VISTA FirmwareInformation");
 #endif
 
@@ -2836,7 +2835,10 @@ typedef struct {
     void* RegistryBase;
     LOADER_BLOCK1C Block1c;
     void* OemFontFile;
-    LOADER_BLOCK2 Block2;
+    void* Extension;
+    union {
+        I386_LOADER_BLOCK I386;
+    } u;
     FIRMWARE_INFORMATION_LOADER_BLOCK_WIN7 FirmwareInformation;
 } LOADER_PARAMETER_BLOCK_WIN7;
 
@@ -2864,8 +2866,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1c.LoadOptions) == 0x54
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1c.NlsData) == 0x58, "LOADER_PARAMETER_BLOCK_WIN7 NlsData");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1c.ArcDiskInformation) == 0x5c, "LOADER_PARAMETER_BLOCK_WIN7 ArcDiskInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, OemFontFile) == 0x60, "LOADER_PARAMETER_BLOCK_WIN7 OemFontFile");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block2.Extension) == 0x64, "LOADER_PARAMETER_BLOCK_WIN7 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block2.u.I386) == 0x68, "LOADER_PARAMETER_BLOCK_WIN7 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Extension) == 0x64, "LOADER_PARAMETER_BLOCK_WIN7 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, u.I386) == 0x68, "LOADER_PARAMETER_BLOCK_WIN7 I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, FirmwareInformation) == 0x74, "LOADER_PARAMETER_BLOCK_WIN7 FirmwareInformation");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_WIN7) == 0xf0, "LOADER_PARAMETER_BLOCK_WIN7 has incorrect size.");
@@ -2891,8 +2893,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1c.LoadOptions) == 0x98
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1c.NlsData) == 0xa0, "LOADER_PARAMETER_BLOCK_WIN7 NlsData");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1c.ArcDiskInformation) == 0xa8, "LOADER_PARAMETER_BLOCK_WIN7 ArcDiskInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, OemFontFile) == 0xb0, "LOADER_PARAMETER_BLOCK_WIN7 OemFontFile");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block2.Extension) == 0xb8, "LOADER_PARAMETER_BLOCK_WIN7 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block2.u.I386) == 0xc0, "LOADER_PARAMETER_BLOCK_WIN7 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Extension) == 0xb8, "LOADER_PARAMETER_BLOCK_WIN7 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, u.I386) == 0xc0, "LOADER_PARAMETER_BLOCK_WIN7 I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, FirmwareInformation) == 0xd0, "LOADER_PARAMETER_BLOCK_WIN7 FirmwareInformation");
 #endif
 
@@ -2911,7 +2913,10 @@ typedef struct {
     uint32_t RegistryLength;
     void* RegistryBase;
     LOADER_BLOCK1C Block1c;
-    LOADER_BLOCK2 Block2;
+    void* Extension;
+    union {
+        I386_LOADER_BLOCK I386;
+    } u;
     FIRMWARE_INFORMATION_LOADER_BLOCK_WIN8 FirmwareInformation;
 } LOADER_PARAMETER_BLOCK_WIN8;
 
@@ -2943,8 +2948,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1c.NtHalPathName) == 0x
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1c.LoadOptions) == 0x68, "LOADER_PARAMETER_BLOCK_WIN8 LoadOptions");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1c.NlsData) == 0x6c, "LOADER_PARAMETER_BLOCK_WIN8 NlsData");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1c.ArcDiskInformation) == 0x70, "LOADER_PARAMETER_BLOCK_WIN8 ArcDiskInformation");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block2.Extension) == 0x74, "LOADER_PARAMETER_BLOCK_WIN8 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block2.u.I386) == 0x78, "LOADER_PARAMETER_BLOCK_WIN8 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Extension) == 0x74, "LOADER_PARAMETER_BLOCK_WIN8 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, u.I386) == 0x78, "LOADER_PARAMETER_BLOCK_WIN8 I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, FirmwareInformation) == 0x84, "LOADER_PARAMETER_BLOCK_WIN8 FirmwareInformation");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_WIN8) == 0x118, "LOADER_PARAMETER_BLOCK_WIN8 has incorrect size.");
@@ -2972,8 +2977,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1c.NtHalPathName) == 0x
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1c.LoadOptions) == 0xb8, "LOADER_PARAMETER_BLOCK_WIN8 LoadOptions");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1c.NlsData) == 0xc0, "LOADER_PARAMETER_BLOCK_WIN8 NlsData");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1c.ArcDiskInformation) == 0xc8, "LOADER_PARAMETER_BLOCK_WIN8 ArcDiskInformation");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block2.Extension) == 0xd0, "LOADER_PARAMETER_BLOCK_WIN8 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block2.u.I386) == 0xd8, "LOADER_PARAMETER_BLOCK_WIN8 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Extension) == 0xd0, "LOADER_PARAMETER_BLOCK_WIN8 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, u.I386) == 0xd8, "LOADER_PARAMETER_BLOCK_WIN8 I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, FirmwareInformation) == 0xe8, "LOADER_PARAMETER_BLOCK_WIN8 FirmwareInformation");
 #endif
 
@@ -3012,7 +3017,10 @@ typedef struct {
     uint32_t RegistryLength;
     void* RegistryBase;
     LOADER_BLOCK1C Block1c;
-    LOADER_BLOCK2 Block2;
+    void* Extension;
+    union {
+        I386_LOADER_BLOCK I386;
+    } u;
     FIRMWARE_INFORMATION_LOADER_BLOCK_WIN81 FirmwareInformation;
 } LOADER_PARAMETER_BLOCK_WIN81;
 
@@ -3044,8 +3052,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1c.NtHalPathName) == 0
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1c.LoadOptions) == 0x68, "LOADER_PARAMETER_BLOCK_WIN81 LoadOptions");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1c.NlsData) == 0x6c, "LOADER_PARAMETER_BLOCK_WIN81 NlsData");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1c.ArcDiskInformation) == 0x70, "LOADER_PARAMETER_BLOCK_WIN81 ArcDiskInformation");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block2.Extension) == 0x74, "LOADER_PARAMETER_BLOCK_WIN81 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block2.u.I386) == 0x78, "LOADER_PARAMETER_BLOCK_WIN81 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Extension) == 0x74, "LOADER_PARAMETER_BLOCK_WIN81 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, u.I386) == 0x78, "LOADER_PARAMETER_BLOCK_WIN81 I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, FirmwareInformation) == 0x84, "LOADER_PARAMETER_BLOCK_WIN81 FirmwareInformation");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_WIN81) == 0x128, "LOADER_PARAMETER_BLOCK_WIN81 has incorrect size.");
@@ -3073,8 +3081,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1c.NtHalPathName) == 0
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1c.LoadOptions) == 0xb8, "LOADER_PARAMETER_BLOCK_WIN81 LoadOptions");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1c.NlsData) == 0xc0, "LOADER_PARAMETER_BLOCK_WIN81 NlsData");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1c.ArcDiskInformation) == 0xc8, "LOADER_PARAMETER_BLOCK_WIN81 ArcDiskInformation");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block2.Extension) == 0xd0, "LOADER_PARAMETER_BLOCK_WIN81 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block2.u.I386) == 0xd8, "LOADER_PARAMETER_BLOCK_WIN81 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Extension) == 0xd0, "LOADER_PARAMETER_BLOCK_WIN81 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, u.I386) == 0xd8, "LOADER_PARAMETER_BLOCK_WIN81 I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, FirmwareInformation) == 0xe8, "LOADER_PARAMETER_BLOCK_WIN81 FirmwareInformation");
 #endif
 
@@ -3095,7 +3103,10 @@ typedef struct {
     uint32_t RegistryLength;
     void* RegistryBase;
     LOADER_BLOCK1C Block1c;
-    LOADER_BLOCK2 Block2;
+    void* Extension;
+    union {
+        I386_LOADER_BLOCK I386;
+    } u;
     FIRMWARE_INFORMATION_LOADER_BLOCK_WIN81 FirmwareInformation;
     char* OsBootstatPathName;
     char* ArcOSDataDeviceName;
@@ -3132,8 +3143,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1c.NtHalPathName) == 0
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1c.LoadOptions) == 0x78, "LOADER_PARAMETER_BLOCK_WIN10 LoadOptions");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1c.NlsData) == 0x7c, "LOADER_PARAMETER_BLOCK_WIN10 NlsData");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1c.ArcDiskInformation) == 0x80, "LOADER_PARAMETER_BLOCK_WIN10 ArcDiskInformation");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block2.Extension) == 0x84, "LOADER_PARAMETER_BLOCK_WIN10 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block2.u.I386) == 0x88, "LOADER_PARAMETER_BLOCK_WIN10 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Extension) == 0x84, "LOADER_PARAMETER_BLOCK_WIN10 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, u.I386) == 0x88, "LOADER_PARAMETER_BLOCK_WIN10 I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, FirmwareInformation) == 0x94, "LOADER_PARAMETER_BLOCK_WIN10 FirmwareInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsBootstatPathName) == 0xbc, "LOADER_PARAMETER_BLOCK_WIN10 OsBootstatPathName");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, ArcOSDataDeviceName) == 0xc0, "LOADER_PARAMETER_BLOCK_WIN10 ArcOSDataDeviceName");
@@ -3166,8 +3177,8 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1c.NtHalPathName) == 0
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1c.LoadOptions) == 0xd8, "LOADER_PARAMETER_BLOCK_WIN10 LoadOptions");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1c.NlsData) == 0xe0, "LOADER_PARAMETER_BLOCK_WIN10 NlsData");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1c.ArcDiskInformation) == 0xe8, "LOADER_PARAMETER_BLOCK_WIN10 ArcDiskInformation");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block2.Extension) == 0xf0, "LOADER_PARAMETER_BLOCK_WIN10 Extension");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block2.u.I386) == 0xf8, "LOADER_PARAMETER_BLOCK_WIN10 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Extension) == 0xf0, "LOADER_PARAMETER_BLOCK_WIN10 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, u.I386) == 0xf8, "LOADER_PARAMETER_BLOCK_WIN10 I386");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, FirmwareInformation) == 0x108, "LOADER_PARAMETER_BLOCK_WIN10 FirmwareInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsBootstatPathName) == 0x148, "LOADER_PARAMETER_BLOCK_WIN10 OsBootstatPathName");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, ArcOSDataDeviceName) == 0x150, "LOADER_PARAMETER_BLOCK_WIN10 ArcOSDataDeviceName");
