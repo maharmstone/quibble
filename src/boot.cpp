@@ -4563,7 +4563,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     std::visit([&](auto&& b) {
         fix_store_mapping(store, store_va, *b, &mappings, version, build);
 
-        Status = enable_paging(image_handle, bs, &mappings, &b->Block1a, va, loader_pages_spanned);
+        Status = enable_paging(image_handle, bs, &mappings, *b, va, loader_pages_spanned);
     }, loader_block);
 
     if (EFI_ERROR(Status)) {

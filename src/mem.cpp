@@ -876,8 +876,9 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
     return EFI_SUCCESS;
 }
 
+template<typename T>
 EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
-                         LOADER_BLOCK1A* block1, void* va, uintptr_t* loader_pages_spanned) {
+                         T& loader_block, void* va, uintptr_t* loader_pages_spanned) {
     EFI_STATUS Status;
     UINTN size, key, descsize;
     UINT32 version;
@@ -1121,7 +1122,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
         return Status;
     }
 
-    Status = setup_memory_descriptor_list(mappings, block1, mdl_pa, va);
+    Status = setup_memory_descriptor_list(mappings, &loader_block.Block1a, mdl_pa, va);
     if (EFI_ERROR(Status)) {
         print_error("setup_memory_descriptor_list", Status);
         return Status;
@@ -1210,6 +1211,25 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
 
     return EFI_SUCCESS;
 }
+
+template EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
+                                  LOADER_PARAMETER_BLOCK_WS03& loader_block, void* va,
+                                  uintptr_t* loader_pages_spanned);
+template EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
+                                  LOADER_PARAMETER_BLOCK_VISTA& loader_block, void* va,
+                                  uintptr_t* loader_pages_spanned);
+template EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
+                                  LOADER_PARAMETER_BLOCK_WIN7& loader_block, void* va,
+                                  uintptr_t* loader_pages_spanned);
+template EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
+                                  LOADER_PARAMETER_BLOCK_WIN8& loader_block, void* va,
+                                  uintptr_t* loader_pages_spanned);
+template EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
+                                  LOADER_PARAMETER_BLOCK_WIN81& loader_block, void* va,
+                                  uintptr_t* loader_pages_spanned);
+template EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
+                                  LOADER_PARAMETER_BLOCK_WIN10& loader_block, void* va,
+                                  uintptr_t* loader_pages_spanned);
 
 void merge_mappings(LIST_ENTRY* mappings) {
     LIST_ENTRY* le = mappings->Flink;
