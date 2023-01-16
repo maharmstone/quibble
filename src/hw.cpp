@@ -375,7 +375,7 @@ EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, T& loader_block, void** va, LIST
     }
 #endif
 
-    loader_block.Block1c.ConfigurationRoot = system_key;
+    loader_block.ConfigurationRoot = system_key;
 
     return EFI_SUCCESS;
 }

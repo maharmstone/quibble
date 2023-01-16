@@ -632,25 +632,25 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
     extblock1c->AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
 
     loader_block.Extension = &store->extension;
-    loader_block.Block1c.NlsData = &store->nls;
+    loader_block.NlsData = &store->nls;
 
-    loader_block.Block1c.NlsData->AnsiCodePageData = nls.AnsiCodePageData;
-    loader_block.Block1c.NlsData->OemCodePageData = nls.OemCodePageData;
-    loader_block.Block1c.NlsData->UnicodeCodePageData = nls.UnicodeCodePageData;
+    loader_block.NlsData->AnsiCodePageData = nls.AnsiCodePageData;
+    loader_block.NlsData->OemCodePageData = nls.OemCodePageData;
+    loader_block.NlsData->UnicodeCodePageData = nls.UnicodeCodePageData;
 
-    loader_block.Block1c.ArcDiskInformation = &store->arc_disk_information;
-    InitializeListHead(&loader_block.Block1c.ArcDiskInformation->DiskSignatureListHead);
+    loader_block.ArcDiskInformation = &store->arc_disk_information;
+    InitializeListHead(&loader_block.ArcDiskInformation->DiskSignatureListHead);
 
     str = store->strings;
     strcpy(str, arc_name);
-    loader_block.Block1c.ArcBootDeviceName = str;
+    loader_block.ArcBootDeviceName = str;
 
     str = &str[strlen(str) + 1];
     strcpy(str, arc_name);
-    loader_block.Block1c.ArcHalDeviceName = str;
+    loader_block.ArcHalDeviceName = str;
 
     str = &str[strlen(str) + 1];
-    loader_block.Block1c.NtBootPathName = str;
+    loader_block.NtBootPathName = str;
 
     pathlen = strlen(path);
 
@@ -664,7 +664,7 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
     str = &str[strlen(str) + 1];
     strcpy(str, "\\");
-    loader_block.Block1c.NtHalPathName = str;
+    loader_block.NtHalPathName = str;
 
     str = &str[strlen(str) + 1];
 
@@ -673,7 +673,7 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
     else
         *str = 0;
 
-    loader_block.Block1c.LoadOptions = str;
+    loader_block.LoadOptions = str;
 
     Status = find_hardware(bs, loader_block, va, mappings, image_handle, version);
     if (EFI_ERROR(Status)) {
@@ -681,8 +681,8 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         return Status;
     }
 
-    Status = find_disks(bs, &loader_block.Block1c.ArcDiskInformation->DiskSignatureListHead,
-                        va, mappings, loader_block.Block1c.ConfigurationRoot,
+    Status = find_disks(bs, &loader_block.ArcDiskInformation->DiskSignatureListHead,
+                        va, mappings, loader_block.ConfigurationRoot,
                         version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
     if (EFI_ERROR(Status)) {
         print_error("find_disks", Status);
@@ -800,8 +800,8 @@ template<typename T>
 static void fix_arc_disk_mapping(T& loader_block, LIST_ENTRY* mappings, bool new_disk_format) {
     LIST_ENTRY* le;
 
-    le = loader_block.Block1c.ArcDiskInformation->DiskSignatureListHead.Flink;
-    while (le != &loader_block.Block1c.ArcDiskInformation->DiskSignatureListHead) {
+    le = loader_block.ArcDiskInformation->DiskSignatureListHead.Flink;
+    while (le != &loader_block.ArcDiskInformation->DiskSignatureListHead) {
         if (new_disk_format) {
             ARC_DISK_SIGNATURE_WIN7* arc = _CR(le, ARC_DISK_SIGNATURE_WIN7, ListEntry);
 
@@ -815,7 +815,7 @@ static void fix_arc_disk_mapping(T& loader_block, LIST_ENTRY* mappings, bool new
         le = le->Flink;
     }
 
-    fix_list_mapping(&loader_block.Block1c.ArcDiskInformation->DiskSignatureListHead, mappings);
+    fix_list_mapping(&loader_block.ArcDiskInformation->DiskSignatureListHead, mappings);
 }
 
 template<typename T>
@@ -986,29 +986,29 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
 
     fix_driver_list_mapping(&loader_block.BootDriverListHead, mappings);
 
-    fix_config_mapping(loader_block.Block1c.ConfigurationRoot, mappings, NULL, &ccd_va);
-    loader_block.Block1c.ConfigurationRoot = (CONFIGURATION_COMPONENT_DATA*)ccd_va;
+    fix_config_mapping(loader_block.ConfigurationRoot, mappings, NULL, &ccd_va);
+    loader_block.ConfigurationRoot = (CONFIGURATION_COMPONENT_DATA*)ccd_va;
 
     loader_block.Extension = fix_address_mapping(loader_block.Extension, store, va);
-    loader_block.Block1c.NlsData = (NLS_DATA_BLOCK*)fix_address_mapping(loader_block.Block1c.NlsData, store, va);
+    loader_block.NlsData = (NLS_DATA_BLOCK*)fix_address_mapping(loader_block.NlsData, store, va);
 
     fix_arc_disk_mapping(loader_block, mappings, version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
-    loader_block.Block1c.ArcDiskInformation = (ARC_DISK_INFORMATION*)fix_address_mapping(loader_block.Block1c.ArcDiskInformation, store, va);
+    loader_block.ArcDiskInformation = (ARC_DISK_INFORMATION*)fix_address_mapping(loader_block.ArcDiskInformation, store, va);
 
-    if (loader_block.Block1c.ArcBootDeviceName)
-        loader_block.Block1c.ArcBootDeviceName = (char*)find_virtual_address(loader_block.Block1c.ArcBootDeviceName, mappings);
+    if (loader_block.ArcBootDeviceName)
+        loader_block.ArcBootDeviceName = (char*)find_virtual_address(loader_block.ArcBootDeviceName, mappings);
 
-    if (loader_block.Block1c.ArcHalDeviceName)
-        loader_block.Block1c.ArcHalDeviceName = (char*)find_virtual_address(loader_block.Block1c.ArcHalDeviceName, mappings);
+    if (loader_block.ArcHalDeviceName)
+        loader_block.ArcHalDeviceName = (char*)find_virtual_address(loader_block.ArcHalDeviceName, mappings);
 
-    if (loader_block.Block1c.NtBootPathName)
-        loader_block.Block1c.NtBootPathName = (char*)find_virtual_address(loader_block.Block1c.NtBootPathName, mappings);
+    if (loader_block.NtBootPathName)
+        loader_block.NtBootPathName = (char*)find_virtual_address(loader_block.NtBootPathName, mappings);
 
-    if (loader_block.Block1c.NtHalPathName)
-        loader_block.Block1c.NtHalPathName = (char*)find_virtual_address(loader_block.Block1c.NtHalPathName, mappings);
+    if (loader_block.NtHalPathName)
+        loader_block.NtHalPathName = (char*)find_virtual_address(loader_block.NtHalPathName, mappings);
 
-    if (loader_block.Block1c.LoadOptions)
-        loader_block.Block1c.LoadOptions = (char*)find_virtual_address(loader_block.Block1c.LoadOptions, mappings);
+    if (loader_block.LoadOptions)
+        loader_block.LoadOptions = (char*)find_virtual_address(loader_block.LoadOptions, mappings);
 
     fix_list_mapping(&extblock1c->FirmwareDescriptorListHead, mappings);
 
