@@ -310,12 +310,6 @@ typedef struct {
 #pragma pack(push,1)
 
 typedef struct {
-    void* EmInfFileImage;
-    uintptr_t EmInfFileSize;
-    void* TriageDumpBlock;
-} LOADER_EXTENSION_BLOCK1A;
-
-typedef struct {
     HEADLESS_LOADER_BLOCK* HeadlessLoaderBlock;
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
@@ -341,7 +335,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     uintptr_t LoaderPagesSpanned;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
@@ -358,9 +354,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Size) == 0x0, "LOADER_PA
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WS03 Profile");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, MajorVersion) == 0x14, "LOADER_PARAMETER_EXTENSION_WS03 MajorVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, MinorVersion) == 0x18, "LOADER_PARAMETER_EXTENSION_WS03 MinorVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1a.EmInfFileImage) == 0x1c, "LOADER_PARAMETER_EXTENSION_WS03 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WS03 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1a.TriageDumpBlock) == 0x24, "LOADER_PARAMETER_EXTENSION_WS03 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, EmInfFileImage) == 0x1c, "LOADER_PARAMETER_EXTENSION_WS03 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WS03 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, TriageDumpBlock) == 0x24, "LOADER_PARAMETER_EXTENSION_WS03 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, LoaderPagesSpanned) == 0x28, "LOADER_PARAMETER_EXTENSION_WS03 LoaderPagesSpanned");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1b.HeadlessLoaderBlock) == 0x2c, "LOADER_PARAMETER_EXTENSION_WS03 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1b.SMBiosEPSHeader) == 0x30, "LOADER_PARAMETER_EXTENSION_WS03 SMBiosEPSHeader");
@@ -376,9 +372,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Size) == 0x0, "LOADER_PA
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WS03 Profile");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, MajorVersion) == 0x14, "LOADER_PARAMETER_EXTENSION_WS03 MajorVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, MinorVersion) == 0x18, "LOADER_PARAMETER_EXTENSION_WS03 MinorVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1a.EmInfFileImage) == 0x20, "LOADER_PARAMETER_EXTENSION_WS03 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1a.EmInfFileSize) == 0x28, "LOADER_PARAMETER_EXTENSION_WS03 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1a.TriageDumpBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WS03 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, EmInfFileImage) == 0x20, "LOADER_PARAMETER_EXTENSION_WS03 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, EmInfFileSize) == 0x28, "LOADER_PARAMETER_EXTENSION_WS03 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, TriageDumpBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WS03 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, LoaderPagesSpanned) == 0x38, "LOADER_PARAMETER_EXTENSION_WS03 LoaderPagesSpanned");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1b.HeadlessLoaderBlock) == 0x40, "LOADER_PARAMETER_EXTENSION_WS03 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1b.SMBiosEPSHeader) == 0x48, "LOADER_PARAMETER_EXTENSION_WS03 SMBiosEPSHeader");
@@ -411,7 +407,9 @@ typedef struct {
 #if defined(__x86_64__)
     uint32_t padding;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     uintptr_t LoaderPagesSpanned;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
@@ -432,9 +430,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Size) == 0x0, "LOADER_P
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_VISTA Profile");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, MajorVersion) == 0x14, "LOADER_PARAMETER_EXTENSION_VISTA MajorVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, MinorVersion) == 0x18, "LOADER_PARAMETER_EXTENSION_VISTA MinorVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1a.EmInfFileImage) == 0x1c, "LOADER_PARAMETER_EXTENSION_VISTA EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_VISTA EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1a.TriageDumpBlock) == 0x24, "LOADER_PARAMETER_EXTENSION_VISTA TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, EmInfFileImage) == 0x1c, "LOADER_PARAMETER_EXTENSION_VISTA EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_VISTA EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, TriageDumpBlock) == 0x24, "LOADER_PARAMETER_EXTENSION_VISTA TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, LoaderPagesSpanned) == 0x28, "LOADER_PARAMETER_EXTENSION_VISTA LoaderPagesSpanned");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1b.HeadlessLoaderBlock) == 0x2c, "LOADER_PARAMETER_EXTENSION_VISTA HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1b.SMBiosEPSHeader) == 0x30, "LOADER_PARAMETER_EXTENSION_VISTA SMBiosEPSHeader");
@@ -454,9 +452,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Size) == 0x0, "LOADER_P
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_VISTA Profile");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, MajorVersion) == 0x14, "LOADER_PARAMETER_EXTENSION_VISTA MajorVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, MinorVersion) == 0x18, "LOADER_PARAMETER_EXTENSION_VISTA MinorVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1a.EmInfFileImage) == 0x20, "LOADER_PARAMETER_EXTENSION_VISTA EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1a.EmInfFileSize) == 0x28, "LOADER_PARAMETER_EXTENSION_VISTA EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1a.TriageDumpBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_VISTA TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, EmInfFileImage) == 0x20, "LOADER_PARAMETER_EXTENSION_VISTA EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, EmInfFileSize) == 0x28, "LOADER_PARAMETER_EXTENSION_VISTA EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, TriageDumpBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_VISTA TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, LoaderPagesSpanned) == 0x38, "LOADER_PARAMETER_EXTENSION_VISTA LoaderPagesSpanned");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1b.HeadlessLoaderBlock) == 0x40, "LOADER_PARAMETER_EXTENSION_VISTA HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1b.SMBiosEPSHeader) == 0x48, "LOADER_PARAMETER_EXTENSION_VISTA SMBiosEPSHeader");
@@ -482,7 +480,9 @@ typedef struct {
 #if defined(__x86_64__)
     uint32_t padding;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     uintptr_t LoaderPagesSpanned;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
@@ -505,9 +505,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Size) == 0x0, "LOAD
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 Profile");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, MajorVersion) == 0x14, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 MajorVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, MinorVersion) == 0x18, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 MinorVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1a.EmInfFileImage) == 0x1c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1a.TriageDumpBlock) == 0x24, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, EmInfFileImage) == 0x1c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, TriageDumpBlock) == 0x24, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, LoaderPagesSpanned) == 0x28, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 LoaderPagesSpanned");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1b.HeadlessLoaderBlock) == 0x2c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1b.SMBiosEPSHeader) == 0x30, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 SMBiosEPSHeader");
@@ -529,9 +529,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Size) == 0x0, "LOAD
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 Profile");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, MajorVersion) == 0x14, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 MajorVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, MinorVersion) == 0x18, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 MinorVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1a.EmInfFileImage) == 0x20, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1a.EmInfFileSize) == 0x28, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1a.TriageDumpBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, EmInfFileImage) == 0x20, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, EmInfFileSize) == 0x28, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, TriageDumpBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, LoaderPagesSpanned) == 0x38, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 LoaderPagesSpanned");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1b.HeadlessLoaderBlock) == 0x40, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1b.SMBiosEPSHeader) == 0x48, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 SMBiosEPSHeader");
@@ -585,7 +585,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     uintptr_t LoaderPagesSpanned;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
@@ -608,9 +610,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN7) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN7 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN7 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN7 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN7 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN7 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN7 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN7 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN7 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN7 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, LoaderPagesSpanned) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN7 LoaderPagesSpanned");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1b.HeadlessLoaderBlock) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN7 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1b.SMBiosEPSHeader) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN7 SMBiosEPSHeader");
@@ -638,9 +640,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, ProcessorCounterFrequenc
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN7) == 0x148, "LOADER_PARAMETER_EXTENSION_WIN7 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN7 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN7 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN7 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN7 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN7 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN7 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN7 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN7 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, LoaderPagesSpanned) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN7 LoaderPagesSpanned");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1b.HeadlessLoaderBlock) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN7 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1b.SMBiosEPSHeader) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN7 SMBiosEPSHeader");
@@ -756,7 +758,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
     struct {
@@ -790,9 +794,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN8) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN8 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN8 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN8 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN8 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN8 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN8 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN8 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN8 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN8 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1b.HeadlessLoaderBlock) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN8 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1b.SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN8 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1b.DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN8 DrvDBImage");
@@ -831,9 +835,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block5b.EfiVersion) == 0
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN8) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN8 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN8 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN8 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN8 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN8 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN8 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN8 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN8 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN8 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1b.HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN8 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1b.SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN8 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1b.DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN8 DrvDBImage");
@@ -989,7 +993,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
     struct {
@@ -1023,9 +1029,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN81) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN81 has incorrect size."); // FIXME - definitely 16 bytes on the end for x86 6.3.9600.18438?
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN81 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN81 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN81 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN81 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1b.HeadlessLoaderBlock) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN81 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1b.SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN81 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1b.DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN81 DrvDBImage");
@@ -1070,9 +1076,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, OfflineCrashdumpConfigu
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN81) == 0x998, "LOADER_PARAMETER_EXTENSION_WIN81 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN81 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN81 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN81 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN81 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN81 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1b.HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN81 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1b.SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN81 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1b.DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN81 DrvDBImage");
@@ -1155,7 +1161,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
     struct {
@@ -1193,9 +1201,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN10 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1b.HeadlessLoaderBlock) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1b.SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1b.DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10 DrvDBImage");
@@ -1249,9 +1257,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SystemHiveRecoveryInfo)
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10) == 0x9f0, "LOADER_PARAMETER_EXTENSION_WIN10 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1b.HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1b.SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1b.DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10 DrvDBImage");
@@ -1311,7 +1319,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
     struct {
@@ -1361,9 +1371,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1607) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10_1607 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1b.HeadlessLoaderBlock) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1b.SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1b.DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1607 DrvDBImage");
@@ -1424,9 +1434,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Reserved1) == 0x94
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1607) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_1607 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1607 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1607 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1b.HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1b.SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1b.DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_1607 DrvDBImage");
@@ -1513,7 +1523,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
     struct {
@@ -1568,9 +1580,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1703) == 0xb68, "LOADER_PARAMETER_EXTENSION_WIN10_1703 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_1703 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_1703 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1b.HeadlessLoaderBlock) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1b.SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1b.DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1703 DrvDBImage");
@@ -1635,9 +1647,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, MaxPciBusNumber) =
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1703) == 0xc40, "LOADER_PARAMETER_EXTENSION_WIN10_1703 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1703 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1703 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1b.HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1b.SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1b.DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_1703 DrvDBImage");
@@ -1749,7 +1761,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
     struct {
@@ -1805,9 +1819,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1809) == 0xc88, "LOADER_PARAMETER_EXTENSION_WIN10_1809 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_1809 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_1809 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1b.HeadlessLoaderBlock) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1b.SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1b.DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1809 DrvDBImage");
@@ -1876,9 +1890,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, FeatureSettings) =
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1809) == 0xd60, "LOADER_PARAMETER_EXTENSION_WIN10_1809 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1809 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1809 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1b.HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1b.SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1b.DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_1809 DrvDBImage");
@@ -1971,7 +1985,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
     struct {
@@ -2034,9 +2050,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1903) == 0xce8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_1903 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_1903 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_1903 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1b.HeadlessLoaderBlock) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1b.SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1b.DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1903 DrvDBImage");
@@ -2108,9 +2124,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, VsmPerformanceData
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1903) == 0xdd0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_1903 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1903 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1903 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1b.HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1b.SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1b.DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_1903 DrvDBImage");
@@ -2240,7 +2256,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     LOADER_EXTENSION_BLOCK1B Block1b;
     void* DrvDBPatchImage;
     uint32_t DrvDBPatchSize;
@@ -2272,9 +2290,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_2004) == 0xd00, "LOADER_PARAMETER_EXTENSION_WIN10_2004 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1b.HeadlessLoaderBlock) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1b.SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1b.DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DrvDBImage");
@@ -2351,9 +2369,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.IommuFaultP
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_2004) == 0xdf0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_2004 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_2004 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1b.HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1b.SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1b.DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DrvDBImage");
@@ -2477,7 +2495,9 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
-    LOADER_EXTENSION_BLOCK1A Block1a;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
     LOADER_EXTENSION_BLOCK1B Block1b;
     void* DrvDBPatchImage;
     uint32_t DrvDBPatchSize;
@@ -2510,9 +2530,9 @@ typedef struct {
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_21H1) == 0xd30, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1a.EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1a.EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1a.TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, EmInfFileImage) == 0x14, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, EmInfFileSize) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, TriageDumpBlock) == 0x1c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1b.HeadlessLoaderBlock) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1b.SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1b.DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DrvDBImage");
@@ -2590,9 +2610,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FeatureConfigurati
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_21H1) == 0xe38, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 Size");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 Profile");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1a.EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EmInfFileImage");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1a.EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EmInfFileSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1a.TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 TriageDumpBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1b.HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HeadlessLoaderBlock");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1b.SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1b.DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DrvDBImage");
