@@ -2637,12 +2637,6 @@ typedef struct {
 typedef struct _SETUP_LOADER_BLOCK SETUP_LOADER_BLOCK;
 
 typedef struct {
-    LIST_ENTRY LoadOrderListHead;
-    LIST_ENTRY MemoryDescriptorListHead;
-    LIST_ENTRY BootDriverListHead;
-} LOADER_BLOCK1A;
-
-typedef struct {
     void* KernelStack;
     void* Prcb;
     void* Process;
@@ -2661,7 +2655,9 @@ typedef struct {
 } LOADER_BLOCK1C;
 
 typedef struct {
-    LOADER_BLOCK1A Block1a;
+    LIST_ENTRY LoadOrderListHead;
+    LIST_ENTRY MemoryDescriptorListHead;
+    LIST_ENTRY BootDriverListHead;
     LOADER_BLOCK1B Block1b;
     uint32_t RegistryLength;
     void* RegistryBase;
@@ -2676,9 +2672,9 @@ typedef struct {
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_WS03) == 0x68, "LOADER_PARAMETER_BLOCK_WS03 has incorrect size.");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1a.LoadOrderListHead) == 0x0, "LOADER_PARAMETER_BLOCK_WS03 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1a.MemoryDescriptorListHead) == 0x8, "LOADER_PARAMETER_BLOCK_WS03 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1a.BootDriverListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WS03 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, LoadOrderListHead) == 0x0, "LOADER_PARAMETER_BLOCK_WS03 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, MemoryDescriptorListHead) == 0x8, "LOADER_PARAMETER_BLOCK_WS03 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, BootDriverListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WS03 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1b.KernelStack) == 0x18, "LOADER_PARAMETER_BLOCK_WS03 KernelStack");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1b.Prcb) == 0x1c, "LOADER_PARAMETER_BLOCK_WS03 Prcb");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1b.Process) == 0x20, "LOADER_PARAMETER_BLOCK_WS03 Process");
@@ -2699,9 +2695,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Extension) == 0x58, "LOADER_
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, u.I386) == 0x5c, "LOADER_PARAMETER_BLOCK_WS03 I386");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_WS03) == 0xc8, "LOADER_PARAMETER_BLOCK_WS03 has incorrect size.");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1a.LoadOrderListHead) == 0x0, "LOADER_PARAMETER_BLOCK_WS03 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1a.MemoryDescriptorListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WS03 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1a.BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WS03 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, LoadOrderListHead) == 0x0, "LOADER_PARAMETER_BLOCK_WS03 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, MemoryDescriptorListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WS03 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WS03 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1b.KernelStack) == 0x30, "LOADER_PARAMETER_BLOCK_WS03 KernelStack");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1b.Prcb) == 0x38, "LOADER_PARAMETER_BLOCK_WS03 Prcb");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WS03, Block1b.Process) == 0x40, "LOADER_PARAMETER_BLOCK_WS03 Process");
@@ -2760,7 +2756,9 @@ typedef struct {
 } FIRMWARE_INFORMATION_LOADER_BLOCK_WIN8;
 
 typedef struct {
-    LOADER_BLOCK1A Block1a;
+    LIST_ENTRY LoadOrderListHead;
+    LIST_ENTRY MemoryDescriptorListHead;
+    LIST_ENTRY BootDriverListHead;
     LOADER_BLOCK1B Block1b;
     uint32_t RegistryLength;
     void* RegistryBase;
@@ -2776,9 +2774,9 @@ typedef struct {
 
 #ifdef _X86_
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_VISTA) == 0x7c, "LOADER_PARAMETER_BLOCK_VISTA has incorrect size.");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1a.LoadOrderListHead) == 0x0, "LOADER_PARAMETER_BLOCK_VISTA LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1a.MemoryDescriptorListHead) == 0x8, "LOADER_PARAMETER_BLOCK_VISTA MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1a.BootDriverListHead) == 0x10, "LOADER_PARAMETER_BLOCK_VISTA BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, LoadOrderListHead) == 0x0, "LOADER_PARAMETER_BLOCK_VISTA LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, MemoryDescriptorListHead) == 0x8, "LOADER_PARAMETER_BLOCK_VISTA MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, BootDriverListHead) == 0x10, "LOADER_PARAMETER_BLOCK_VISTA BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1b.KernelStack) == 0x18, "LOADER_PARAMETER_BLOCK_VISTA KernelStack");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1b.Prcb) == 0x1c, "LOADER_PARAMETER_BLOCK_VISTA Prcb");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1b.Process) == 0x20, "LOADER_PARAMETER_BLOCK_VISTA Process");
@@ -2800,9 +2798,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, u.I386) == 0x5c, "LOADER_PA
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, FirmwareInformation) == 0x68, "LOADER_PARAMETER_BLOCK_VISTA FirmwareInformation");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_BLOCK_VISTA) == 0xe8, "LOADER_PARAMETER_BLOCK_VISTA has incorrect size.");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1a.LoadOrderListHead) == 0x0, "LOADER_PARAMETER_BLOCK_VISTA LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1a.MemoryDescriptorListHead) == 0x10, "LOADER_PARAMETER_BLOCK_VISTA MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1a.BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_VISTA BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, LoadOrderListHead) == 0x0, "LOADER_PARAMETER_BLOCK_VISTA LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, MemoryDescriptorListHead) == 0x10, "LOADER_PARAMETER_BLOCK_VISTA MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_VISTA BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1b.KernelStack) == 0x30, "LOADER_PARAMETER_BLOCK_VISTA KernelStack");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1b.Prcb) == 0x38, "LOADER_PARAMETER_BLOCK_VISTA Prcb");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_VISTA, Block1b.Process) == 0x40, "LOADER_PARAMETER_BLOCK_VISTA Process");
@@ -2829,7 +2827,9 @@ typedef struct {
     uint32_t OsMinorVersion;
     uint32_t Size;
     uint32_t Reserved;
-    LOADER_BLOCK1A Block1a;
+    LIST_ENTRY LoadOrderListHead;
+    LIST_ENTRY MemoryDescriptorListHead;
+    LIST_ENTRY BootDriverListHead;
     LOADER_BLOCK1B Block1b;
     uint32_t RegistryLength;
     void* RegistryBase;
@@ -2848,9 +2848,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, OsMajorVersion) == 0x0, "LOA
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, OsMinorVersion) == 0x4, "LOADER_PARAMETER_BLOCK_WIN7 OsMinorVersion");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Size) == 0x8, "LOADER_PARAMETER_BLOCK_WIN7 Size");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Reserved) == 0xc, "LOADER_PARAMETER_BLOCK_WIN7 Reserved");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1a.LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN7 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1a.MemoryDescriptorListHead) == 0x18, "LOADER_PARAMETER_BLOCK_WIN7 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1a.BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN7 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN7 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, MemoryDescriptorListHead) == 0x18, "LOADER_PARAMETER_BLOCK_WIN7 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN7 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1b.KernelStack) == 0x28, "LOADER_PARAMETER_BLOCK_WIN7 KernelStack");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1b.Prcb) == 0x2c, "LOADER_PARAMETER_BLOCK_WIN7 Prcb");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1b.Process) == 0x30, "LOADER_PARAMETER_BLOCK_WIN7 Process");
@@ -2875,9 +2875,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, OsMajorVersion) == 0x0, "LOA
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, OsMinorVersion) == 0x4, "LOADER_PARAMETER_BLOCK_WIN7 OsMinorVersion");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Size) == 0x8, "LOADER_PARAMETER_BLOCK_WIN7 Size");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Reserved) == 0xc, "LOADER_PARAMETER_BLOCK_WIN7 Reserved");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1a.LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN7 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1a.MemoryDescriptorListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN7 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1a.BootDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN7 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN7 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, MemoryDescriptorListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN7 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, BootDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN7 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1b.KernelStack) == 0x40, "LOADER_PARAMETER_BLOCK_WIN7 KernelStack");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1b.Prcb) == 0x48, "LOADER_PARAMETER_BLOCK_WIN7 Prcb");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN7, Block1b.Process) == 0x50, "LOADER_PARAMETER_BLOCK_WIN7 Process");
@@ -2905,7 +2905,9 @@ typedef struct {
     uint32_t OsMinorVersion;
     uint32_t Size;
     uint32_t Reserved;
-    LOADER_BLOCK1A Block1a;
+    LIST_ENTRY LoadOrderListHead;
+    LIST_ENTRY MemoryDescriptorListHead;
+    LIST_ENTRY BootDriverListHead;
     LIST_ENTRY EarlyLaunchListHead;
     LIST_ENTRY CoreDriverListHead;
     LOADER_BLOCK1B Block1b;
@@ -2928,9 +2930,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, OsMajorVersion) == 0x0, "LOA
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, OsMinorVersion) == 0x4, "LOADER_PARAMETER_BLOCK_WIN8 OsMinorVersion");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Size) == 0x8, "LOADER_PARAMETER_BLOCK_WIN8 Size");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Reserved) == 0xc, "LOADER_PARAMETER_BLOCK_WIN8 Reserved");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1a.LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN8 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1a.MemoryDescriptorListHead) == 0x18, "LOADER_PARAMETER_BLOCK_WIN8 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1a.BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN8 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN8 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, MemoryDescriptorListHead) == 0x18, "LOADER_PARAMETER_BLOCK_WIN8 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN8 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, EarlyLaunchListHead) == 0x28, "LOADER_PARAMETER_BLOCK_WIN8 EarlyLaunchListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, CoreDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN8 CoreDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1b.KernelStack) == 0x38, "LOADER_PARAMETER_BLOCK_WIN8 KernelStack");
@@ -2957,9 +2959,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, OsMajorVersion) == 0x0, "LOA
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, OsMinorVersion) == 0x4, "LOADER_PARAMETER_BLOCK_WIN8 OsMinorVersion");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Size) == 0x8, "LOADER_PARAMETER_BLOCK_WIN8 Size");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Reserved) == 0xc, "LOADER_PARAMETER_BLOCK_WIN8 Reserved");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1a.LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN8 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1a.MemoryDescriptorListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN8 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1a.BootDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN8 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN8 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, MemoryDescriptorListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN8 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, BootDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN8 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, EarlyLaunchListHead) == 0x40, "LOADER_PARAMETER_BLOCK_WIN8 EarlyLaunchListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, CoreDriverListHead) == 0x50, "LOADER_PARAMETER_BLOCK_WIN8 CoreDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN8, Block1b.KernelStack) == 0x60, "LOADER_PARAMETER_BLOCK_WIN8 KernelStack");
@@ -3009,7 +3011,9 @@ typedef struct {
     uint32_t OsMinorVersion;
     uint32_t Size;
     uint32_t Reserved;
-    LOADER_BLOCK1A Block1a;
+    LIST_ENTRY LoadOrderListHead;
+    LIST_ENTRY MemoryDescriptorListHead;
+    LIST_ENTRY BootDriverListHead;
     LIST_ENTRY EarlyLaunchListHead;
     LIST_ENTRY CoreDriverListHead;
     LOADER_BLOCK1B Block1b;
@@ -3032,9 +3036,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, OsMajorVersion) == 0x0, "LO
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, OsMinorVersion) == 0x4, "LOADER_PARAMETER_BLOCK_WIN81 OsMinorVersion");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Size) == 0x8, "LOADER_PARAMETER_BLOCK_WIN81 Size");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Reserved) == 0xc, "LOADER_PARAMETER_BLOCK_WIN81 Reserved");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1a.LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN81 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1a.MemoryDescriptorListHead) == 0x18, "LOADER_PARAMETER_BLOCK_WIN81 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1a.BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN81 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN81 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, MemoryDescriptorListHead) == 0x18, "LOADER_PARAMETER_BLOCK_WIN81 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN81 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, EarlyLaunchListHead) == 0x28, "LOADER_PARAMETER_BLOCK_WIN81 EarlyLaunchListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, CoreDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN81 CoreDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1b.KernelStack) == 0x38, "LOADER_PARAMETER_BLOCK_WIN81 KernelStack");
@@ -3061,9 +3065,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, OsMajorVersion) == 0x0, "LO
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, OsMinorVersion) == 0x4, "LOADER_PARAMETER_BLOCK_WIN81 OsMinorVersion");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Size) == 0x8, "LOADER_PARAMETER_BLOCK_WIN81 Size");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Reserved) == 0xc, "LOADER_PARAMETER_BLOCK_WIN81 Reserved");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1a.LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN81 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1a.MemoryDescriptorListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN81 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1a.BootDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN81 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN81 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, MemoryDescriptorListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN81 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, BootDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN81 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, EarlyLaunchListHead) == 0x40, "LOADER_PARAMETER_BLOCK_WIN81 EarlyLaunchListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, CoreDriverListHead) == 0x50, "LOADER_PARAMETER_BLOCK_WIN81 CoreDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN81, Block1b.KernelStack) == 0x60, "LOADER_PARAMETER_BLOCK_WIN81 KernelStack");
@@ -3093,7 +3097,9 @@ typedef struct {
     uint32_t OsMinorVersion;
     uint32_t Size;
     uint32_t OsLoaderSecurityVersion;
-    LOADER_BLOCK1A Block1a;
+    LIST_ENTRY LoadOrderListHead;
+    LIST_ENTRY MemoryDescriptorListHead;
+    LIST_ENTRY BootDriverListHead;
     LIST_ENTRY EarlyLaunchListHead;
     LIST_ENTRY CoreDriverListHead;
     LIST_ENTRY CoreExtensionsDriverListHead;
@@ -3121,9 +3127,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsMajorVersion) == 0x0, "LO
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsMinorVersion) == 0x4, "LOADER_PARAMETER_BLOCK_WIN10 OsMinorVersion");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Size) == 0x8, "LOADER_PARAMETER_BLOCK_WIN10 Size");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsLoaderSecurityVersion) == 0xc, "LOADER_PARAMETER_BLOCK_WIN10 Reserved");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1a.LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN10 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1a.MemoryDescriptorListHead) == 0x18, "LOADER_PARAMETER_BLOCK_WIN10 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1a.BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN10 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN10 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, MemoryDescriptorListHead) == 0x18, "LOADER_PARAMETER_BLOCK_WIN10 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, BootDriverListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN10 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, EarlyLaunchListHead) == 0x28, "LOADER_PARAMETER_BLOCK_WIN10 EarlyLaunchListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, CoreDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN10 CoreDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, CoreExtensionsDriverListHead) == 0x38, "LOADER_PARAMETER_BLOCK_WIN10 CoreExtensionsDriverListHead");
@@ -3155,9 +3161,9 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsMajorVersion) == 0x0, "LO
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsMinorVersion) == 0x4, "LOADER_PARAMETER_BLOCK_WIN10 OsMinorVersion");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Size) == 0x8, "LOADER_PARAMETER_BLOCK_WIN10 Size");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, OsLoaderSecurityVersion) == 0xc, "LOADER_PARAMETER_BLOCK_WIN10 Reserved");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1a.LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN10 LoadOrderListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1a.MemoryDescriptorListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN10 MemoryDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, Block1a.BootDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN10 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN10 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, MemoryDescriptorListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN10 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, BootDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN10 BootDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, EarlyLaunchListHead) == 0x40, "LOADER_PARAMETER_BLOCK_WIN10 EarlyLaunchListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, CoreDriverListHead) == 0x50, "LOADER_PARAMETER_BLOCK_WIN10 CoreDriverListHead");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, CoreExtensionsDriverListHead) == 0x60, "LOADER_PARAMETER_BLOCK_WIN10 CoreExtensionsDriverListHead");

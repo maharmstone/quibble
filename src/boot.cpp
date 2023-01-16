@@ -272,13 +272,13 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
     cpu_frequency = get_cpu_frequency(bs);
 
-    InitializeListHead(&loader_block.Block1a.LoadOrderListHead);
-    InitializeListHead(&loader_block.Block1a.MemoryDescriptorListHead);
+    InitializeListHead(&loader_block.LoadOrderListHead);
+    InitializeListHead(&loader_block.MemoryDescriptorListHead);
 
-    loader_block.Block1a.BootDriverListHead.Flink = drivers->Flink;
-    loader_block.Block1a.BootDriverListHead.Blink = drivers->Blink;
-    loader_block.Block1a.BootDriverListHead.Flink->Blink = &loader_block.Block1a.BootDriverListHead;
-    loader_block.Block1a.BootDriverListHead.Blink->Flink = &loader_block.Block1a.BootDriverListHead;
+    loader_block.BootDriverListHead.Flink = drivers->Flink;
+    loader_block.BootDriverListHead.Blink = drivers->Blink;
+    loader_block.BootDriverListHead.Flink->Blink = &loader_block.BootDriverListHead;
+    loader_block.BootDriverListHead.Blink->Flink = &loader_block.BootDriverListHead;
 
     if (version <= _WIN32_WINNT_WS03) {
         extblock1a = &store->extension_ws03.Block1a;
@@ -766,8 +766,8 @@ template<typename T>
 static void fix_image_list_mapping(T& loader_block, LIST_ENTRY* mappings) {
     LIST_ENTRY* le;
 
-    le = loader_block.Block1a.LoadOrderListHead.Flink;
-    while (le != &loader_block.Block1a.LoadOrderListHead) {
+    le = loader_block.LoadOrderListHead.Flink;
+    while (le != &loader_block.LoadOrderListHead) {
         KLDR_DATA_TABLE_ENTRY* dte = _CR(le, KLDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
 
         dte->BaseDllName.Buffer = (wchar_t*)find_virtual_address(dte->BaseDllName.Buffer, mappings);
@@ -776,7 +776,7 @@ static void fix_image_list_mapping(T& loader_block, LIST_ENTRY* mappings) {
         le = le->Flink;
     }
 
-    fix_list_mapping(&loader_block.Block1a.LoadOrderListHead, mappings);
+    fix_list_mapping(&loader_block.LoadOrderListHead, mappings);
 }
 
 static void fix_driver_list_mapping(LIST_ENTRY* list, LIST_ENTRY* mappings) {
@@ -986,7 +986,7 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
 
     fix_image_list_mapping(loader_block, mappings);
 
-    fix_driver_list_mapping(&loader_block.Block1a.BootDriverListHead, mappings);
+    fix_driver_list_mapping(&loader_block.BootDriverListHead, mappings);
 
     fix_config_mapping(block1c->ConfigurationRoot, mappings, NULL, &ccd_va);
     block1c->ConfigurationRoot = (CONFIGURATION_COMPONENT_DATA*)ccd_va;
@@ -2497,7 +2497,7 @@ static void add_loader_entry(image* img, T& loader_block, void** pa, bool dll,
     if (no_reloc)
         dte->DontRelocate = 1;
 
-    InsertTailList(&loader_block.Block1a.LoadOrderListHead, &dte->InLoadOrderLinks);
+    InsertTailList(&loader_block.LoadOrderListHead, &dte->InLoadOrderLinks);
 
     if (bdle)
         bdle->LdrEntry = dte;
