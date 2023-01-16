@@ -398,12 +398,6 @@ typedef struct {
 #pragma pack(push,1)
 
 typedef struct {
-    uint32_t BootViaWinload:1;
-    uint32_t BootViaEFI:1;
-    uint32_t Reserved:30;
-} LOADER_EXTENSION_BLOCK2A;
-
-typedef struct {
     LIST_ENTRY BootApplicationPersistentData;
     void* WmdTestResult;
     GUID BootIdentifier;
@@ -421,7 +415,11 @@ typedef struct {
     uintptr_t LoaderPagesSpanned;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
 } LOADER_PARAMETER_EXTENSION_VISTA;
@@ -488,7 +486,11 @@ typedef struct {
     uintptr_t LoaderPagesSpanned;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -587,7 +589,11 @@ typedef struct {
     uintptr_t LoaderPagesSpanned;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -753,7 +759,11 @@ typedef struct {
     LOADER_EXTENSION_BLOCK1A Block1a;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -982,7 +992,11 @@ typedef struct {
     LOADER_EXTENSION_BLOCK1A Block1a;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -1144,7 +1158,11 @@ typedef struct {
     LOADER_EXTENSION_BLOCK1A Block1a;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -1296,7 +1314,11 @@ typedef struct {
     LOADER_EXTENSION_BLOCK1A Block1a;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -1494,7 +1516,11 @@ typedef struct {
     LOADER_EXTENSION_BLOCK1A Block1a;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -1726,7 +1752,11 @@ typedef struct {
     LOADER_EXTENSION_BLOCK1A Block1a;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA_1809 LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -1944,7 +1974,11 @@ typedef struct {
     LOADER_EXTENSION_BLOCK1A Block1a;
     LOADER_EXTENSION_BLOCK1B Block1b;
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA_1903 LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -2214,7 +2248,11 @@ typedef struct {
     uint32_t padding2;
 #endif
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA_1903 LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
@@ -2447,7 +2485,11 @@ typedef struct {
     uint32_t padding2;
 #endif
     LOADER_EXTENSION_BLOCK1C Block1c;
-    LOADER_EXTENSION_BLOCK2A Block2a;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
     LOADER_PERFORMANCE_DATA_1903 LoaderPerformanceData;
     LOADER_EXTENSION_BLOCK2B Block2b;
     uintptr_t ResumePages;
