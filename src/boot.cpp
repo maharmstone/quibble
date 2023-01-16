@@ -19,6 +19,8 @@
 #include <string.h>
 #include <wchar.h>
 #include <intrin.h>
+#include <variant>
+#include <optional>
 #include "quibble.h"
 #include "reg.h"
 #include "peload.h"
@@ -225,17 +227,39 @@ static uint64_t get_cpu_frequency(EFI_BOOT_SERVICES* bs) {
     return (tsc2 - tsc1) * (1000 / delay);
 }
 
-static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* options, char* path, char* arc_name, unsigned int* store_pages,
-                                             void** va, LIST_ENTRY* mappings, LIST_ENTRY* drivers, EFI_HANDLE image_handle,
-                                             uint16_t version, uint16_t build, uint16_t revision, LOADER_BLOCK1A** pblock1a,
-                                             LOADER_BLOCK1B** pblock1b, void*** registry_base, uint32_t** registry_length,
-                                             LOADER_BLOCK2** pblock2, LOADER_EXTENSION_BLOCK1A** pextblock1a,
-                                             LOADER_EXTENSION_BLOCK1B** pextblock1b, LOADER_EXTENSION_BLOCK3** pextblock3,
-                                             uintptr_t** ploader_pages_spanned, LIST_ENTRY* core_drivers) {
+using loader_block_variant = std::variant<LOADER_PARAMETER_BLOCK_WS03*,
+                                          LOADER_PARAMETER_BLOCK_VISTA*,
+                                          LOADER_PARAMETER_BLOCK_WIN7*,
+                                          LOADER_PARAMETER_BLOCK_WIN8*,
+                                          LOADER_PARAMETER_BLOCK_WIN81*,
+                                          LOADER_PARAMETER_BLOCK_WIN10*>;
+
+static std::optional<loader_block_variant> find_loader_block(loader_store* store, uint16_t version) {
+    if (version <= _WIN32_WINNT_WS03)
+        return &store->loader_block_ws03;
+    else if (version == _WIN32_WINNT_VISTA)
+        return &store->loader_block_vista;
+    else if (version == _WIN32_WINNT_WIN7)
+        return &store->loader_block_win7;
+    else if (version == _WIN32_WINNT_WIN8)
+        return &store->loader_block_win8;
+    else if (version == _WIN32_WINNT_WINBLUE)
+        return &store->loader_block_win81;
+    else if (version == _WIN32_WINNT_WIN10)
+        return &store->loader_block_win10;
+
+    print_string("Unsupported Windows version.\n");
+    return std::nullopt;
+}
+
+static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* store, char* options, char* path, char* arc_name,
+                                          void** va, LIST_ENTRY* mappings, LIST_ENTRY* drivers, EFI_HANDLE image_handle,
+                                          uint16_t version, uint16_t build, uint16_t revision, LOADER_BLOCK1A** pblock1a,
+                                          LOADER_BLOCK1B** pblock1b, void*** registry_base, uint32_t** registry_length,
+                                          LOADER_BLOCK2** pblock2, LOADER_EXTENSION_BLOCK1A** pextblock1a,
+                                          LOADER_EXTENSION_BLOCK1B** pextblock1b, LOADER_EXTENSION_BLOCK3** pextblock3,
+                                          uintptr_t** ploader_pages_spanned, LIST_ENTRY* core_drivers) {
     EFI_STATUS Status;
-    EFI_PHYSICAL_ADDRESS addr;
-    loader_store* store;
-    unsigned int pages;
     LOADER_BLOCK1A* block1a;
     LOADER_BLOCK1B* block1b;
     LOADER_BLOCK1C* block1c;
@@ -250,20 +274,6 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
     uintptr_t* loader_pages_spanned;
     char* str;
     unsigned int pathlen;
-
-    pages = sizeof(loader_store) / EFI_PAGE_SIZE;
-    if (sizeof(loader_store) % EFI_PAGE_SIZE != 0)
-        pages++;
-
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, pages, &addr);
-    if (EFI_ERROR(Status)) {
-        print_error("AllocatePages", Status);
-        return NULL;
-    }
-
-    store = (loader_store*)(uintptr_t)addr;
-
-    memset(store, 0, sizeof(loader_store));
 
     cpu_frequency = get_cpu_frequency(bs);
 
@@ -635,7 +645,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         }
     } else {
         print_string("Unsupported Windows version.\n");
-        return NULL;
+        return EFI_INVALID_PARAMETER;
     }
 
     InitializeListHead(&block1a->LoadOrderListHead);
@@ -698,16 +708,14 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
     Status = find_hardware(bs, block1c, va, mappings, image_handle, version);
     if (EFI_ERROR(Status)) {
         print_error("find_hardware", Status);
-        bs->FreePages(addr, pages);
-        return NULL;
+        return Status;
     }
 
     Status = find_disks(bs, &block1c->ArcDiskInformation->DiskSignatureListHead, va, mappings, block1c->ConfigurationRoot,
                         version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
     if (EFI_ERROR(Status)) {
         print_error("find_disks", Status);
-        bs->FreePages(addr, pages);
-        return NULL;
+        return Status;
     }
 
     if (extblock2b) {
@@ -731,7 +739,6 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
         InitializeListHead(&extblock5a->ApiSetSchemaExtensions);
     }
 
-    *store_pages = pages;
     *pblock1a = block1a;
     *pblock1b = block1b;
     *pblock2 = block2;
@@ -740,7 +747,7 @@ static loader_store* initialize_loader_block(EFI_BOOT_SERVICES* bs, char* option
     *pextblock3 = extblock3;
     *ploader_pages_spanned = loader_pages_spanned;
 
-    return store;
+    return EFI_SUCCESS;
 }
 
 static void fix_list_mapping(LIST_ENTRY* list, LIST_ENTRY* mappings) {
@@ -3670,7 +3677,6 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     void* va;
     void* va2;
     loader_store* store;
-    unsigned int store_pages;
     gdt_entry* gdt;
     idt_entry* idt;
     KTSS* tssphys;
@@ -3700,6 +3706,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     wchar_t* pathw;
     KPCR* pcrva = NULL;
     bool kdstub_export_loaded = false;
+    std::optional<loader_block_variant> loader_block_opt;
+    loader_block_variant loader_block;
 
     static const wchar_t drivers_dir_path[] = L"system32\\drivers";
 
@@ -4147,12 +4155,38 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
             kdstub_export_loaded = true;
     }
 
-    store = initialize_loader_block(bs, options, path, arc_name, &store_pages, &va, &mappings, &drivers, image_handle, version, build,
-                                    revision, &block1a, &block1b, &registry_base, &registry_length, &block2, &extblock1a, &extblock1b,
-                                    &extblock3, &loader_pages_spanned, &core_drivers);
-    if (!store) {
-        print_string("out of memory\n");
-        Status = EFI_OUT_OF_RESOURCES;
+    {
+        EFI_PHYSICAL_ADDRESS addr;
+
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(sizeof(loader_store)), &addr);
+        if (EFI_ERROR(Status)) {
+            print_error("AllocatePages", Status);
+            goto end;
+        }
+
+        store = (loader_store*)(uintptr_t)addr;
+
+        memset(store, 0, sizeof(loader_store));
+    }
+
+    loader_block_opt = find_loader_block(store, version);
+
+    if (!loader_block_opt.has_value()) {
+        Status = EFI_INVALID_PARAMETER;
+        goto end;
+    }
+
+    loader_block = loader_block_opt.value();
+
+    std::visit([&](auto&&) {
+        Status = initialize_loader_block(bs, store, options, path, arc_name, &va, &mappings, &drivers, image_handle, version, build,
+                                         revision, &block1a, &block1b, &registry_base, &registry_length, &block2, &extblock1a, &extblock1b,
+                                         &extblock3, &loader_pages_spanned, &core_drivers);
+    }, loader_block);
+
+    if (EFI_ERROR(Status)) {
+        print_error("initialize_loader_block", Status);
+        bs->FreePages((uintptr_t)store, PAGE_COUNT(sizeof(loader_store)));
         goto end;
     }
 
@@ -4209,14 +4243,14 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         }
     }
 
-    Status = add_mapping(bs, &mappings, va, store, store_pages, LoaderSystemBlock);
+    Status = add_mapping(bs, &mappings, va, store, PAGE_COUNT(sizeof(loader_store)), LoaderSystemBlock);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         goto end;
     }
 
     store_va = (loader_store*)va;
-    va = (uint8_t*)va + (store_pages * EFI_PAGE_SIZE);
+    va = (uint8_t*)va + (PAGE_COUNT(sizeof(loader_store)) * EFI_PAGE_SIZE);
 
     Status = generate_images_list(bs, &images, block1a, &va, &mappings);
     if (EFI_ERROR(Status)) {
