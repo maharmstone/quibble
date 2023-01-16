@@ -437,9 +437,7 @@ static std::optional<extension_block_variant> find_extension_block(loader_store*
 
 template<typename T>
 static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, uint16_t version, uint16_t build, uint16_t revision,
-                                             LOADER_EXTENSION_BLOCK1B** pextblock1b, LOADER_EXTENSION_BLOCK3** pextblock3,
-                                             uintptr_t** ploader_pages_spanned) {
-    LOADER_EXTENSION_BLOCK1B* extblock1b;
+                                             LOADER_EXTENSION_BLOCK3** pextblock3, uintptr_t** ploader_pages_spanned) {
     LOADER_EXTENSION_BLOCK1C* extblock1c;
     LOADER_EXTENSION_BLOCK2B* extblock2b;
     LOADER_EXTENSION_BLOCK3* extblock3;
@@ -447,7 +445,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     LOADER_EXTENSION_BLOCK5A* extblock5a;
     uintptr_t* loader_pages_spanned;
 
-    extblock1b = &extblock.Block1b;
     extblock1c = &extblock.Block1c;
 
     if constexpr (requires { T::Block2b; })
@@ -651,7 +648,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         InitializeListHead(&extblock5a->ApiSetSchemaExtensions);
     }
 
-    *pextblock1b = extblock1b;
     *pextblock3 = extblock3;
     *ploader_pages_spanned = loader_pages_spanned;
 
@@ -2579,8 +2575,8 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
         return Status;
     }
 
-    extblock.Block1b.DrvDBImage = *va;
-    extblock.Block1b.DrvDBSize = size;
+    extblock.DrvDBImage = *va;
+    extblock.DrvDBSize = size;
 
     *va = (uint8_t*)*va + (PAGE_COUNT(size) * EFI_PAGE_SIZE);
 
@@ -3587,7 +3583,6 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     uint32_t version_ms, version_ls;
     uint16_t version;
     uint16_t build, revision;
-    LOADER_EXTENSION_BLOCK1B* extblock1b;
     LOADER_EXTENSION_BLOCK3* extblock3;
     uintptr_t* loader_pages_spanned;
     unsigned int pathlen, pathwlen;
@@ -4089,8 +4084,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     std::visit([&](auto&& e) {
-        Status = initialize_extension_block(store, *e, version, build, revision, &extblock1b, &extblock3,
-                                            &loader_pages_spanned);
+        Status = initialize_extension_block(store, *e, version, build, revision, &extblock3, &loader_pages_spanned);
     }, extension_block);
 
     if (EFI_ERROR(Status)) {
