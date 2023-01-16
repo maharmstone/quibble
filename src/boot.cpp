@@ -2452,7 +2452,8 @@ static EFI_STATUS map_errata_inf(EFI_BOOT_SERVICES* bs, LOADER_EXTENSION_BLOCK1A
     return EFI_SUCCESS;
 }
 
-static void add_loader_entry(image* img, LOADER_BLOCK1A* block1, void** pa, bool dll,
+template<typename T>
+static void add_loader_entry(image* img, T& loader_block, void** pa, bool dll,
                              BOOT_DRIVER_LIST_ENTRY* bdle, bool no_reloc) {
     KLDR_DATA_TABLE_ENTRY* dte;
     void* pa2 = *pa;
@@ -2498,7 +2499,7 @@ static void add_loader_entry(image* img, LOADER_BLOCK1A* block1, void** pa, bool
     if (no_reloc)
         dte->DontRelocate = 1;
 
-    InsertTailList(&block1->LoadOrderListHead, &dte->InLoadOrderLinks);
+    InsertTailList(&loader_block.Block1a.LoadOrderListHead, &dte->InLoadOrderLinks);
 
     if (bdle)
         bdle->LdrEntry = dte;
@@ -2506,7 +2507,8 @@ static void add_loader_entry(image* img, LOADER_BLOCK1A* block1, void** pa, bool
     *pa = pa2;
 }
 
-static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, LOADER_BLOCK1A* block1,
+template<typename T>
+static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, T& loader_block,
                                        void** va, LIST_ENTRY* mappings) {
     EFI_STATUS Status;
     LIST_ENTRY* le;
@@ -2540,7 +2542,7 @@ static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images
     while (le != images) {
         image* img = _CR(le, image, list_entry);
 
-        add_loader_entry(img, block1, &pa, img->dll, img->bdle, img->no_reloc);
+        add_loader_entry(img, loader_block, &pa, img->dll, img->bdle, img->no_reloc);
 
         le = le->Flink;
     }
@@ -4204,7 +4206,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     va = (uint8_t*)va + (PAGE_COUNT(sizeof(loader_store)) * EFI_PAGE_SIZE);
 
     std::visit([&](auto&& b) {
-        Status = generate_images_list(bs, &images, &b->Block1a, &va, &mappings);
+        Status = generate_images_list(bs, &images, *b, &va, &mappings);
     }, loader_block);
 
     if (EFI_ERROR(Status)) {
