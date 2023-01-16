@@ -821,7 +821,6 @@ template<typename T>
 static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LIST_ENTRY* mappings,
                               uint16_t version, uint16_t build) {
     void* ccd_va;
-    LOADER_BLOCK1A* block1a;
     LOADER_BLOCK1C* block1c;
     LOADER_EXTENSION_BLOCK1C* extblock1c;
     LOADER_EXTENSION_BLOCK2B* extblock2b;
@@ -829,7 +828,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
     LOADER_EXTENSION_BLOCK4* extblock4;
     LOADER_EXTENSION_BLOCK5A* extblock5a;
 
-    block1a = &loader_block.Block1a;
     block1c = &loader_block.Block1c;
 
     if (version <= _WIN32_WINNT_WS03) {
@@ -988,7 +986,7 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
 
     fix_image_list_mapping(loader_block, mappings);
 
-    fix_driver_list_mapping(&block1a->BootDriverListHead, mappings);
+    fix_driver_list_mapping(&loader_block.Block1a.BootDriverListHead, mappings);
 
     fix_config_mapping(block1c->ConfigurationRoot, mappings, NULL, &ccd_va);
     block1c->ConfigurationRoot = (CONFIGURATION_COMPONENT_DATA*)ccd_va;
