@@ -675,7 +675,7 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
     loader_block.Block1c.LoadOptions = str;
 
-    Status = find_hardware(bs, &loader_block.Block1c, va, mappings, image_handle, version);
+    Status = find_hardware(bs, loader_block, va, mappings, image_handle, version);
     if (EFI_ERROR(Status)) {
         print_error("find_hardware", Status);
         return Status;

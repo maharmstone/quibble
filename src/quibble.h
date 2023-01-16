@@ -126,8 +126,11 @@ void merge_mappings(LIST_ENTRY* mappings);
 
 // hw.c
 extern LIST_ENTRY block_devices;
-EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_BLOCK1C* block1, void** va, LIST_ENTRY* mappings,
+
+template<typename T>
+EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, T& loader_block, void** va, LIST_ENTRY* mappings,
                          EFI_HANDLE image_handle, uint16_t version);
+
 EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** va, LIST_ENTRY* mappings,
                       CONFIGURATION_COMPONENT_DATA* system_key, bool new_disk_format);
 EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs);
