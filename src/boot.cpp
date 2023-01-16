@@ -435,7 +435,8 @@ static std::optional<extension_block_variant> find_extension_block(loader_store*
     return std::nullopt;
 }
 
-static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t version, uint16_t build, uint16_t revision,
+template<typename T>
+static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, uint16_t version, uint16_t build, uint16_t revision,
                                              LOADER_EXTENSION_BLOCK1A** pextblock1a, LOADER_EXTENSION_BLOCK1B** pextblock1b,
                                              LOADER_EXTENSION_BLOCK3** pextblock3, uintptr_t** ploader_pages_spanned) {
     LOADER_EXTENSION_BLOCK1A* extblock1a;
@@ -447,33 +448,43 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
     LOADER_EXTENSION_BLOCK5A* extblock5a;
     uintptr_t* loader_pages_spanned;
 
-    if (version <= _WIN32_WINNT_WS03) {
-        extblock1a = &store->extension_ws03.Block1a;
-        loader_pages_spanned = &store->extension_ws03.LoaderPagesSpanned;
-        extblock1b = &store->extension_ws03.Block1b;
-        extblock1c = &store->extension_ws03.Block1c;
+    extblock1a = &extblock.Block1a;
+    extblock1b = &extblock.Block1b;
+    extblock1c = &extblock.Block1c;
+
+    if constexpr (requires { T::Block2b; })
+        extblock2b = &extblock.Block2b;
+    else
         extblock2b = NULL;
+
+    if constexpr (requires { T::Block3; })
+        extblock3 = &extblock.Block3;
+    else
         extblock3 = NULL;
+
+    if constexpr (requires { T::Block4; })
+        extblock4 = &extblock.Block4;
+    else
         extblock4 = NULL;
+
+    if constexpr (requires { T::Block5a; })
+        extblock5a = &extblock.Block5a;
+    else
         extblock5a = NULL;
 
+    if constexpr (requires { T::LoaderPagesSpanned; })
+        loader_pages_spanned = &extblock.LoaderPagesSpanned;
+    else
+        loader_pages_spanned = NULL;
+
+    if (version <= _WIN32_WINNT_WS03) {
         store->extension_ws03.Size = sizeof(LOADER_PARAMETER_EXTENSION_WS03);
         store->extension_ws03.Profile.Status = 2;
         store->extension_ws03.MajorVersion = version >> 8;
         store->extension_ws03.MinorVersion = version & 0xff;
     } else if (version == _WIN32_WINNT_VISTA) {
-        extblock3 = NULL;
-        extblock4 = NULL;
-        extblock5a = NULL;
-
         // FIXME - is x86 SP2 the same struct as amd64 SP2? Which does SP1 use?
         if (build >= 6002) { // service pack 2
-            extblock1a = &store->extension_vista_sp2.Block1a;
-            loader_pages_spanned = &store->extension_vista_sp2.LoaderPagesSpanned;
-            extblock1b = &store->extension_vista_sp2.Block1b;
-            extblock1c = &store->extension_vista_sp2.Block1c;
-            extblock2b = &store->extension_vista_sp2.Block2b;
-
             store->extension_vista_sp2.Size = sizeof(LOADER_PARAMETER_EXTENSION_VISTA_SP2);
             store->extension_vista_sp2.Profile.Status = 2;
             store->extension_vista_sp2.MajorVersion = version >> 8;
@@ -481,12 +492,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
 
             store->extension_vista_sp2.LoaderPerformanceData = &store->loader_performance_data;
         } else {
-            extblock1a = &store->extension_vista.Block1a;
-            loader_pages_spanned = &store->extension_vista.LoaderPagesSpanned;
-            extblock1b = &store->extension_vista.Block1b;
-            extblock1c = &store->extension_vista.Block1c;
-            extblock2b = &store->extension_vista.Block2b;
-
             store->extension_vista.Size = sizeof(LOADER_PARAMETER_EXTENSION_VISTA);
             store->extension_vista.Profile.Status = 2;
             store->extension_vista.MajorVersion = version >> 8;
@@ -495,15 +500,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
             store->extension_vista.LoaderPerformanceData = &store->loader_performance_data;
         }
     } else if (version == _WIN32_WINNT_WIN7) {
-        extblock1a = &store->extension_win7.Block1a;
-        loader_pages_spanned = &store->extension_win7.LoaderPagesSpanned;
-        extblock1b = &store->extension_win7.Block1b;
-        extblock1c = &store->extension_win7.Block1c;
-        extblock2b = &store->extension_win7.Block2b;
-        extblock3 = &store->extension_win7.Block3;
-        extblock4 = NULL;
-        extblock5a = NULL;
-
         store->extension_win7.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN7);
         store->extension_win7.Profile.Status = 2;
 
@@ -514,15 +510,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
 
         store->extension_win7.LoaderPerformanceData = &store->loader_performance_data;
     } else if (version == _WIN32_WINNT_WIN8) {
-        extblock1a = &store->extension_win8.Block1a;
-        loader_pages_spanned = NULL;
-        extblock1b = &store->extension_win8.Block1b;
-        extblock1c = &store->extension_win8.Block1c;
-        extblock2b = &store->extension_win8.Block2b;
-        extblock3 = &store->extension_win8.Block3;
-        extblock4 = &store->extension_win8.Block4;
-        extblock5a = NULL;
-
         store->extension_win8.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN8);
         store->extension_win8.Profile.Status = 2;
 
@@ -531,15 +518,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
         store->extension_win8.LoaderPerformanceData = &store->loader_performance_data;
         store->extension_win8.ProcessorCounterFrequency = cpu_frequency;
     } else if (version == _WIN32_WINNT_WINBLUE) {
-        extblock1a = &store->extension_win81.Block1a;
-        loader_pages_spanned = NULL;
-        extblock1b = &store->extension_win81.Block1b;
-        extblock1c = &store->extension_win81.Block1c;
-        extblock2b = &store->extension_win81.Block2b;
-        extblock3 = &store->extension_win81.Block3;
-        extblock4 = &store->extension_win81.Block4;
-        extblock5a = &store->extension_win81.Block5a;
-
         if (revision >= 18438)
             store->extension_win81.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN81);
         else
@@ -559,16 +537,7 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
     } else if (version == _WIN32_WINNT_WIN10) {
         LOADER_EXTENSION_BLOCK6* extblock6;
 
-        loader_pages_spanned = NULL;
-
         if (build >= WIN10_BUILD_21H1) {
-            extblock1a = &store->extension_win10_21H1.Block1a;
-            extblock1b = &store->extension_win10_21H1.Block1b;
-            extblock1c = &store->extension_win10_21H1.Block1c;
-            extblock2b = &store->extension_win10_21H1.Block2b;
-            extblock3 = &store->extension_win10_21H1.Block3;
-            extblock4 = &store->extension_win10_21H1.Block4;
-            extblock5a = &store->extension_win10_21H1.Block5a;
             extblock6 = &store->extension_win10_21H1.Block6;
             store->extension_win10_21H1.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_21H1);
 
@@ -577,13 +546,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
             store->extension_win10_21H1.Block7.MajorRelease = NTDDI_WIN10_20H1;
             store->extension_win10_21H1.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_2004) {
-            extblock1a = &store->extension_win10_2004.Block1a;
-            extblock1b = &store->extension_win10_2004.Block1b;
-            extblock1c = &store->extension_win10_2004.Block1c;
-            extblock2b = &store->extension_win10_2004.Block2b;
-            extblock3 = &store->extension_win10_2004.Block3;
-            extblock4 = &store->extension_win10_2004.Block4;
-            extblock5a = &store->extension_win10_2004.Block5a;
             extblock6 = &store->extension_win10_2004.Block6;
             store->extension_win10_2004.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_2004);
 
@@ -592,13 +554,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
             store->extension_win10_2004.Block7.MajorRelease = NTDDI_WIN10_20H1;
             store->extension_win10_2004.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_1903) {
-            extblock1a = &store->extension_win10_1903.Block1a;
-            extblock1b = &store->extension_win10_1903.Block1b;
-            extblock1c = &store->extension_win10_1903.Block1c;
-            extblock2b = &store->extension_win10_1903.Block2b;
-            extblock3 = &store->extension_win10_1903.Block3;
-            extblock4 = &store->extension_win10_1903.Block4;
-            extblock5a = &store->extension_win10_1903.Block5a;
             extblock6 = &store->extension_win10_1903.Block6;
             store->extension_win10_1903.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1903);
 
@@ -609,13 +564,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
             store->extension_win10_1903.MajorRelease = NTDDI_WIN10_19H1;
             store->extension_win10_1903.ProcessorCounterFrequency = cpu_frequency;
         } else if (build == WIN10_BUILD_1809) {
-            extblock1a = &store->extension_win10_1809.Block1a;
-            extblock1b = &store->extension_win10_1809.Block1b;
-            extblock1c = &store->extension_win10_1809.Block1c;
-            extblock2b = &store->extension_win10_1809.Block2b;
-            extblock3 = &store->extension_win10_1809.Block3;
-            extblock4 = &store->extension_win10_1809.Block4;
-            extblock5a = &store->extension_win10_1809.Block5a;
             extblock6 = &store->extension_win10_1809.Block6;
             store->extension_win10_1809.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1809);
 
@@ -624,13 +572,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
             store->extension_win10_1809.MajorRelease = NTDDI_WIN10_RS5;
             store->extension_win10_1809.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_1703) {
-            extblock1a = &store->extension_win10_1703.Block1a;
-            extblock1b = &store->extension_win10_1703.Block1b;
-            extblock1c = &store->extension_win10_1703.Block1c;
-            extblock2b = &store->extension_win10_1703.Block2b;
-            extblock3 = &store->extension_win10_1703.Block3;
-            extblock4 = &store->extension_win10_1703.Block4;
-            extblock5a = &store->extension_win10_1703.Block5a;
             extblock6 = &store->extension_win10_1703.Block6;
 
             if (build >= WIN10_BUILD_1803)
@@ -652,13 +593,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
             store->extension_win10_1703.LoaderPerformanceData = &store->loader_performance_data;
             store->extension_win10_1703.ProcessorCounterFrequency = cpu_frequency;
         } else if (build >= WIN10_BUILD_1607) {
-            extblock1a = &store->extension_win10_1607.Block1a;
-            extblock1b = &store->extension_win10_1607.Block1b;
-            extblock1c = &store->extension_win10_1607.Block1c;
-            extblock2b = &store->extension_win10_1607.Block2b;
-            extblock3 = &store->extension_win10_1607.Block3;
-            extblock4 = &store->extension_win10_1607.Block4;
-            extblock5a = &store->extension_win10_1607.Block5a;
             extblock6 = &store->extension_win10_1607.Block6;
             store->extension_win10_1607.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN10_1607);
 
@@ -671,13 +605,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, uint16_t versi
             store->extension_win10_1607.LoaderPerformanceData = &store->loader_performance_data;
             store->extension_win10_1607.ProcessorCounterFrequency = cpu_frequency;
         } else {
-            extblock1a = &store->extension_win10.Block1a;
-            extblock1b = &store->extension_win10.Block1b;
-            extblock1c = &store->extension_win10.Block1c;
-            extblock2b = &store->extension_win10.Block2b;
-            extblock3 = &store->extension_win10.Block3;
-            extblock4 = &store->extension_win10.Block4;
-            extblock5a = &store->extension_win10.Block5a;
             extblock6 = &store->extension_win10.Block6;
 
             if (build < WIN10_BUILD_1511)
@@ -4163,7 +4090,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         goto end;
     }
 
-    Status = initialize_extension_block(store, version, build, revision, &extblock1a, &extblock1b, &extblock3, &loader_pages_spanned);
+    std::visit([&](auto&& e) {
+        Status = initialize_extension_block(store, *e, version, build, revision, &extblock1a, &extblock1b,
+                                            &extblock3, &loader_pages_spanned);
+    }, extension_block);
 
     if (EFI_ERROR(Status)) {
         print_error("initialize_extension_block", Status);
