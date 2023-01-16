@@ -2370,7 +2370,8 @@ static EFI_STATUS map_nls(EFI_BOOT_SERVICES* bs, NLS_DATA_BLOCK* nls, void** va,
     return EFI_SUCCESS;
 }
 
-static EFI_STATUS map_errata_inf(EFI_BOOT_SERVICES* bs, LOADER_EXTENSION_BLOCK1A* extblock1a, void** va,
+template<typename T>
+static EFI_STATUS map_errata_inf(EFI_BOOT_SERVICES* bs, T& extblock, void** va,
                                  LIST_ENTRY* mappings) {
     EFI_STATUS Status;
     void* va2 = *va;
@@ -2381,8 +2382,8 @@ static EFI_STATUS map_errata_inf(EFI_BOOT_SERVICES* bs, LOADER_EXTENSION_BLOCK1A
         return Status;
     }
 
-    extblock1a->EmInfFileImage = va2;
-    extblock1a->EmInfFileSize = errata_inf_size;
+    extblock.Block1a.EmInfFileImage = va2;
+    extblock.Block1a.EmInfFileSize = errata_inf_size;
 
     va2 = (uint8_t*)va2 + (PAGE_COUNT(errata_inf_size) * EFI_PAGE_SIZE);
 
@@ -4375,7 +4376,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     if (errata_inf) {
-        Status = map_errata_inf(bs, extblock1a, &va, &mappings);
+        std::visit([&](auto&& e) {
+            Status = map_errata_inf(bs, *e, &va, &mappings);
+        }, extension_block);
+
         if (EFI_ERROR(Status)) {
             print_error("map_errata_inf", Status);
             goto end;
