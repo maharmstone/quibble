@@ -302,6 +302,35 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
             loader_block.Size = sizeof(loader_block);
     }
 
+    if constexpr (requires { T::EarlyLaunchListHead; }) {
+        InitializeListHead(&loader_block.EarlyLaunchListHead);
+    }
+
+    if constexpr (requires { T::CoreDriverListHead; }) {
+        InitializeListHead(&loader_block.CoreDriverListHead);
+
+        loader_block.CoreDriverListHead.Flink = core_drivers->Flink;
+        loader_block.CoreDriverListHead.Blink = core_drivers->Blink;
+        loader_block.CoreDriverListHead.Flink->Blink = &loader_block.CoreDriverListHead;
+        loader_block.CoreDriverListHead.Blink->Flink = &loader_block.CoreDriverListHead;
+    }
+
+    if constexpr (requires { T::CoreExtensionsDriverListHead; }) {
+        InitializeListHead(&loader_block.CoreExtensionsDriverListHead);
+    }
+
+    if constexpr (requires { T::TpmCoreDriverListHead; }) {
+        InitializeListHead(&loader_block.TpmCoreDriverListHead);
+    }
+
+    if constexpr (requires { T::KernelStackSize; })
+        loader_block.KernelStackSize = KERNEL_STACK_SIZE * EFI_PAGE_SIZE;
+
+    if constexpr (requires { T::OsLoaderSecurityVersion; }) {
+        if (build >= WIN10_BUILD_1511)
+            loader_block.OsLoaderSecurityVersion = 1;
+    }
+
     if (version <= _WIN32_WINNT_WS03) {
         extblock1a = &store->extension_ws03.Block1a;
         loader_pages_spanned = &store->extension_ws03.LoaderPagesSpanned;
@@ -381,16 +410,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         store->extension_win8.Size = sizeof(LOADER_PARAMETER_EXTENSION_WIN8);
         store->extension_win8.Profile.Status = 2;
 
-        InitializeListHead(&store->loader_block_win8.EarlyLaunchListHead);
-        InitializeListHead(&store->loader_block_win8.CoreDriverListHead);
-
-        store->loader_block_win8.KernelStackSize = KERNEL_STACK_SIZE * EFI_PAGE_SIZE;
-
-        store->loader_block_win8.CoreDriverListHead.Flink = core_drivers->Flink;
-        store->loader_block_win8.CoreDriverListHead.Blink = core_drivers->Blink;
-        store->loader_block_win8.CoreDriverListHead.Flink->Blink = &store->loader_block_win8.CoreDriverListHead;
-        store->loader_block_win8.CoreDriverListHead.Blink->Flink = &store->loader_block_win8.CoreDriverListHead;
-
         store->extension_win8.BootEntropyResult.maxEntropySources = 7;
 
         store->extension_win8.LoaderPerformanceData = &store->loader_performance_data;
@@ -412,16 +431,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
 
         store->extension_win81.Profile.Status = 2;
 
-        InitializeListHead(&store->loader_block_win81.EarlyLaunchListHead);
-        InitializeListHead(&store->loader_block_win81.CoreDriverListHead);
-
-        store->loader_block_win81.KernelStackSize = KERNEL_STACK_SIZE * EFI_PAGE_SIZE;
-
-        store->loader_block_win81.CoreDriverListHead.Flink = core_drivers->Flink;
-        store->loader_block_win81.CoreDriverListHead.Blink = core_drivers->Blink;
-        store->loader_block_win81.CoreDriverListHead.Flink->Blink = &store->loader_block_win81.CoreDriverListHead;
-        store->loader_block_win81.CoreDriverListHead.Blink->Flink = &store->loader_block_win81.CoreDriverListHead;
-
         store->extension_win81.BootEntropyResult.maxEntropySources = 8;
 
         store->extension_win81.LoaderPerformanceData = &store->loader_performance_data;
@@ -435,21 +444,6 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         LOADER_EXTENSION_BLOCK6* extblock6;
 
         loader_pages_spanned = NULL;
-
-        if (build >= WIN10_BUILD_1511)
-            store->loader_block_win10.OsLoaderSecurityVersion = 1;
-
-        InitializeListHead(&store->loader_block_win10.EarlyLaunchListHead);
-        InitializeListHead(&store->loader_block_win10.CoreDriverListHead);
-        InitializeListHead(&store->loader_block_win10.CoreExtensionsDriverListHead);
-        InitializeListHead(&store->loader_block_win10.TpmCoreDriverListHead);
-
-        store->loader_block_win10.KernelStackSize = KERNEL_STACK_SIZE * EFI_PAGE_SIZE;
-
-        store->loader_block_win10.CoreDriverListHead.Flink = core_drivers->Flink;
-        store->loader_block_win10.CoreDriverListHead.Blink = core_drivers->Blink;
-        store->loader_block_win10.CoreDriverListHead.Flink->Blink = &store->loader_block_win10.CoreDriverListHead;
-        store->loader_block_win10.CoreDriverListHead.Blink->Flink = &store->loader_block_win10.CoreDriverListHead;
 
         if (build >= WIN10_BUILD_21H1) {
             extblock1a = &store->extension_win10_21H1.Block1a;
