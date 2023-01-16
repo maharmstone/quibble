@@ -4242,7 +4242,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     if (build >= WIN10_BUILD_1703) {
         std::visit([&](auto&& b) {
-            b->Block1b.Prcb = &pcrva->PrcbData;
+            b->Prcb = &pcrva->PrcbData;
         }, loader_block);
     }
 
@@ -4392,7 +4392,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         }
 
         std::visit([&](auto&& b) {
-            b->Block1b.KernelStack = (uint8_t*)va + ((KERNEL_STACK_SIZE + 1) * EFI_PAGE_SIZE); // end of stack
+            b->KernelStack = (uint8_t*)va + ((KERNEL_STACK_SIZE + 1) * EFI_PAGE_SIZE); // end of stack
         }, loader_block);
 
         va = (uint8_t*)va + (allocation * EFI_PAGE_SIZE);
