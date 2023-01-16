@@ -816,7 +816,9 @@ static void fix_arc_disk_mapping(LOADER_BLOCK1C* block1, LIST_ENTRY* mappings, b
     fix_list_mapping(&block1->ArcDiskInformation->DiskSignatureListHead, mappings);
 }
 
-static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mappings, uint16_t version, uint16_t build) {
+template<typename T>
+static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LIST_ENTRY* mappings,
+                              uint16_t version, uint16_t build) {
     void* ccd_va;
     LOADER_BLOCK1A* block1a;
     LOADER_BLOCK1C* block1c;
@@ -827,19 +829,17 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
     LOADER_EXTENSION_BLOCK4* extblock4;
     LOADER_EXTENSION_BLOCK5A* extblock5a;
 
+    block1a = &loader_block.Block1a;
+    block1c = &loader_block.Block1c;
+    block2 = &loader_block.Block2;
+
     if (version <= _WIN32_WINNT_WS03) {
-        block1a = &store->loader_block_ws03.Block1a;
-        block1c = &store->loader_block_ws03.Block1c;
-        block2 = &store->loader_block_ws03.Block2;
         extblock1c = &store->extension_ws03.Block1c;
         extblock2b = NULL;
         extblock3 = NULL;
         extblock4 = NULL;
         extblock5a = NULL;
     } else if (version == _WIN32_WINNT_VISTA) {
-        block1a = &store->loader_block_vista.Block1a;
-        block1c = &store->loader_block_vista.Block1c;
-        block2 = &store->loader_block_vista.Block2;
         extblock1c = &store->extension_vista.Block1c;
         extblock2b = &store->extension_vista.Block2b;
         extblock3 = NULL;
@@ -852,9 +852,6 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         store->extension_vista.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_vista.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WIN7) {
-        block1a = &store->loader_block_win7.Block1a;
-        block1c = &store->loader_block_win7.Block1c;
-        block2 = &store->loader_block_win7.Block2;
         extblock1c = &store->extension_win7.Block1c;
         extblock2b = &store->extension_win7.Block2b;
         extblock3 = &store->extension_win7.Block3;
@@ -867,9 +864,6 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         store->extension_win7.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win7.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WIN8) {
-        block1a = &store->loader_block_win8.Block1a;
-        block1c = &store->loader_block_win8.Block1c;
-        block2 = &store->loader_block_win8.Block2;
         extblock1c = &store->extension_win8.Block1c;
         extblock2b = &store->extension_win8.Block2b;
         extblock3 = &store->extension_win8.Block3;
@@ -888,9 +882,6 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
         store->extension_win8.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win8.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WINBLUE) {
-        block1a = &store->loader_block_win81.Block1a;
-        block1c = &store->loader_block_win81.Block1c;
-        block2 = &store->loader_block_win81.Block2;
         extblock1c = &store->extension_win81.Block1c;
         extblock2b = &store->extension_win81.Block2b;
         extblock3 = &store->extension_win81.Block3;
@@ -915,10 +906,6 @@ static void fix_store_mapping(loader_store* store, void* va, LIST_ENTRY* mapping
             store->extension_win81.KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(store->extension_win81.KdDebugDevice, mappings);
     } else if (version == _WIN32_WINNT_WIN10) {
         LOADER_EXTENSION_BLOCK6* extblock6;
-
-        block1a = &store->loader_block_win10.Block1a;
-        block1c = &store->loader_block_win10.Block1c;
-        block2 = &store->loader_block_win10.Block2;
 
         fix_list_mapping(&store->loader_block_win10.EarlyLaunchListHead, mappings);
         fix_list_mapping(&store->loader_block_win10.CoreExtensionsDriverListHead, mappings);
@@ -4574,9 +4561,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     print_string("Booting Windows...\n");
 
-    fix_store_mapping(store, store_va, &mappings, version, build);
-
     std::visit([&](auto&& b) {
+        fix_store_mapping(store, store_va, *b, &mappings, version, build);
+
         Status = enable_paging(image_handle, bs, &mappings, &b->Block1a, va, loader_pages_spanned);
     }, loader_block);
 
