@@ -749,12 +749,6 @@ typedef struct {
     uint32_t WfsFPDataSize;
 } LOADER_EXTENSION_BLOCK4;
 
-typedef struct {
-    UNICODE_STRING AcpiBiosVersion;
-    UNICODE_STRING SmbiosVersion;
-    UNICODE_STRING EfiVersion;
-} LOADER_EXTENSION_BLOCK5B;
-
 #pragma pack(push,1)
 
 typedef struct {
@@ -793,7 +787,9 @@ typedef struct {
 #else
     uint8_t unknown[0x30];
 #endif
-    LOADER_EXTENSION_BLOCK5B Block5b;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
 } LOADER_PARAMETER_EXTENSION_WIN8;
 
 #pragma pack(pop)
@@ -836,9 +832,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.BootFlags) == 0x8
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.InternalBootFlags) == 0x818, "LOADER_PARAMETER_EXTENSION_WIN8 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.WfsFPData) == 0x820, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.WfsFPDataSize) == 0x824, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block5b.AcpiBiosVersion) == 0x858, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block5b.SmbiosVersion) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN8 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block5b.EfiVersion) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN8 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiBiosVersion) == 0x858, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, SmbiosVersion) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN8 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, EfiVersion) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN8 EfiVersion");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN8) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN8 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN8 Size");
@@ -877,9 +873,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.BootFlags) == 0x8
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.InternalBootFlags) == 0x878, "LOADER_PARAMETER_EXTENSION_WIN8 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.WfsFPData) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.WfsFPDataSize) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block5b.AcpiBiosVersion) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block5b.SmbiosVersion) == 0x900, "LOADER_PARAMETER_EXTENSION_WIN8 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block5b.EfiVersion) == 0x910, "LOADER_PARAMETER_EXTENSION_WIN8 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiBiosVersion) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, SmbiosVersion) == 0x900, "LOADER_PARAMETER_EXTENSION_WIN8 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, EfiVersion) == 0x910, "LOADER_PARAMETER_EXTENSION_WIN8 EfiVersion");
 #endif
 
 typedef struct {
@@ -1027,7 +1023,9 @@ typedef struct {
     LOADER_PARAMETER_HYPERVISOR_EXTENSION HypervisorExtension;
     LOADER_EXTENSION_BLOCK4 Block4;
     LOADER_EXTENSION_BLOCK5A Block5a;
-    LOADER_EXTENSION_BLOCK5B Block5b;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN81 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
@@ -1078,9 +1076,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.BugcheckParamet
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaExtensions) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5b.AcpiBiosVersion) == 0x8b4, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5b.SmbiosVersion) == 0x8bc, "LOADER_PARAMETER_EXTENSION_WIN81 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5b.EfiVersion) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN81 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiBiosVersion) == 0x8b4, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, SmbiosVersion) == 0x8bc, "LOADER_PARAMETER_EXTENSION_WIN81 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, EfiVersion) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN81 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, KdDebugDevice) == 0x8cc, "LOADER_PARAMETER_EXTENSION_WIN81 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, OfflineCrashdumpConfigurationTable) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN81 OfflineCrashdumpConfigurationTable");
 #elif defined(__x86_64__)
@@ -1125,9 +1123,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.BugcheckParamet
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaExtensions) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5b.AcpiBiosVersion) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5b.SmbiosVersion) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN81 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5b.EfiVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN81 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiBiosVersion) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, SmbiosVersion) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN81 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, EfiVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN81 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, KdDebugDevice) == 0x970, "LOADER_PARAMETER_EXTENSION_WIN81 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, OfflineCrashdumpConfigurationTable) == 0x978, "LOADER_PARAMETER_EXTENSION_WIN81 OfflineCrashdumpConfigurationTable");
 #endif
@@ -1181,7 +1179,9 @@ typedef struct {
     LOADER_PARAMETER_HYPERVISOR_EXTENSION HypervisorExtension;
     LOADER_EXTENSION_BLOCK4 Block4;
     LOADER_EXTENSION_BLOCK5A Block5a;
-    LOADER_EXTENSION_BLOCK5B Block5b;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
@@ -1249,9 +1249,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.BugcheckParamet
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaExtensions) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5b.AcpiBiosVersion) == 0x8b4, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5b.SmbiosVersion) == 0x8bc, "LOADER_PARAMETER_EXTENSION_WIN10 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5b.EfiVersion) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiBiosVersion) == 0x8b4, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SmbiosVersion) == 0x8bc, "LOADER_PARAMETER_EXTENSION_WIN10 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, EfiVersion) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, KdDebugDevice) == 0x8cc, "LOADER_PARAMETER_EXTENSION_WIN10 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, OfflineCrashdumpConfigurationTable) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN10 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ManufacturingProfile) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10 ManufacturingProfile");
@@ -1305,9 +1305,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.BugcheckParamet
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaExtensions) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5b.AcpiBiosVersion) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5b.SmbiosVersion) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5b.EfiVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiBiosVersion) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SmbiosVersion) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, EfiVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, KdDebugDevice) == 0x970, "LOADER_PARAMETER_EXTENSION_WIN10 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, OfflineCrashdumpConfigurationTable) == 0x978, "LOADER_PARAMETER_EXTENSION_WIN10 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ManufacturingProfile) == 0x998, "LOADER_PARAMETER_EXTENSION_WIN10 ManufacturingProfile");
@@ -1355,7 +1355,9 @@ typedef struct {
     LOADER_PARAMETER_HYPERVISOR_EXTENSION HypervisorExtension;
     LOADER_EXTENSION_BLOCK4 Block4;
     LOADER_EXTENSION_BLOCK5A Block5a;
-    LOADER_EXTENSION_BLOCK5B Block5b;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
@@ -1435,9 +1437,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaExtensions) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5b.AcpiBiosVersion) == 0x8b4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5b.SmbiosVersion) == 0x8bc, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5b.EfiVersion) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiBiosVersion) == 0x8b4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, SmbiosVersion) == 0x8bc, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, EfiVersion) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, KdDebugDevice) == 0x8cc, "LOADER_PARAMETER_EXTENSION_WIN10_1607 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, OfflineCrashdumpConfigurationTable) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ManufacturingProfile) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ManufacturingProfile");
@@ -1498,9 +1500,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaExtensions) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5b.AcpiBiosVersion) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5b.SmbiosVersion) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5b.EfiVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiBiosVersion) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, SmbiosVersion) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, EfiVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, KdDebugDevice) == 0x970, "LOADER_PARAMETER_EXTENSION_WIN10_1607 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, OfflineCrashdumpConfigurationTable) == 0x978, "LOADER_PARAMETER_EXTENSION_WIN10_1607 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ManufacturingProfile) == 0x998, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ManufacturingProfile");
@@ -1575,7 +1577,9 @@ typedef struct {
     LOADER_PARAMETER_HYPERVISOR_EXTENSION HypervisorExtension;
     LOADER_EXTENSION_BLOCK4 Block4;
     LOADER_EXTENSION_BLOCK5A Block5a;
-    LOADER_EXTENSION_BLOCK5B Block5b;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
@@ -1660,9 +1664,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchema) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaSize) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaExtensions) == 0x8cc, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5b.AcpiBiosVersion) == 0x8d4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5b.SmbiosVersion) == 0x8dc, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5b.EfiVersion) == 0x8e4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiBiosVersion) == 0x8d4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, SmbiosVersion) == 0x8dc, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, EfiVersion) == 0x8e4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, KdDebugDevice) == 0x8ec, "LOADER_PARAMETER_EXTENSION_WIN10_1703 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, OfflineCrashdumpConfigurationTable) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ManufacturingProfile) == 0x910, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ManufacturingProfile");
@@ -1727,9 +1731,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchema) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaSize) == 0x948, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaExtensions) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5b.AcpiBiosVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5b.SmbiosVersion) == 0x970, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5b.EfiVersion) == 0x980, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiBiosVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, SmbiosVersion) == 0x970, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, EfiVersion) == 0x980, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, KdDebugDevice) == 0x990, "LOADER_PARAMETER_EXTENSION_WIN10_1703 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, OfflineCrashdumpConfigurationTable) == 0x998, "LOADER_PARAMETER_EXTENSION_WIN10_1703 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ManufacturingProfile) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ManufacturingProfile");
@@ -1826,7 +1830,9 @@ typedef struct {
     LOADER_PARAMETER_HYPERVISOR_EXTENSION_1809 HypervisorExtension;
     LOADER_EXTENSION_BLOCK4 Block4;
     LOADER_EXTENSION_BLOCK5A Block5a;
-    LOADER_EXTENSION_BLOCK5B Block5b;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
@@ -1917,9 +1923,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchema) == 0x9dc, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaSize) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaExtensions) == 0x9e4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5b.AcpiBiosVersion) == 0x9ec, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5b.SmbiosVersion) == 0x9f4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5b.EfiVersion) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiBiosVersion) == 0x9ec, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, SmbiosVersion) == 0x9f4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, EfiVersion) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, KdDebugDevice) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_1809 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, OfflineCrashdumpConfigurationTable) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN10_1809 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ManufacturingProfile) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ManufacturingProfile");
@@ -1986,9 +1992,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchema) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaSize) == 0xa60, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaExtensions) == 0xa68, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5b.AcpiBiosVersion) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5b.SmbiosVersion) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5b.EfiVersion) == 0xa98, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiBiosVersion) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, SmbiosVersion) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, EfiVersion) == 0xa98, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, KdDebugDevice) == 0xaa8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, OfflineCrashdumpConfigurationTable) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ManufacturingProfile) == 0xad0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ManufacturingProfile");
@@ -2066,7 +2072,9 @@ typedef struct {
     LOADER_PARAMETER_HYPERVISOR_EXTENSION_1809 HypervisorExtension;
     LOADER_EXTENSION_BLOCK4 Block4;
     LOADER_EXTENSION_BLOCK5A Block5a;
-    LOADER_EXTENSION_BLOCK5B Block5b;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
@@ -2164,9 +2172,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchema) == 0x9f4, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaSize) == 0x9f8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaExtensions) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5b.AcpiBiosVersion) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5b.SmbiosVersion) == 0xa0c, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5b.EfiVersion) == 0xa14, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiBiosVersion) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, SmbiosVersion) == 0xa0c, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, EfiVersion) == 0xa14, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, KdDebugDevice) == 0xa1c, "LOADER_PARAMETER_EXTENSION_WIN10_1903 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, OfflineCrashdumpConfigurationTable) == 0xa20, "LOADER_PARAMETER_EXTENSION_WIN10_1903 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ManufacturingProfile) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ManufacturingProfile");
@@ -2236,9 +2244,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchema) == 0xa70, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaSize) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaExtensions) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5b.AcpiBiosVersion) == 0xa90, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5b.SmbiosVersion) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5b.EfiVersion) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiBiosVersion) == 0xa90, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, SmbiosVersion) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, EfiVersion) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, KdDebugDevice) == 0xac0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, OfflineCrashdumpConfigurationTable) == 0xac8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ManufacturingProfile) == 0xae8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ManufacturingProfile");
@@ -2315,7 +2323,9 @@ typedef struct {
     LOADER_PARAMETER_HYPERVISOR_EXTENSION_1809 HypervisorExtension;
     LOADER_EXTENSION_BLOCK4 Block4;
     LOADER_EXTENSION_BLOCK5A Block5a;
-    LOADER_EXTENSION_BLOCK5B Block5b;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
@@ -2418,9 +2428,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchema) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaSize) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaExtensions) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5b.AcpiBiosVersion) == 0xa0c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5b.SmbiosVersion) == 0xa14, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5b.EfiVersion) == 0xa1c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiBiosVersion) == 0xa0c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SmbiosVersion) == 0xa14, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, EfiVersion) == 0xa1c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, KdDebugDevice) == 0xa24, "LOADER_PARAMETER_EXTENSION_WIN10_2004 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, OfflineCrashdumpConfigurationTable) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_2004 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ManufacturingProfile) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ManufacturingProfile");
@@ -2495,9 +2505,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchema) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaSize) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaExtensions) == 0xa90, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5b.AcpiBiosVersion) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5b.SmbiosVersion) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5b.EfiVersion) == 0xac0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiBiosVersion) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SmbiosVersion) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, EfiVersion) == 0xac0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, KdDebugDevice) == 0xad0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, OfflineCrashdumpConfigurationTable) == 0xad8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ManufacturingProfile) == 0xaf8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ManufacturingProfile");
@@ -2609,7 +2619,9 @@ typedef struct {
     LOADER_PARAMETER_HYPERVISOR_EXTENSION_1809 HypervisorExtension;
     LOADER_EXTENSION_BLOCK4 Block4;
     LOADER_EXTENSION_BLOCK5A Block5a;
-    LOADER_EXTENSION_BLOCK5B Block5b;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
     uint32_t padding3;
@@ -2716,9 +2728,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchema) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaSize) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaExtensions) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5b.AcpiBiosVersion) == 0xa0c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5b.SmbiosVersion) == 0xa14, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5b.EfiVersion) == 0xa1c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiBiosVersion) == 0xa0c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SmbiosVersion) == 0xa14, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, EfiVersion) == 0xa1c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, KdDebugDevice) == 0xa24, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, OfflineCrashdumpConfigurationTable) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ManufacturingProfile) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ManufacturingProfile");
@@ -2794,9 +2806,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.BugcheckPa
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchema) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaSize) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaExtensions) == 0xa90, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaExtensions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5b.AcpiBiosVersion) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiBiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5b.SmbiosVersion) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SmbiosVersion");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5b.EfiVersion) == 0xac0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiBiosVersion) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SmbiosVersion) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, EfiVersion) == 0xac0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EfiVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, KdDebugDevice) == 0xad0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 KdDebugDevice");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, OfflineCrashdumpConfigurationTable) == 0xad8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 OfflineCrashdumpConfigurationTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ManufacturingProfile) == 0xaf8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ManufacturingProfile");
