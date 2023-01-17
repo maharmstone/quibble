@@ -439,7 +439,7 @@ template<typename T>
 static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, uint16_t version, uint16_t build,
                                              uint16_t revision) {
     if (version == _WIN32_WINNT_WINBLUE && revision < 18438)
-        extblock.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN81, padding4);
+        extblock.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN81, padding6);
     else if (version == _WIN32_WINNT_WIN10 && build >= WIN10_BUILD_1703 && build < WIN10_BUILD_1803)
         extblock.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, MaxPciBusNumber);
     else if (version == _WIN32_WINNT_WIN10 && build < WIN10_BUILD_1511)
@@ -528,10 +528,10 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     if constexpr (requires { T::DbgRtcBootTime; })
         extblock.DbgRtcBootTime = 1;
 
-    if constexpr (requires { T::Block5a; }) {
-        extblock.Block5a.ApiSetSchema = apisetva;
-        extblock.Block5a.ApiSetSchemaSize = apisetsize;
-        InitializeListHead(&extblock.Block5a.ApiSetSchemaExtensions);
+    if constexpr (requires { T::ApiSetSchema; }) {
+        extblock.ApiSetSchema = apisetva;
+        extblock.ApiSetSchemaSize = apisetsize;
+        InitializeListHead(&extblock.ApiSetSchemaExtensions);
     }
 
     return EFI_SUCCESS;
@@ -699,13 +699,6 @@ static void fix_loader_block_mapping(loader_store* store, void* va, T& loader_bl
 
 template<typename T>
 static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
-    LOADER_EXTENSION_BLOCK5A* extblock5a;
-
-    if constexpr (requires { T::Block5a; })
-        extblock5a = &extblock.Block5a;
-    else
-        extblock5a = NULL;
-
     if constexpr (requires { T::LoaderPerformanceData; }) {
         // FIXME - LOADER_PERFORMANCE_DATA_1809 and LOADER_PERFORMANCE_DATA_1903?
         if constexpr (std::is_same_v<decltype(T::LoaderPerformanceData), LOADER_PERFORMANCE_DATA*>) {
@@ -735,8 +728,8 @@ static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
     if constexpr (requires { T::HalExtensionModuleList; })
         fix_list_mapping(&extblock.HalExtensionModuleList, mappings);
 
-    if (extblock5a)
-        fix_list_mapping(&extblock5a->ApiSetSchemaExtensions, mappings);
+    if constexpr (requires { T::ApiSetSchemaExtensions; })
+        fix_list_mapping(&extblock.ApiSetSchemaExtensions, mappings);
 }
 
 static void set_gdt_entry(gdt_entry* gdt, uint16_t selector, uint32_t base, uint32_t limit, uint8_t type,

@@ -1002,17 +1002,6 @@ typedef struct {
     uint32_t OfflineMemoryDumpCapable;
 } OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN81;
 
-#pragma pack(pop)
-
-typedef struct {
-    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
-    void* ApiSetSchema;
-    uint32_t ApiSetSchemaSize;
-    LIST_ENTRY ApiSetSchemaExtensions;
-} LOADER_EXTENSION_BLOCK5A;
-
-#pragma pack(push,1)
-
 typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
@@ -1075,14 +1064,20 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding3;
 #endif
-    LOADER_EXTENSION_BLOCK5A Block5a;
+    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
+    void* ApiSetSchema;
+    uint32_t ApiSetSchemaSize;
+#ifdef __x86_64__
+    uint32_t padding4;
+#endif
+    LIST_ENTRY ApiSetSchemaExtensions;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN81 OfflineCrashdumpConfigurationTable;
-    uint32_t padding4;
-    uint32_t padding5[4];
+    uint32_t padding5;
+    uint32_t padding6[4];
 } LOADER_PARAMETER_EXTENSION_WIN81;
 
 #pragma pack(pop)
@@ -1125,10 +1120,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootFlags) == 0x878, "L
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, InternalBootFlags) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN81 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WfsFPData) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WfsFPDataSize) == 0x88c, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.BugcheckParameters) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN81 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaExtensions) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BugcheckParameters) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN81 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ApiSetSchemaExtensions) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiBiosVersion) == 0x8b4, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, SmbiosVersion) == 0x8bc, "LOADER_PARAMETER_EXTENSION_WIN81 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, EfiVersion) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN81 EfiVersion");
@@ -1172,10 +1167,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootFlags) == 0x8d8, "L
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, InternalBootFlags) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN81 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WfsFPData) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WfsFPDataSize) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.BugcheckParameters) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN81 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaExtensions) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BugcheckParameters) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN81 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ApiSetSchemaExtensions) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiBiosVersion) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, SmbiosVersion) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN81 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, EfiVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN81 EfiVersion");
@@ -1262,27 +1257,33 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding3;
 #endif
-    LOADER_EXTENSION_BLOCK5A Block5a;
+    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
+    void* ApiSetSchema;
+    uint32_t ApiSetSchemaSize;
+#ifdef __x86_64__
+    uint32_t padding4;
+#endif
+    LIST_ENTRY ApiSetSchemaExtensions;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
-    uint32_t padding4;
+    uint32_t padding5;
     UNICODE_STRING ManufacturingProfile;
     void* BbtBuffer;
 #ifndef __x86_64__
-    uint32_t padding5;
+    uint32_t padding6;
 #endif
     uint64_t XsaveAllowedFeatures;
     uint32_t XsaveFlags;
 #ifdef __x86_64__
-    uint32_t padding6;
+    uint32_t padding7;
 #endif
     void* BootOptions;
     uint32_t BootId;
 #ifdef __x86_64__
-    uint32_t padding7;
+    uint32_t padding8;
 #endif
     LOADER_PARAMETER_CI_EXTENSION* CodeIntegrityData;
     uint32_t CodeIntegrityDataSize;
@@ -1329,10 +1330,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootFlags) == 0x878, "L
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, InternalBootFlags) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN10 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WfsFPData) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WfsFPDataSize) == 0x88c, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.BugcheckParameters) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN10 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaExtensions) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BugcheckParameters) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN10 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ApiSetSchemaExtensions) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiBiosVersion) == 0x8b4, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SmbiosVersion) == 0x8bc, "LOADER_PARAMETER_EXTENSION_WIN10 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, EfiVersion) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10 EfiVersion");
@@ -1385,10 +1386,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootFlags) == 0x8d8, "L
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, InternalBootFlags) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN10 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WfsFPData) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WfsFPDataSize) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.BugcheckParameters) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN10 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaExtensions) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BugcheckParameters) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN10 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ApiSetSchemaExtensions) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiBiosVersion) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SmbiosVersion) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, EfiVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10 EfiVersion");
@@ -1469,22 +1470,28 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding3;
 #endif
-    LOADER_EXTENSION_BLOCK5A Block5a;
+    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
+    void* ApiSetSchema;
+    uint32_t ApiSetSchemaSize;
+#ifdef __x86_64__
+    uint32_t padding4;
+#endif
+    LIST_ENTRY ApiSetSchemaExtensions;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
-    uint32_t padding4;
+    uint32_t padding5;
     UNICODE_STRING ManufacturingProfile;
     void* BbtBuffer;
 #ifndef __x86_64__
-    uint32_t padding5;
+    uint32_t padding6;
 #endif
     uint64_t XsaveAllowedFeatures;
     uint32_t XsaveFlags;
 #ifdef __x86_64__
-    uint32_t padding6;
+    uint32_t padding7;
 #endif
     void* BootOptions;
     uint32_t IumEnablement;
@@ -1496,7 +1503,7 @@ typedef struct {
     LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
     uint32_t SoftRestartCount;
 #ifdef __x86_64__
-    uint32_t padding7;
+    uint32_t padding8;
 #endif
     int64_t SoftRestartTime;
 #ifdef __x86_64__
@@ -1548,10 +1555,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootFlags) == 0x87
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, InternalBootFlags) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN10_1607 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WfsFPData) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WfsFPDataSize) == 0x88c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.BugcheckParameters) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaExtensions) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BugcheckParameters) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ApiSetSchemaExtensions) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiBiosVersion) == 0x8b4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, SmbiosVersion) == 0x8bc, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, EfiVersion) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EfiVersion");
@@ -1611,10 +1618,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootFlags) == 0x8d
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, InternalBootFlags) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WfsFPData) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WfsFPDataSize) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.BugcheckParameters) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaExtensions) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BugcheckParameters) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ApiSetSchemaExtensions) == 0x930, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiBiosVersion) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, SmbiosVersion) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, EfiVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10_1607 EfiVersion");
@@ -1722,22 +1729,28 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding3;
 #endif
-    LOADER_EXTENSION_BLOCK5A Block5a;
+    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
+    void* ApiSetSchema;
+    uint32_t ApiSetSchemaSize;
+#ifdef __x86_64__
+    uint32_t padding4;
+#endif
+    LIST_ENTRY ApiSetSchemaExtensions;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
-    uint32_t padding4;
+    uint32_t padding5;
     UNICODE_STRING ManufacturingProfile;
     void* BbtBuffer;
 #ifndef __x86_64__
-    uint32_t padding5;
+    uint32_t padding6;
 #endif
     uint64_t XsaveAllowedFeatures;
     uint32_t XsaveFlags;
 #ifdef __x86_64__
-    uint32_t padding6;
+    uint32_t padding7;
 #endif
     void* BootOptions;
     uint32_t IumEnablement;
@@ -1749,7 +1762,7 @@ typedef struct {
     LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
     uint32_t SoftRestartCount;
 #ifdef __x86_64__
-    uint32_t padding7;
+    uint32_t padding8;
 #endif
     int64_t SoftRestartTime;
 #ifdef __x86_64__
@@ -1763,7 +1776,7 @@ typedef struct {
     char NtBuildLabEx[0xe0];
     LOADER_RESET_REASON ResetReason;
     uint32_t MaxPciBusNumber;
-    uint32_t padding8;
+    uint32_t padding9;
 } LOADER_PARAMETER_EXTENSION_WIN10_1703;
 
 #pragma pack(pop)
@@ -1806,10 +1819,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootFlags) == 0x89
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, InternalBootFlags) == 0x8a0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WfsFPData) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WfsFPDataSize) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.BugcheckParameters) == 0x8b0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchema) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaSize) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaExtensions) == 0x8cc, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BugcheckParameters) == 0x8b0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ApiSetSchema) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ApiSetSchemaSize) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ApiSetSchemaExtensions) == 0x8cc, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiBiosVersion) == 0x8d4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, SmbiosVersion) == 0x8dc, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, EfiVersion) == 0x8e4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EfiVersion");
@@ -1873,10 +1886,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootFlags) == 0x8f
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, InternalBootFlags) == 0x900, "LOADER_PARAMETER_EXTENSION_WIN10_1703 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WfsFPData) == 0x908, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WfsFPDataSize) == 0x910, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.BugcheckParameters) == 0x918, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchema) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaSize) == 0x948, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaExtensions) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BugcheckParameters) == 0x918, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ApiSetSchema) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ApiSetSchemaSize) == 0x948, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ApiSetSchemaExtensions) == 0x950, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiBiosVersion) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, SmbiosVersion) == 0x970, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, EfiVersion) == 0x980, "LOADER_PARAMETER_EXTENSION_WIN10_1703 EfiVersion");
@@ -2006,22 +2019,28 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding3;
 #endif
-    LOADER_EXTENSION_BLOCK5A Block5a;
+    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
+    void* ApiSetSchema;
+    uint32_t ApiSetSchemaSize;
+#ifdef __x86_64__
+    uint32_t padding4;
+#endif
+    LIST_ENTRY ApiSetSchemaExtensions;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
-    uint32_t padding4;
+    uint32_t padding5;
     UNICODE_STRING ManufacturingProfile;
     void* BbtBuffer;
 #ifndef __x86_64__
-    uint32_t padding5;
+    uint32_t padding6;
 #endif
     uint64_t XsaveAllowedFeatures;
     uint32_t XsaveFlags;
 #ifdef __x86_64__
-    uint32_t padding6;
+    uint32_t padding7;
 #endif
     void* BootOptions;
     uint32_t IumEnablement;
@@ -2033,7 +2052,7 @@ typedef struct {
     LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
     uint32_t SoftRestartCount;
 #ifdef __x86_64__
-    uint32_t padding7;
+    uint32_t padding8;
 #endif
     int64_t SoftRestartTime;
 #ifdef __x86_64__
@@ -2047,7 +2066,7 @@ typedef struct {
     char NtBuildLab[0xe0];
     char NtBuildLabEx[0xe0];
 #ifndef __x86_64__
-    uint32_t padding8;
+    uint32_t padding9;
 #endif
     LOADER_RESET_REASON ResetReason;
     uint32_t MaxPciBusNumber;
@@ -2096,10 +2115,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootFlags) == 0x9b
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, InternalBootFlags) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WfsFPData) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WfsFPDataSize) == 0x9c4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.BugcheckParameters) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchema) == 0x9dc, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaSize) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaExtensions) == 0x9e4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BugcheckParameters) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ApiSetSchema) == 0x9dc, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ApiSetSchemaSize) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ApiSetSchemaExtensions) == 0x9e4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiBiosVersion) == 0x9ec, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, SmbiosVersion) == 0x9f4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, EfiVersion) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EfiVersion");
@@ -2165,10 +2184,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootFlags) == 0xa1
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, InternalBootFlags) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN10_1809 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WfsFPData) == 0xa20, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WfsFPDataSize) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.BugcheckParameters) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchema) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaSize) == 0xa60, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaExtensions) == 0xa68, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BugcheckParameters) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ApiSetSchema) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ApiSetSchemaSize) == 0xa60, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ApiSetSchemaExtensions) == 0xa68, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiBiosVersion) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, SmbiosVersion) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, EfiVersion) == 0xa98, "LOADER_PARAMETER_EXTENSION_WIN10_1809 EfiVersion");
@@ -2276,7 +2295,10 @@ typedef struct {
     };
     void* WfsFPData;
     uint32_t WfsFPDataSize;
-    LOADER_EXTENSION_BLOCK5A Block5a;
+    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
+    void* ApiSetSchema;
+    uint32_t ApiSetSchemaSize;
+    LIST_ENTRY ApiSetSchemaExtensions;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
@@ -2373,10 +2395,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootFlags) == 0x9c
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, InternalBootFlags) == 0x9d0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WfsFPData) == 0x9d8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WfsFPDataSize) == 0x9dc, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.BugcheckParameters) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchema) == 0x9f4, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaSize) == 0x9f8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaExtensions) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BugcheckParameters) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ApiSetSchema) == 0x9f4, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ApiSetSchemaSize) == 0x9f8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ApiSetSchemaExtensions) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiBiosVersion) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, SmbiosVersion) == 0xa0c, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, EfiVersion) == 0xa14, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EfiVersion");
@@ -2445,10 +2467,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootFlags) == 0xa2
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, InternalBootFlags) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_1903 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WfsFPData) == 0xa38, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WfsFPDataSize) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.BugcheckParameters) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchema) == 0xa70, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaSize) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaExtensions) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BugcheckParameters) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ApiSetSchema) == 0xa70, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ApiSetSchemaSize) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ApiSetSchemaExtensions) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiBiosVersion) == 0xa90, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, SmbiosVersion) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, EfiVersion) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 EfiVersion");
@@ -2555,7 +2577,10 @@ typedef struct {
     };
     void* WfsFPData;
     uint32_t WfsFPDataSize;
-    LOADER_EXTENSION_BLOCK5A Block5a;
+    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
+    void* ApiSetSchema;
+    uint32_t ApiSetSchemaSize;
+    LIST_ENTRY ApiSetSchemaExtensions;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
@@ -2657,10 +2682,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootFlags) == 0x9d
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, InternalBootFlags) == 0x9d8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WfsFPData) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WfsFPDataSize) == 0x9e4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.BugcheckParameters) == 0x9e8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchema) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaSize) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaExtensions) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BugcheckParameters) == 0x9e8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ApiSetSchema) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ApiSetSchemaSize) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ApiSetSchemaExtensions) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiBiosVersion) == 0xa0c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SmbiosVersion) == 0xa14, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, EfiVersion) == 0xa1c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EfiVersion");
@@ -2734,10 +2759,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootFlags) == 0xa3
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, InternalBootFlags) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_2004 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WfsFPData) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WfsFPDataSize) == 0xa50, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.BugcheckParameters) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchema) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaSize) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaExtensions) == 0xa90, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BugcheckParameters) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ApiSetSchema) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ApiSetSchemaSize) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ApiSetSchemaExtensions) == 0xa90, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiBiosVersion) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SmbiosVersion) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, EfiVersion) == 0xac0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 EfiVersion");
@@ -2879,7 +2904,10 @@ typedef struct {
     };
     void* WfsFPData;
     uint32_t WfsFPDataSize;
-    LOADER_EXTENSION_BLOCK5A Block5a;
+    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
+    void* ApiSetSchema;
+    uint32_t ApiSetSchemaSize;
+    LIST_ENTRY ApiSetSchemaExtensions;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
@@ -2985,10 +3013,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootFlags) == 0x9d
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, InternalBootFlags) == 0x9d8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WfsFPData) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WfsFPDataSize) == 0x9e4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.BugcheckParameters) == 0x9e8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchema) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaSize) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaExtensions) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BugcheckParameters) == 0x9e8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ApiSetSchema) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ApiSetSchemaSize) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ApiSetSchemaExtensions) == 0xa04, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiBiosVersion) == 0xa0c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SmbiosVersion) == 0xa14, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, EfiVersion) == 0xa1c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EfiVersion");
@@ -3063,10 +3091,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootFlags) == 0xa3
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, InternalBootFlags) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 InternalBootFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WfsFPData) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WfsFPDataSize) == 0xa50, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.BugcheckParameters) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BugcheckParameters");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchema) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchema");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaSize) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaExtensions) == 0xa90, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BugcheckParameters) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ApiSetSchema) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ApiSetSchemaSize) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ApiSetSchemaExtensions) == 0xa90, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaExtensions");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiBiosVersion) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SmbiosVersion) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, EfiVersion) == 0xac0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 EfiVersion");
