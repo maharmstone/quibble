@@ -510,8 +510,8 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     InitializeListHead(&extblock.FirmwareDescriptorListHead);
     extblock.AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
 
-    if constexpr (requires { T::Block2b; }) {
-        InitializeListHead(&extblock.Block2b.BootApplicationPersistentData);
+    if constexpr (requires { T::BootApplicationPersistentData; }) {
+        InitializeListHead(&extblock.BootApplicationPersistentData);
     }
 
     if constexpr (requires { T::Block3; }) {
@@ -730,8 +730,8 @@ static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
 
     fix_list_mapping(&extblock.FirmwareDescriptorListHead, mappings);
 
-    if constexpr (requires { T::Block2b; })
-        fix_list_mapping(&extblock.Block2b.BootApplicationPersistentData, mappings);
+    if constexpr (requires { T::BootApplicationPersistentData; })
+        fix_list_mapping(&extblock.BootApplicationPersistentData, mappings);
 
     if (extblock3) {
         if (extblock3->BgContext)

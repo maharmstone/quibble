@@ -386,12 +386,6 @@ typedef struct {
 #pragma pack(push,1)
 
 typedef struct {
-    LIST_ENTRY BootApplicationPersistentData;
-    void* WmdTestResult;
-    GUID BootIdentifier;
-} LOADER_EXTENSION_BLOCK2B;
-
-typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
     uint32_t MajorVersion;
@@ -421,7 +415,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
 } LOADER_PARAMETER_EXTENSION_VISTA;
 
 #pragma pack(pop)
@@ -445,9 +441,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, FirmwareDescriptorListH
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, AcpiTable) == 0x50, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, AcpiTableSize) == 0x54, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, LoaderPerformanceData) == 0x5c, "LOADER_PARAMETER_EXTENSION_VISTA LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.BootApplicationPersistentData) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.WmdTestResult) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.BootIdentifier) == 0x6c, "LOADER_PARAMETER_EXTENSION_VISTA BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, BootApplicationPersistentData) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, WmdTestResult) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, BootIdentifier) == 0x6c, "LOADER_PARAMETER_EXTENSION_VISTA BootIdentifier");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_VISTA) == 0xb8, "LOADER_PARAMETER_EXTENSION_VISTA has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_VISTA Size");
@@ -467,9 +463,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, FirmwareDescriptorListH
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, LoaderPerformanceData) == 0x88, "LOADER_PARAMETER_EXTENSION_VISTA LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.BootApplicationPersistentData) == 0x90, "LOADER_PARAMETER_EXTENSION_VISTA BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.WmdTestResult) == 0xa0, "LOADER_PARAMETER_EXTENSION_VISTA WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.BootIdentifier) == 0xa8, "LOADER_PARAMETER_EXTENSION_VISTA BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, BootApplicationPersistentData) == 0x90, "LOADER_PARAMETER_EXTENSION_VISTA BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, WmdTestResult) == 0xa0, "LOADER_PARAMETER_EXTENSION_VISTA WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, BootIdentifier) == 0xa8, "LOADER_PARAMETER_EXTENSION_VISTA BootIdentifier");
 #endif
 
 #pragma pack(push,1)
@@ -504,7 +500,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
 } LOADER_PARAMETER_EXTENSION_VISTA_SP2;
@@ -530,9 +528,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, FirmwareDescriptorL
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, AcpiTable) == 0x50, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, AcpiTableSize) == 0x54, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, LoaderPerformanceData) == 0x5c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.BootApplicationPersistentData) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.WmdTestResult) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.BootIdentifier) == 0x6c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, BootApplicationPersistentData) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, WmdTestResult) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, BootIdentifier) == 0x6c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, ResumePages) == 0x7c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, DumpHeader) == 0x80, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 DumpHeader");
 #elif defined(__x86_64__)
@@ -554,9 +552,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, FirmwareDescriptorL
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, LoaderPerformanceData) == 0x88, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.BootApplicationPersistentData) == 0x90, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.WmdTestResult) == 0xa0, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.BootIdentifier) == 0xa8, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, BootApplicationPersistentData) == 0x90, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, WmdTestResult) == 0xa0, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, BootIdentifier) == 0xa8, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, ResumePages) == 0xb8, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, DumpHeader) == 0xc0, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 DumpHeader");
 #endif
@@ -619,7 +617,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -645,9 +645,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, FirmwareDescriptorListHe
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, AcpiTable) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, AcpiTableSize) == 0x4c, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, LoaderPerformanceData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN7 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.BootApplicationPersistentData) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN7 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.WmdTestResult) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN7 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.BootIdentifier) == 0x64, "LOADER_PARAMETER_EXTENSION_WIN7 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, BootApplicationPersistentData) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN7 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, WmdTestResult) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN7 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, BootIdentifier) == 0x64, "LOADER_PARAMETER_EXTENSION_WIN7 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, ResumePages) == 0x74, "LOADER_PARAMETER_EXTENSION_WIN7 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, DumpHeader) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN7 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block3.BgContext) == 0x7c, "LOADER_PARAMETER_EXTENSION_WIN7 BgContext");
@@ -675,9 +675,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, FirmwareDescriptorListHe
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, AcpiTable) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, AcpiTableSize) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, LoaderPerformanceData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN7 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.BootApplicationPersistentData) == 0x88, "LOADER_PARAMETER_EXTENSION_WIN7 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.WmdTestResult) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN7 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.BootIdentifier) == 0xa0, "LOADER_PARAMETER_EXTENSION_WIN7 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, BootApplicationPersistentData) == 0x88, "LOADER_PARAMETER_EXTENSION_WIN7 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, WmdTestResult) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN7 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, BootIdentifier) == 0xa0, "LOADER_PARAMETER_EXTENSION_WIN7 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, ResumePages) == 0xb0, "LOADER_PARAMETER_EXTENSION_WIN7 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, DumpHeader) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN7 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block3.BgContext) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN7 BgContext");
@@ -795,7 +795,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -834,9 +836,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, FirmwareDescriptorListHe
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN8 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN8 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN8 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN8 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN8 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN8 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN8 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, ResumePages) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN8 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, DumpHeader) == 0x74, "LOADER_PARAMETER_EXTENSION_WIN8 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block3.BgContext) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN8 BgContext");
@@ -875,9 +877,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, FirmwareDescriptorListHe
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN8 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN8 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN8 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN8 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN8 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN8 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN8 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, ResumePages) == 0xa8, "LOADER_PARAMETER_EXTENSION_WIN8 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, DumpHeader) == 0xb0, "LOADER_PARAMETER_EXTENSION_WIN8 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block3.BgContext) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN8 BgContext");
@@ -1042,7 +1044,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -1081,9 +1085,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, FirmwareDescriptorListH
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN81 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN81 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN81 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN81 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN81 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN81 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN81 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ResumePages) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN81 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, DumpHeader) == 0x74, "LOADER_PARAMETER_EXTENSION_WIN81 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block3.BgContext) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN81 BgContext");
@@ -1128,9 +1132,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, FirmwareDescriptorListH
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN81 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN81 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN81 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN81 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN81 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN81 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN81 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ResumePages) == 0xa8, "LOADER_PARAMETER_EXTENSION_WIN81 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, DumpHeader) == 0xb0, "LOADER_PARAMETER_EXTENSION_WIN81 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block3.BgContext) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN81 BgContext");
@@ -1205,7 +1209,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -1261,9 +1267,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, FirmwareDescriptorListH
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN10 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN10 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN10 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN10 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ResumePages) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, DumpHeader) == 0x74, "LOADER_PARAMETER_EXTENSION_WIN10 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block3.BgContext) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10 BgContext");
@@ -1317,9 +1323,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, FirmwareDescriptorListH
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN10 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN10 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ResumePages) == 0xa8, "LOADER_PARAMETER_EXTENSION_WIN10 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, DumpHeader) == 0xb0, "LOADER_PARAMETER_EXTENSION_WIN10 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block3.BgContext) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10 BgContext");
@@ -1388,7 +1394,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -1456,9 +1464,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1607 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ResumePages) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, DumpHeader) == 0x74, "LOADER_PARAMETER_EXTENSION_WIN10_1607 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block3.BgContext) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BgContext");
@@ -1519,9 +1527,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1607 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ResumePages) == 0xa8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, DumpHeader) == 0xb0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block3.BgContext) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BgContext");
@@ -1617,7 +1625,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA* LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -1690,9 +1700,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1703 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootIdentifier) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ResumePages) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, DumpHeader) == 0x74, "LOADER_PARAMETER_EXTENSION_WIN10_1703 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block3.BgContext) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BgContext");
@@ -1757,9 +1767,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1703 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootIdentifier) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ResumePages) == 0xa8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, DumpHeader) == 0xb0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block3.BgContext) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BgContext");
@@ -1880,7 +1890,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA_1809 LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -1956,9 +1968,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1809 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.BootApplicationPersistentData) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.WmdTestResult) == 0xa0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.BootIdentifier) == 0xa4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootApplicationPersistentData) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WmdTestResult) == 0xa0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootIdentifier) == 0xa4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ResumePages) == 0xb4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, DumpHeader) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block3.BgContext) == 0xbc, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BgContext");
@@ -2025,9 +2037,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1809 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.BootApplicationPersistentData) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.WmdTestResult) == 0xd0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.BootIdentifier) == 0xd8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootApplicationPersistentData) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WmdTestResult) == 0xd0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootIdentifier) == 0xd8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ResumePages) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, DumpHeader) == 0xf0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block3.BgContext) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BgContext");
@@ -2129,7 +2141,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA_1903 LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -2212,9 +2226,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1903 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.BootApplicationPersistentData) == 0xb0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.WmdTestResult) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.BootIdentifier) == 0xbc, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootApplicationPersistentData) == 0xb0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WmdTestResult) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootIdentifier) == 0xbc, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ResumePages) == 0xcc, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, DumpHeader) == 0xd0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block3.BgContext) == 0xd4, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BgContext");
@@ -2284,9 +2298,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1903 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.BootApplicationPersistentData) == 0xd8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.WmdTestResult) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.BootIdentifier) == 0xf0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootApplicationPersistentData) == 0xd8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WmdTestResult) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootIdentifier) == 0xf0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ResumePages) == 0x100, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, DumpHeader) == 0x108, "LOADER_PARAMETER_EXTENSION_WIN10_1903 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block3.BgContext) == 0x110, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BgContext");
@@ -2387,7 +2401,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA_1903 LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -2475,9 +2491,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiTable) == 0x4c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiTableSize) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, LoaderPerformanceData) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_2004 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.BootApplicationPersistentData) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.WmdTestResult) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.BootIdentifier) == 0xc4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootApplicationPersistentData) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WmdTestResult) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootIdentifier) == 0xc4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ResumePages) == 0xd4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DumpHeader) == 0xd8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block3.BgContext) == 0xdc, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BgContext");
@@ -2552,9 +2568,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, LoaderPerformanceData) == 0x88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.BootApplicationPersistentData) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.WmdTestResult) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.BootIdentifier) == 0x100, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootApplicationPersistentData) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WmdTestResult) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootIdentifier) == 0x100, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ResumePages) == 0x110, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DumpHeader) == 0x118, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block3.BgContext) == 0x120, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BgContext");
@@ -2690,7 +2706,9 @@ typedef struct {
         uint32_t Reserved:30;
     };
     LOADER_PERFORMANCE_DATA_1903 LoaderPerformanceData;
-    LOADER_EXTENSION_BLOCK2B Block2b;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
     uintptr_t ResumePages;
     void* DumpHeader;
     LOADER_EXTENSION_BLOCK3 Block3;
@@ -2782,9 +2800,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiTable) == 0x4c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiTableSize) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, LoaderPerformanceData) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.BootApplicationPersistentData) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.WmdTestResult) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.BootIdentifier) == 0xc4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootApplicationPersistentData) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WmdTestResult) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootIdentifier) == 0xc4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ResumePages) == 0xd4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DumpHeader) == 0xd8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block3.BgContext) == 0xdc, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BgContext");
@@ -2860,9 +2878,9 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FirmwareDescriptor
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTable");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, LoaderPerformanceData) == 0x88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 LoaderPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.BootApplicationPersistentData) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootApplicationPersistentData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.WmdTestResult) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WmdTestResult");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.BootIdentifier) == 0x100, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootApplicationPersistentData) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WmdTestResult) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootIdentifier) == 0x100, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootIdentifier");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ResumePages) == 0x110, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ResumePages");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DumpHeader) == 0x118, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DumpHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block3.BgContext) == 0x120, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BgContext");
