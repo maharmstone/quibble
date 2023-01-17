@@ -722,19 +722,15 @@ static void fix_extension_block_mapping(loader_store* store, T& extblock, LIST_E
     else
         extblock5a = NULL;
 
-    if (version == _WIN32_WINNT_VISTA) {
-        store->extension_vista.LoaderPerformanceData =
-            (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_vista.LoaderPerformanceData, mappings);
-    } else if (version == _WIN32_WINNT_WIN7) {
-        store->extension_win7.LoaderPerformanceData =
-            (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win7.LoaderPerformanceData, mappings);
-    } else if (version == _WIN32_WINNT_WIN8) {
-        store->extension_win8.LoaderPerformanceData =
-            (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win8.LoaderPerformanceData, mappings);
-    } else if (version == _WIN32_WINNT_WINBLUE) {
-        store->extension_win81.LoaderPerformanceData =
-            (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win81.LoaderPerformanceData, mappings);
+    if constexpr (requires { T::LoaderPerformanceData; }) {
+        // FIXME - LOADER_PERFORMANCE_DATA_1809 and LOADER_PERFORMANCE_DATA_1903?
+        if constexpr (std::is_same_v<decltype(T::LoaderPerformanceData), LOADER_PERFORMANCE_DATA*>) {
+            extblock.LoaderPerformanceData =
+                (LOADER_PERFORMANCE_DATA*)find_virtual_address(extblock.LoaderPerformanceData, mappings);
+        }
+    }
 
+    if (version == _WIN32_WINNT_WINBLUE) {
         if (store->extension_win81.KdDebugDevice)
             store->extension_win81.KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(store->extension_win81.KdDebugDevice, mappings);
     } else if (version == _WIN32_WINNT_WIN10) {
@@ -750,19 +746,10 @@ static void fix_extension_block_mapping(loader_store* store, T& extblock, LIST_E
             ddd = &store->extension_win10_1809.KdDebugDevice;
         } else if (build >= WIN10_BUILD_1703) {
             ddd = &store->extension_win10_1703.KdDebugDevice;
-
-            store->extension_win10_1703.LoaderPerformanceData =
-                (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10_1703.LoaderPerformanceData, mappings);
         } else if (build >= WIN10_BUILD_1607) {
             ddd = &store->extension_win10_1607.KdDebugDevice;
-
-            store->extension_win10_1607.LoaderPerformanceData =
-                (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10_1607.LoaderPerformanceData, mappings);
         } else {
             ddd = &store->extension_win10.KdDebugDevice;
-
-            store->extension_win10.LoaderPerformanceData =
-                (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10.LoaderPerformanceData, mappings);
         }
 
         if (*ddd)
