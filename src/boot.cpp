@@ -694,53 +694,47 @@ static void fix_loader_block_mapping(loader_store* store, void* va, T& loader_bl
         loader_block.LoadOptions = (char*)find_virtual_address(loader_block.LoadOptions, mappings);
 }
 
-static void fix_extension_block_mapping(loader_store* store, LIST_ENTRY* mappings, uint16_t version, uint16_t build) {
+template<typename T>
+static void fix_extension_block_mapping(loader_store* store, T& extblock, LIST_ENTRY* mappings,
+                                        uint16_t version, uint16_t build) {
     LOADER_EXTENSION_BLOCK1C* extblock1c;
     LOADER_EXTENSION_BLOCK2B* extblock2b;
     LOADER_EXTENSION_BLOCK3* extblock3;
     LOADER_EXTENSION_BLOCK4* extblock4;
     LOADER_EXTENSION_BLOCK5A* extblock5a;
 
-    if (version <= _WIN32_WINNT_WS03) {
-        extblock1c = &store->extension_ws03.Block1c;
+    extblock1c = &extblock.Block1c;
+
+    if constexpr (requires { T::Block2b; })
+        extblock2b = &extblock.Block2b;
+    else
         extblock2b = NULL;
+
+    if constexpr (requires { T::Block3; })
+        extblock3 = &extblock.Block3;
+    else
         extblock3 = NULL;
+
+    if constexpr (requires { T::Block4; })
+        extblock4 = &extblock.Block4;
+    else
         extblock4 = NULL;
-        extblock5a = NULL;
-    } else if (version == _WIN32_WINNT_VISTA) {
-        extblock1c = &store->extension_vista.Block1c;
-        extblock2b = &store->extension_vista.Block2b;
-        extblock3 = NULL;
-        extblock4 = NULL;
+
+    if constexpr (requires { T::Block5a; })
+        extblock5a = &extblock.Block5a;
+    else
         extblock5a = NULL;
 
+    if (version == _WIN32_WINNT_VISTA) {
         store->extension_vista.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_vista.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WIN7) {
-        extblock1c = &store->extension_win7.Block1c;
-        extblock2b = &store->extension_win7.Block2b;
-        extblock3 = &store->extension_win7.Block3;
-        extblock4 = NULL;
-        extblock5a = NULL;
-
         store->extension_win7.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win7.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WIN8) {
-        extblock1c = &store->extension_win8.Block1c;
-        extblock2b = &store->extension_win8.Block2b;
-        extblock3 = &store->extension_win8.Block3;
-        extblock4 = &store->extension_win8.Block4;
-        extblock5a = NULL;
-
         store->extension_win8.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win8.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WINBLUE) {
-        extblock1c = &store->extension_win81.Block1c;
-        extblock2b = &store->extension_win81.Block2b;
-        extblock3 = &store->extension_win81.Block3;
-        extblock4 = &store->extension_win81.Block4;
-        extblock5a = &store->extension_win81.Block5a;
-
         store->extension_win81.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win81.LoaderPerformanceData, mappings);
 
@@ -750,59 +744,24 @@ static void fix_extension_block_mapping(loader_store* store, LIST_ENTRY* mapping
         DEBUG_DEVICE_DESCRIPTOR** ddd;
 
         if (build >= WIN10_BUILD_21H1) {
-            extblock1c = &store->extension_win10_21H1.Block1c;
-            extblock2b = &store->extension_win10_21H1.Block2b;
-            extblock3 = &store->extension_win10_21H1.Block3;
-            extblock4 = &store->extension_win10_21H1.Block4;
-            extblock5a = &store->extension_win10_21H1.Block5a;
             ddd = &store->extension_win10_21H1.KdDebugDevice;
         } else if (build >= WIN10_BUILD_2004) {
-            extblock1c = &store->extension_win10_2004.Block1c;
-            extblock2b = &store->extension_win10_2004.Block2b;
-            extblock3 = &store->extension_win10_2004.Block3;
-            extblock4 = &store->extension_win10_2004.Block4;
-            extblock5a = &store->extension_win10_2004.Block5a;
             ddd = &store->extension_win10_2004.KdDebugDevice;
         } else if (build >= WIN10_BUILD_1903) {
-            extblock1c = &store->extension_win10_1903.Block1c;
-            extblock2b = &store->extension_win10_1903.Block2b;
-            extblock3 = &store->extension_win10_1903.Block3;
-            extblock4 = &store->extension_win10_1903.Block4;
-            extblock5a = &store->extension_win10_1903.Block5a;
             ddd = &store->extension_win10_1903.KdDebugDevice;
         } else if (build == WIN10_BUILD_1809) {
-            extblock1c = &store->extension_win10_1809.Block1c;
-            extblock2b = &store->extension_win10_1809.Block2b;
-            extblock3 = &store->extension_win10_1809.Block3;
-            extblock4 = &store->extension_win10_1809.Block4;
-            extblock5a = &store->extension_win10_1809.Block5a;
             ddd = &store->extension_win10_1809.KdDebugDevice;
         } else if (build >= WIN10_BUILD_1703) {
-            extblock1c = &store->extension_win10_1703.Block1c;
-            extblock2b = &store->extension_win10_1703.Block2b;
-            extblock3 = &store->extension_win10_1703.Block3;
-            extblock4 = &store->extension_win10_1703.Block4;
-            extblock5a = &store->extension_win10_1703.Block5a;
             ddd = &store->extension_win10_1703.KdDebugDevice;
 
             store->extension_win10_1703.LoaderPerformanceData =
                 (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10_1703.LoaderPerformanceData, mappings);
         } else if (build >= WIN10_BUILD_1607) {
-            extblock1c = &store->extension_win10_1607.Block1c;
-            extblock2b = &store->extension_win10_1607.Block2b;
-            extblock3 = &store->extension_win10_1607.Block3;
-            extblock4 = &store->extension_win10_1607.Block4;
-            extblock5a = &store->extension_win10_1607.Block5a;
             ddd = &store->extension_win10_1607.KdDebugDevice;
 
             store->extension_win10_1607.LoaderPerformanceData =
                 (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win10_1607.LoaderPerformanceData, mappings);
         } else {
-            extblock1c = &store->extension_win10.Block1c;
-            extblock2b = &store->extension_win10.Block2b;
-            extblock3 = &store->extension_win10.Block3;
-            extblock4 = &store->extension_win10.Block4;
-            extblock5a = &store->extension_win10.Block5a;
             ddd = &store->extension_win10.KdDebugDevice;
 
             store->extension_win10.LoaderPerformanceData =
@@ -4391,7 +4350,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         fix_loader_block_mapping(store, store_va, *b, &mappings, version, build);
     }, loader_block);
 
-    fix_extension_block_mapping(store, &mappings, version, build);
+    std::visit([&](auto&& e) {
+        fix_extension_block_mapping(store, *e, &mappings, version, build);
+    }, extension_block);
 
     for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
         if (store->debug_device_descriptor.BaseAddress[i].Valid && store->debug_device_descriptor.BaseAddress[i].Type == CmResourceTypeMemory) {
