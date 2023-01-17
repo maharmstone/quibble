@@ -843,16 +843,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
 
     if (extblock5a)
         fix_list_mapping(&extblock5a->ApiSetSchemaExtensions, mappings);
-
-    for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
-        if (store->debug_device_descriptor.BaseAddress[i].Valid && store->debug_device_descriptor.BaseAddress[i].Type == CmResourceTypeMemory) {
-            store->debug_device_descriptor.BaseAddress[i].TranslatedAddress =
-                (uint8_t*)find_virtual_address(store->debug_device_descriptor.BaseAddress[i].TranslatedAddress, mappings);
-        }
-    }
-
-    if (store->debug_device_descriptor.Memory.VirtualAddress)
-        store->debug_device_descriptor.Memory.VirtualAddress = find_virtual_address(store->debug_device_descriptor.Memory.VirtualAddress, mappings);
 }
 
 static void set_gdt_entry(gdt_entry* gdt, uint16_t selector, uint32_t base, uint32_t limit, uint8_t type,
@@ -4411,7 +4401,19 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     std::visit([&](auto&& b) {
         fix_store_mapping(store, store_va, *b, &mappings, version, build);
+    }, loader_block);
 
+    for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
+        if (store->debug_device_descriptor.BaseAddress[i].Valid && store->debug_device_descriptor.BaseAddress[i].Type == CmResourceTypeMemory) {
+            store->debug_device_descriptor.BaseAddress[i].TranslatedAddress =
+            (uint8_t*)find_virtual_address(store->debug_device_descriptor.BaseAddress[i].TranslatedAddress, &mappings);
+        }
+    }
+
+    if (store->debug_device_descriptor.Memory.VirtualAddress)
+        store->debug_device_descriptor.Memory.VirtualAddress = find_virtual_address(store->debug_device_descriptor.Memory.VirtualAddress, &mappings);
+
+    std::visit([&](auto&& b) {
         Status = enable_paging(image_handle, bs, &mappings, *b, va, loader_pages_spanned);
     }, loader_block);
 
