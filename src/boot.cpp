@@ -436,15 +436,8 @@ static std::optional<extension_block_variant> find_extension_block(loader_store*
 }
 
 template<typename T>
-static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, uint16_t version, uint16_t build, uint16_t revision,
-                                             uintptr_t** ploader_pages_spanned) {
-    uintptr_t* loader_pages_spanned;
-
-    if constexpr (requires { T::LoaderPagesSpanned; })
-        loader_pages_spanned = &extblock.LoaderPagesSpanned;
-    else
-        loader_pages_spanned = NULL;
-
+static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, uint16_t version, uint16_t build,
+                                             uint16_t revision) {
     if (version == _WIN32_WINNT_WINBLUE && revision < 18438)
         extblock.Size = offsetof(LOADER_PARAMETER_EXTENSION_WIN81, padding4);
     else if (version == _WIN32_WINNT_WIN10 && build >= WIN10_BUILD_1703 && build < WIN10_BUILD_1803)
@@ -537,8 +530,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         extblock.Block5a.ApiSetSchemaSize = apisetsize;
         InitializeListHead(&extblock.Block5a.ApiSetSchemaExtensions);
     }
-
-    *ploader_pages_spanned = loader_pages_spanned;
 
     return EFI_SUCCESS;
 }
@@ -3974,7 +3965,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     std::visit([&](auto&& e) {
-        Status = initialize_extension_block(store, *e, version, build, revision, &loader_pages_spanned);
+        Status = initialize_extension_block(store, *e, version, build, revision);
     }, extension_block);
 
     if (EFI_ERROR(Status)) {
@@ -3982,6 +3973,11 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         bs->FreePages((uintptr_t)store, PAGE_COUNT(sizeof(loader_store)));
         goto end;
     }
+
+    std::visit([&](auto&& e) {
+        if constexpr (requires { e->LoaderPagesSpanned; })
+            loader_pages_spanned = &e->LoaderPagesSpanned;
+    }, extension_block);
 
     {
         LIST_ENTRY* le = images.Flink;
