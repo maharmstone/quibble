@@ -514,9 +514,9 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
 
     if (version == _WIN32_WINNT_WIN10) {
         if (build >= WIN10_BUILD_21H1) {
-            store->extension_win10_21H1.Block7.MajorRelease = NTDDI_WIN10_20H1;
+            store->extension_win10_21H1.MajorRelease = NTDDI_WIN10_20H1;
         } else if (build >= WIN10_BUILD_2004) {
-            store->extension_win10_2004.Block7.MajorRelease = NTDDI_WIN10_20H1;
+            store->extension_win10_2004.MajorRelease = NTDDI_WIN10_20H1;
         } else if (build >= WIN10_BUILD_1903) {
             // contrary to what you might expect, both 1903 and 1909 use the same value here
             store->extension_win10_1903.MajorRelease = NTDDI_WIN10_19H1;

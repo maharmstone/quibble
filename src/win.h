@@ -2282,49 +2282,6 @@ typedef struct {
 } NUMA_MEMORY_RANGE;
 
 typedef struct {
-    uint32_t IumEnablement;
-    uint32_t IumPolicy;
-    uint32_t IumStatus;
-    uint32_t BootId;
-    LOADER_PARAMETER_CI_EXTENSION* CodeIntegrityData;
-    uint32_t CodeIntegrityDataSize;
-    LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
-    uint32_t SoftRestartCount;
-#ifdef __x86_64__
-    uint32_t padding3;
-#endif
-    int64_t SoftRestartTime;
-#ifdef __x86_64__
-    void* HypercallCodeVa;
-    void* HalVirtualAddress;
-    uint64_t HalNumberOfBytes;
-#endif
-    LEAP_SECOND_DATA* LeapSecondData;
-    uint32_t MajorRelease;
-    uint32_t Reserved1;
-    char NtBuildLab[0xe0];
-    char NtBuildLabEx[0xe0];
-#ifndef __x86_64__
-    uint32_t padding4;
-#endif
-    LOADER_RESET_REASON ResetReason;
-    uint32_t MaxPciBusNumber;
-    uint32_t FeatureSettings;
-    uint32_t HotPatchReserveSize;
-    uint32_t RetpolineReserveSize;
-#ifdef __x86_64__
-    struct {
-        void* CodeBase;
-        uint32_t CodeSize;
-    } MiniExecutive;
-#endif
-    VSM_PERFORMANCE_DATA VsmPerformanceData;
-    NUMA_MEMORY_RANGE* NumaMemoryRanges;
-    uint32_t NumaMemoryRangeCount;
-    uint32_t IommuFaultPolicy;
-} LOADER_EXTENSION_BLOCK7;
-
-typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
 #ifdef __x86_64__
@@ -2373,7 +2330,46 @@ typedef struct {
     uint32_t padding5;
 #endif
     void* BootOptions;
-    LOADER_EXTENSION_BLOCK7 Block7;
+    uint32_t IumEnablement;
+    uint32_t IumPolicy;
+    uint32_t IumStatus;
+    uint32_t BootId;
+    LOADER_PARAMETER_CI_EXTENSION* CodeIntegrityData;
+    uint32_t CodeIntegrityDataSize;
+    LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
+    uint32_t SoftRestartCount;
+#ifdef __x86_64__
+    uint32_t padding6;
+#endif
+    int64_t SoftRestartTime;
+#ifdef __x86_64__
+    void* HypercallCodeVa;
+    void* HalVirtualAddress;
+    uint64_t HalNumberOfBytes;
+#endif
+    LEAP_SECOND_DATA* LeapSecondData;
+    uint32_t MajorRelease;
+    uint32_t Reserved1;
+    char NtBuildLab[0xe0];
+    char NtBuildLabEx[0xe0];
+#ifndef __x86_64__
+    uint32_t padding7;
+#endif
+    LOADER_RESET_REASON ResetReason;
+    uint32_t MaxPciBusNumber;
+    uint32_t FeatureSettings;
+    uint32_t HotPatchReserveSize;
+    uint32_t RetpolineReserveSize;
+#ifdef __x86_64__
+    struct {
+        void* CodeBase;
+        uint32_t CodeSize;
+    } MiniExecutive;
+#endif
+    VSM_PERFORMANCE_DATA VsmPerformanceData;
+    NUMA_MEMORY_RANGE* NumaMemoryRanges;
+    uint32_t NumaMemoryRangeCount;
+    uint32_t IommuFaultPolicy;
 } LOADER_PARAMETER_EXTENSION_WIN10_2004;
 
 #ifdef _X86_
@@ -2432,29 +2428,29 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BbtBuffer) == 0xa5
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, XsaveAllowedFeatures) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_2004 XsaveAllowedFeatures");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, XsaveFlags) == 0xa60, "LOADER_PARAMETER_EXTENSION_WIN10_2004 XsaveFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootOptions) == 0xa64, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootOptions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.IumEnablement) == 0xa68, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumEnablement");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.IumPolicy) == 0xa6c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumPolicy");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.IumStatus) == 0xa70, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumStatus");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.BootId) == 0xa74, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.CodeIntegrityData) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_2004 CodeIntegrityData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.CodeIntegrityDataSize) == 0xa7c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 CodeIntegrityDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.SystemHiveRecoveryInfo) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SystemHiveRecoveryInfo");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.SoftRestartCount) == 0xa94, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SoftRestartCount");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.SoftRestartTime) == 0xa98, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SoftRestartTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.LeapSecondData) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 LeapSecondData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.MajorRelease) == 0xaa4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MajorRelease");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.Reserved1) == 0xaa8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 Reserved1");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.NtBuildLab) == 0xaac, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NtBuildLab");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.NtBuildLabEx) == 0xb8c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NtBuildLabEx");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.ResetReason) == 0xc70, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ResetReason");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.MaxPciBusNumber) == 0xca0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MaxPciBusNumber");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.FeatureSettings) == 0xca4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 FeatureSettings");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.HotPatchReserveSize) == 0xca8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HotPatchReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.RetpolineReserveSize) == 0xcac, "LOADER_PARAMETER_EXTENSION_WIN10_2004 RetpolineReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.VsmPerformanceData) == 0xcb0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 VsmPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.NumaMemoryRanges) == 0xcf0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NumaMemoryRanges");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.NumaMemoryRangeCount) == 0xcf4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NumaMemoryRangeCount");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.IommuFaultPolicy) == 0xcf8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IommuFaultPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, IumEnablement) == 0xa68, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumEnablement");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, IumPolicy) == 0xa6c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, IumStatus) == 0xa70, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumStatus");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootId) == 0xa74, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, CodeIntegrityData) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_2004 CodeIntegrityData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, CodeIntegrityDataSize) == 0xa7c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 CodeIntegrityDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SystemHiveRecoveryInfo) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SystemHiveRecoveryInfo");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SoftRestartCount) == 0xa94, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SoftRestartCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SoftRestartTime) == 0xa98, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SoftRestartTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, LeapSecondData) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 LeapSecondData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, MajorRelease) == 0xaa4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MajorRelease");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Reserved1) == 0xaa8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 Reserved1");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NtBuildLab) == 0xaac, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NtBuildLab");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NtBuildLabEx) == 0xb8c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NtBuildLabEx");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ResetReason) == 0xc70, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ResetReason");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, MaxPciBusNumber) == 0xca0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MaxPciBusNumber");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, FeatureSettings) == 0xca4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 FeatureSettings");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HotPatchReserveSize) == 0xca8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HotPatchReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, RetpolineReserveSize) == 0xcac, "LOADER_PARAMETER_EXTENSION_WIN10_2004 RetpolineReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, VsmPerformanceData) == 0xcb0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 VsmPerformanceData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NumaMemoryRanges) == 0xcf0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NumaMemoryRanges");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NumaMemoryRangeCount) == 0xcf4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NumaMemoryRangeCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, IommuFaultPolicy) == 0xcf8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IommuFaultPolicy");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_2004) == 0xdf0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 Size");
@@ -2509,33 +2505,33 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BbtBuffer) == 0xb0
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, XsaveAllowedFeatures) == 0xb10, "LOADER_PARAMETER_EXTENSION_WIN10_2004 XsaveAllowedFeatures");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, XsaveFlags) == 0xb18, "LOADER_PARAMETER_EXTENSION_WIN10_2004 XsaveFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootOptions) == 0xb20, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootOptions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.IumEnablement) == 0xb28, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumEnablement");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.IumPolicy) == 0xb2c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumPolicy");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.IumStatus) == 0xb30, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumStatus");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.BootId) == 0xb34, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.CodeIntegrityData) == 0xb38, "LOADER_PARAMETER_EXTENSION_WIN10_2004 CodeIntegrityData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.CodeIntegrityDataSize) == 0xb40, "LOADER_PARAMETER_EXTENSION_WIN10_2004 CodeIntegrityDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.SystemHiveRecoveryInfo) == 0xb44, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SystemHiveRecoveryInfo");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.SoftRestartCount) == 0xb58, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SoftRestartCount");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.SoftRestartTime) == 0xb60, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SoftRestartTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.HypercallCodeVa) == 0xb68, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HypercallCodeVa");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.HalVirtualAddress) == 0xb70, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalVirtualAddress");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.HalNumberOfBytes) == 0xb78, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalNumberOfBytes");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.LeapSecondData) == 0xb80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 LeapSecondData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.MajorRelease) == 0xb88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MajorRelease");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.Reserved1) == 0xb8c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 Reserved1");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.NtBuildLab) == 0xb90, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NtBuildLab");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.NtBuildLabEx) == 0xc70, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NtBuildLabEx");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.ResetReason) == 0xd50, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ResetReason");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.MaxPciBusNumber) == 0xd80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MaxPciBusNumber");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.FeatureSettings) == 0xd84, "LOADER_PARAMETER_EXTENSION_WIN10_2004 FeatureSettings");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.HotPatchReserveSize) == 0xd88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HotPatchReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.RetpolineReserveSize) == 0xd8c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 RetpolineReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.MiniExecutive) == 0xd90, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MiniExecutive");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.VsmPerformanceData) == 0xda0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 VsmPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.NumaMemoryRanges) == 0xde0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NumaMemoryRanges");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.NumaMemoryRangeCount) == 0xde8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NumaMemoryRangeCount");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block7.IommuFaultPolicy) == 0xdec, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IommuFaultPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, IumEnablement) == 0xb28, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumEnablement");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, IumPolicy) == 0xb2c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, IumStatus) == 0xb30, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IumStatus");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootId) == 0xb34, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, CodeIntegrityData) == 0xb38, "LOADER_PARAMETER_EXTENSION_WIN10_2004 CodeIntegrityData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, CodeIntegrityDataSize) == 0xb40, "LOADER_PARAMETER_EXTENSION_WIN10_2004 CodeIntegrityDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SystemHiveRecoveryInfo) == 0xb44, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SystemHiveRecoveryInfo");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SoftRestartCount) == 0xb58, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SoftRestartCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SoftRestartTime) == 0xb60, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SoftRestartTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HypercallCodeVa) == 0xb68, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HypercallCodeVa");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HalVirtualAddress) == 0xb70, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalVirtualAddress");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HalNumberOfBytes) == 0xb78, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalNumberOfBytes");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, LeapSecondData) == 0xb80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 LeapSecondData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, MajorRelease) == 0xb88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MajorRelease");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Reserved1) == 0xb8c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 Reserved1");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NtBuildLab) == 0xb90, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NtBuildLab");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NtBuildLabEx) == 0xc70, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NtBuildLabEx");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ResetReason) == 0xd50, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ResetReason");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, MaxPciBusNumber) == 0xd80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MaxPciBusNumber");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, FeatureSettings) == 0xd84, "LOADER_PARAMETER_EXTENSION_WIN10_2004 FeatureSettings");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HotPatchReserveSize) == 0xd88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HotPatchReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, RetpolineReserveSize) == 0xd8c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 RetpolineReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, MiniExecutive) == 0xd90, "LOADER_PARAMETER_EXTENSION_WIN10_2004 MiniExecutive");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, VsmPerformanceData) == 0xda0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 VsmPerformanceData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NumaMemoryRanges) == 0xde0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NumaMemoryRanges");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NumaMemoryRangeCount) == 0xde8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NumaMemoryRangeCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, IommuFaultPolicy) == 0xdec, "LOADER_PARAMETER_EXTENSION_WIN10_2004 IommuFaultPolicy");
 #endif
 
 typedef struct {
@@ -2628,7 +2624,49 @@ typedef struct {
     uint32_t padding5;
 #endif
     void* BootOptions;
-    LOADER_EXTENSION_BLOCK7 Block7;
+    uint32_t IumEnablement;
+    uint32_t IumPolicy;
+    uint32_t IumStatus;
+    uint32_t BootId;
+    LOADER_PARAMETER_CI_EXTENSION* CodeIntegrityData;
+    uint32_t CodeIntegrityDataSize;
+    LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
+    uint32_t SoftRestartCount;
+#ifdef __x86_64__
+    uint32_t padding6;
+#endif
+    int64_t SoftRestartTime;
+#ifdef __x86_64__
+    void* HypercallCodeVa;
+    void* HalVirtualAddress;
+    uint64_t HalNumberOfBytes;
+#endif
+    LEAP_SECOND_DATA* LeapSecondData;
+    uint32_t MajorRelease;
+    uint32_t Reserved1;
+    char NtBuildLab[0xe0];
+    char NtBuildLabEx[0xe0];
+#ifndef __x86_64__
+    uint32_t padding7;
+#endif
+    LOADER_RESET_REASON ResetReason;
+    uint32_t MaxPciBusNumber;
+    uint32_t FeatureSettings;
+    uint32_t HotPatchReserveSize;
+    uint32_t RetpolineReserveSize;
+#ifdef __x86_64__
+    struct {
+        void* CodeBase;
+        uint32_t CodeSize;
+    } MiniExecutive;
+#endif
+    VSM_PERFORMANCE_DATA VsmPerformanceData;
+    NUMA_MEMORY_RANGE* NumaMemoryRanges;
+    uint32_t NumaMemoryRangeCount;
+    uint32_t IommuFaultPolicy;
+#ifndef __x86_64__
+    uint32_t padding8;
+#endif
     LOADER_FEATURE_CONFIGURATION_INFORMATION FeatureConfigurationInformation;
 } LOADER_PARAMETER_EXTENSION_WIN10_21H1;
 
@@ -2688,29 +2726,29 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BbtBuffer) == 0xa5
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, XsaveAllowedFeatures) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 XsaveAllowedFeatures");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, XsaveFlags) == 0xa60, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 XsaveFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootOptions) == 0xa64, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootOptions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.IumEnablement) == 0xa68, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumEnablement");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.IumPolicy) == 0xa6c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumPolicy");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.IumStatus) == 0xa70, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumStatus");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.BootId) == 0xa74, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.CodeIntegrityData) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 CodeIntegrityData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.CodeIntegrityDataSize) == 0xa7c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 CodeIntegrityDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.SystemHiveRecoveryInfo) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SystemHiveRecoveryInfo");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.SoftRestartCount) == 0xa94, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SoftRestartCount");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.SoftRestartTime) == 0xa98, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SoftRestartTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.LeapSecondData) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 LeapSecondData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.MajorRelease) == 0xaa4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MajorRelease");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.Reserved1) == 0xaa8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 Reserved1");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.NtBuildLab) == 0xaac, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NtBuildLab");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.NtBuildLabEx) == 0xb8c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NtBuildLabEx");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.ResetReason) == 0xc70, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ResetReason");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.MaxPciBusNumber) == 0xca0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MaxPciBusNumber");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.FeatureSettings) == 0xca4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FeatureSettings");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.HotPatchReserveSize) == 0xca8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HotPatchReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.RetpolineReserveSize) == 0xcac, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 RetpolineReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.VsmPerformanceData) == 0xcb0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 VsmPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.NumaMemoryRanges) == 0xcf0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRanges");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.NumaMemoryRangeCount) == 0xcf4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRangeCount");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.IommuFaultPolicy) == 0xcf8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IommuFaultPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, IumEnablement) == 0xa68, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumEnablement");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, IumPolicy) == 0xa6c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, IumStatus) == 0xa70, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumStatus");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootId) == 0xa74, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, CodeIntegrityData) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 CodeIntegrityData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, CodeIntegrityDataSize) == 0xa7c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 CodeIntegrityDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SystemHiveRecoveryInfo) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SystemHiveRecoveryInfo");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SoftRestartCount) == 0xa94, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SoftRestartCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SoftRestartTime) == 0xa98, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SoftRestartTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, LeapSecondData) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 LeapSecondData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MajorRelease) == 0xaa4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MajorRelease");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Reserved1) == 0xaa8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 Reserved1");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NtBuildLab) == 0xaac, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NtBuildLab");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NtBuildLabEx) == 0xb8c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NtBuildLabEx");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ResetReason) == 0xc70, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ResetReason");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MaxPciBusNumber) == 0xca0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MaxPciBusNumber");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FeatureSettings) == 0xca4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FeatureSettings");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HotPatchReserveSize) == 0xca8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HotPatchReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, RetpolineReserveSize) == 0xcac, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 RetpolineReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, VsmPerformanceData) == 0xcb0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 VsmPerformanceData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NumaMemoryRanges) == 0xcf0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRanges");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NumaMemoryRangeCount) == 0xcf4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRangeCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, IommuFaultPolicy) == 0xcf8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IommuFaultPolicy");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FeatureConfigurationInformation) == 0xd00, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FeatureConfigurationInformation");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN10_21H1) == 0xe38, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 has incorrect size.");
@@ -2766,33 +2804,33 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BbtBuffer) == 0xb0
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, XsaveAllowedFeatures) == 0xb10, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 XsaveAllowedFeatures");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, XsaveFlags) == 0xb18, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 XsaveFlags");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootOptions) == 0xb20, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootOptions");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.IumEnablement) == 0xb28, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumEnablement");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.IumPolicy) == 0xb2c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumPolicy");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.IumStatus) == 0xb30, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumStatus");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.BootId) == 0xb34, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.CodeIntegrityData) == 0xb38, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 CodeIntegrityData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.CodeIntegrityDataSize) == 0xb40, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 CodeIntegrityDataSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.SystemHiveRecoveryInfo) == 0xb44, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SystemHiveRecoveryInfo");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.SoftRestartCount) == 0xb58, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SoftRestartCount");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.SoftRestartTime) == 0xb60, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SoftRestartTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.HypercallCodeVa) == 0xb68, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HypercallCodeVa");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.HalVirtualAddress) == 0xb70, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalVirtualAddress");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.HalNumberOfBytes) == 0xb78, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalNumberOfBytes");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.LeapSecondData) == 0xb80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 LeapSecondData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.MajorRelease) == 0xb88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MajorRelease");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.Reserved1) == 0xb8c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 Reserved1");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.NtBuildLab) == 0xb90, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NtBuildLab");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.NtBuildLabEx) == 0xc70, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NtBuildLabEx");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.ResetReason) == 0xd50, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ResetReason");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.MaxPciBusNumber) == 0xd80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MaxPciBusNumber");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.FeatureSettings) == 0xd84, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FeatureSettings");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.HotPatchReserveSize) == 0xd88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HotPatchReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.RetpolineReserveSize) == 0xd8c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 RetpolineReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.MiniExecutive) == 0xd90, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MiniExecutive");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.VsmPerformanceData) == 0xda0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 VsmPerformanceData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.NumaMemoryRanges) == 0xde0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRanges");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.NumaMemoryRangeCount) == 0xde8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRangeCount");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block7.IommuFaultPolicy) == 0xdec, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IommuFaultPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, IumEnablement) == 0xb28, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumEnablement");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, IumPolicy) == 0xb2c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, IumStatus) == 0xb30, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IumStatus");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootId) == 0xb34, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, CodeIntegrityData) == 0xb38, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 CodeIntegrityData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, CodeIntegrityDataSize) == 0xb40, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 CodeIntegrityDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SystemHiveRecoveryInfo) == 0xb44, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SystemHiveRecoveryInfo");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SoftRestartCount) == 0xb58, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SoftRestartCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SoftRestartTime) == 0xb60, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SoftRestartTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HypercallCodeVa) == 0xb68, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HypercallCodeVa");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HalVirtualAddress) == 0xb70, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalVirtualAddress");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HalNumberOfBytes) == 0xb78, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalNumberOfBytes");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, LeapSecondData) == 0xb80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 LeapSecondData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MajorRelease) == 0xb88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MajorRelease");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Reserved1) == 0xb8c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 Reserved1");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NtBuildLab) == 0xb90, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NtBuildLab");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NtBuildLabEx) == 0xc70, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NtBuildLabEx");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ResetReason) == 0xd50, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ResetReason");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MaxPciBusNumber) == 0xd80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MaxPciBusNumber");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FeatureSettings) == 0xd84, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FeatureSettings");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HotPatchReserveSize) == 0xd88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HotPatchReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, RetpolineReserveSize) == 0xd8c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 RetpolineReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MiniExecutive) == 0xd90, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MiniExecutive");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, VsmPerformanceData) == 0xda0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 VsmPerformanceData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NumaMemoryRanges) == 0xde0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRanges");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NumaMemoryRangeCount) == 0xde8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRangeCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, IommuFaultPolicy) == 0xdec, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 IommuFaultPolicy");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FeatureConfigurationInformation) == 0xdf0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FeatureConfigurationInformation");
 #endif
 
