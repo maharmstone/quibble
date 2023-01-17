@@ -518,12 +518,15 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         InitializeListHead(&extblock.AttachedHives);
     }
 
-    if constexpr (requires { T::Block4; }) {
-        InitializeListHead(&extblock.Block4.HalExtensionModuleList);
-
-        get_system_time(&extblock.Block4.SystemTime);
-        extblock.Block4.DbgRtcBootTime = 1;
+    if constexpr (requires { T::HalExtensionModuleList; }) {
+        InitializeListHead(&extblock.HalExtensionModuleList);
     }
+
+    if constexpr (requires { T::SystemTime; })
+        get_system_time(&extblock.SystemTime);
+
+    if constexpr (requires { T::DbgRtcBootTime; })
+        extblock.DbgRtcBootTime = 1;
 
     if constexpr (requires { T::Block5a; }) {
         extblock.Block5a.ApiSetSchema = apisetva;
@@ -696,13 +699,7 @@ static void fix_loader_block_mapping(loader_store* store, void* va, T& loader_bl
 
 template<typename T>
 static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
-    LOADER_EXTENSION_BLOCK4* extblock4;
     LOADER_EXTENSION_BLOCK5A* extblock5a;
-
-    if constexpr (requires { T::Block4; })
-        extblock4 = &extblock.Block4;
-    else
-        extblock4 = NULL;
 
     if constexpr (requires { T::Block5a; })
         extblock5a = &extblock.Block5a;
@@ -735,8 +732,8 @@ static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
     if constexpr (requires { T::AttachedHives; })
         fix_list_mapping(&extblock.AttachedHives, mappings);
 
-    if (extblock4)
-        fix_list_mapping(&extblock4->HalExtensionModuleList, mappings);
+    if constexpr (requires { T::HalExtensionModuleList; })
+        fix_list_mapping(&extblock.HalExtensionModuleList, mappings);
 
     if (extblock5a)
         fix_list_mapping(&extblock5a->ApiSetSchemaExtensions, mappings);

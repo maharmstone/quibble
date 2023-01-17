@@ -742,26 +742,6 @@ typedef struct {
     wchar_t* Buffer;
 } UNICODE_STRING;
 
-typedef struct {
-    GUID HardwareConfigurationId;
-    LIST_ENTRY HalExtensionModuleList;
-    int64_t SystemTime;
-    uint64_t TimeStampAtSystemTimeRead;
-    uint64_t BootFlags;
-
-    union {
-        uint64_t InternalBootFlags;
-        struct {
-            uint64_t DbgUtcBootTime : 1;
-            uint64_t DbgRtcBootTime : 1;
-            uint64_t DbgNoLegacyServices : 1;
-        };
-    };
-
-    void* WfsFPData;
-    uint32_t WfsFPDataSize;
-} LOADER_EXTENSION_BLOCK4;
-
 #pragma pack(push,1)
 
 typedef struct {
@@ -808,9 +788,24 @@ typedef struct {
     BOOT_ENTROPY_LDR_RESULT_WIN8 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
     LOADER_PARAMETER_HYPERVISOR_EXTENSION HypervisorExtension;
-    LOADER_EXTENSION_BLOCK4 Block4;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
 #ifdef __x86_64__
     uint8_t unknown[0x60];
+    uint32_t padding3;
 #else
     uint8_t unknown[0x30];
 #endif
@@ -851,14 +846,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, MemoryCachingRequirement
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, BootEntropyResult) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN8 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, ProcessorCounterFrequency) == 0x7a8, "LOADER_PARAMETER_EXTENSION_WIN8 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, HypervisorExtension) == 0x7b0, "LOADER_PARAMETER_EXTENSION_WIN8 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.HardwareConfigurationId) == 0x7e8, "LOADER_PARAMETER_EXTENSION_WIN8 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.HalExtensionModuleList) == 0x7f8, "LOADER_PARAMETER_EXTENSION_WIN8 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.SystemTime) == 0x800, "LOADER_PARAMETER_EXTENSION_WIN8 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.TimeStampAtSystemTimeRead) == 0x808, "LOADER_PARAMETER_EXTENSION_WIN8 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.BootFlags) == 0x810, "LOADER_PARAMETER_EXTENSION_WIN8 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.InternalBootFlags) == 0x818, "LOADER_PARAMETER_EXTENSION_WIN8 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.WfsFPData) == 0x820, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.WfsFPDataSize) == 0x824, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, HardwareConfigurationId) == 0x7e8, "LOADER_PARAMETER_EXTENSION_WIN8 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, HalExtensionModuleList) == 0x7f8, "LOADER_PARAMETER_EXTENSION_WIN8 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, SystemTime) == 0x800, "LOADER_PARAMETER_EXTENSION_WIN8 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, TimeStampAtSystemTimeRead) == 0x808, "LOADER_PARAMETER_EXTENSION_WIN8 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, BootFlags) == 0x810, "LOADER_PARAMETER_EXTENSION_WIN8 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, InternalBootFlags) == 0x818, "LOADER_PARAMETER_EXTENSION_WIN8 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, WfsFPData) == 0x820, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, WfsFPDataSize) == 0x824, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiBiosVersion) == 0x858, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, SmbiosVersion) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN8 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, EfiVersion) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN8 EfiVersion");
@@ -892,14 +887,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, MemoryCachingRequirement
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, BootEntropyResult) == 0xf0, "LOADER_PARAMETER_EXTENSION_WIN8 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, ProcessorCounterFrequency) == 0x800, "LOADER_PARAMETER_EXTENSION_WIN8 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, HypervisorExtension) == 0x808, "LOADER_PARAMETER_EXTENSION_WIN8 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.HardwareConfigurationId) == 0x840, "LOADER_PARAMETER_EXTENSION_WIN8 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.HalExtensionModuleList) == 0x850, "LOADER_PARAMETER_EXTENSION_WIN8 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.SystemTime) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN8 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.TimeStampAtSystemTimeRead) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN8 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.BootFlags) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN8 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.InternalBootFlags) == 0x878, "LOADER_PARAMETER_EXTENSION_WIN8 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.WfsFPData) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block4.WfsFPDataSize) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, HardwareConfigurationId) == 0x840, "LOADER_PARAMETER_EXTENSION_WIN8 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, HalExtensionModuleList) == 0x850, "LOADER_PARAMETER_EXTENSION_WIN8 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, SystemTime) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN8 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, TimeStampAtSystemTimeRead) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN8 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, BootFlags) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN8 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, InternalBootFlags) == 0x878, "LOADER_PARAMETER_EXTENSION_WIN8 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, WfsFPData) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, WfsFPDataSize) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN8 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiBiosVersion) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiBiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, SmbiosVersion) == 0x900, "LOADER_PARAMETER_EXTENSION_WIN8 SmbiosVersion");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, EfiVersion) == 0x910, "LOADER_PARAMETER_EXTENSION_WIN8 EfiVersion");
@@ -1062,15 +1057,32 @@ typedef struct {
     BOOT_ENTROPY_LDR_RESULT_WIN81 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
     LOADER_PARAMETER_HYPERVISOR_EXTENSION HypervisorExtension;
-    LOADER_EXTENSION_BLOCK4 Block4;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
+#ifdef __x86_64__
+    uint32_t padding3;
+#endif
     LOADER_EXTENSION_BLOCK5A Block5a;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN81 OfflineCrashdumpConfigurationTable;
-    uint32_t padding3;
-    uint32_t padding4[4];
+    uint32_t padding4;
+    uint32_t padding5[4];
 } LOADER_PARAMETER_EXTENSION_WIN81;
 
 #pragma pack(pop)
@@ -1105,14 +1117,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, MemoryCachingRequiremen
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootEntropyResult) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN81 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ProcessorCounterFrequency) == 0x810, "LOADER_PARAMETER_EXTENSION_WIN81 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, HypervisorExtension) == 0x818, "LOADER_PARAMETER_EXTENSION_WIN81 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.HardwareConfigurationId) == 0x850, "LOADER_PARAMETER_EXTENSION_WIN81 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.HalExtensionModuleList) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN81 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.SystemTime) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN81 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.TimeStampAtSystemTimeRead) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN81 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.BootFlags) == 0x878, "LOADER_PARAMETER_EXTENSION_WIN81 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.InternalBootFlags) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN81 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.WfsFPData) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.WfsFPDataSize) == 0x88c, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, HardwareConfigurationId) == 0x850, "LOADER_PARAMETER_EXTENSION_WIN81 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, HalExtensionModuleList) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN81 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, SystemTime) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN81 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, TimeStampAtSystemTimeRead) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN81 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootFlags) == 0x878, "LOADER_PARAMETER_EXTENSION_WIN81 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, InternalBootFlags) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN81 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WfsFPData) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WfsFPDataSize) == 0x88c, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.BugcheckParameters) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN81 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaSize");
@@ -1152,14 +1164,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, MemoryCachingRequiremen
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootEntropyResult) == 0xf0, "LOADER_PARAMETER_EXTENSION_WIN81 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, ProcessorCounterFrequency) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN81 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, HypervisorExtension) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN81 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.HardwareConfigurationId) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN81 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.HalExtensionModuleList) == 0x8b8, "LOADER_PARAMETER_EXTENSION_WIN81 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.SystemTime) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN81 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.TimeStampAtSystemTimeRead) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN81 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.BootFlags) == 0x8d8, "LOADER_PARAMETER_EXTENSION_WIN81 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.InternalBootFlags) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN81 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.WfsFPData) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block4.WfsFPDataSize) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, HardwareConfigurationId) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN81 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, HalExtensionModuleList) == 0x8b8, "LOADER_PARAMETER_EXTENSION_WIN81 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, SystemTime) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN81 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, TimeStampAtSystemTimeRead) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN81 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, BootFlags) == 0x8d8, "LOADER_PARAMETER_EXTENSION_WIN81 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, InternalBootFlags) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN81 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WfsFPData) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, WfsFPDataSize) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN81 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.BugcheckParameters) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN81 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block5a.ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN81 ApiSetSchemaSize");
@@ -1232,28 +1244,45 @@ typedef struct {
     BOOT_ENTROPY_LDR_RESULT_WIN81 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
     LOADER_PARAMETER_HYPERVISOR_EXTENSION HypervisorExtension;
-    LOADER_EXTENSION_BLOCK4 Block4;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
+#ifdef __x86_64__
+    uint32_t padding3;
+#endif
     LOADER_EXTENSION_BLOCK5A Block5a;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
-    uint32_t padding3;
+    uint32_t padding4;
     UNICODE_STRING ManufacturingProfile;
     void* BbtBuffer;
 #ifndef __x86_64__
-    uint32_t padding4;
+    uint32_t padding5;
 #endif
     uint64_t XsaveAllowedFeatures;
     uint32_t XsaveFlags;
 #ifdef __x86_64__
-    uint32_t padding5;
+    uint32_t padding6;
 #endif
     void* BootOptions;
     uint32_t BootId;
 #ifdef __x86_64__
-    uint32_t padding6;
+    uint32_t padding7;
 #endif
     LOADER_PARAMETER_CI_EXTENSION* CodeIntegrityData;
     uint32_t CodeIntegrityDataSize;
@@ -1292,14 +1321,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, MemoryCachingRequiremen
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootEntropyResult) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ProcessorCounterFrequency) == 0x810, "LOADER_PARAMETER_EXTENSION_WIN10 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, HypervisorExtension) == 0x818, "LOADER_PARAMETER_EXTENSION_WIN10 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.HardwareConfigurationId) == 0x850, "LOADER_PARAMETER_EXTENSION_WIN10 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.HalExtensionModuleList) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN10 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.SystemTime) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN10 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.TimeStampAtSystemTimeRead) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN10 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.BootFlags) == 0x878, "LOADER_PARAMETER_EXTENSION_WIN10 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.InternalBootFlags) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN10 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.WfsFPData) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.WfsFPDataSize) == 0x88c, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, HardwareConfigurationId) == 0x850, "LOADER_PARAMETER_EXTENSION_WIN10 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, HalExtensionModuleList) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN10 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SystemTime) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN10 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, TimeStampAtSystemTimeRead) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN10 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootFlags) == 0x878, "LOADER_PARAMETER_EXTENSION_WIN10 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, InternalBootFlags) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN10 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WfsFPData) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WfsFPDataSize) == 0x88c, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.BugcheckParameters) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN10 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaSize");
@@ -1348,14 +1377,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, MemoryCachingRequiremen
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootEntropyResult) == 0xf0, "LOADER_PARAMETER_EXTENSION_WIN10 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, ProcessorCounterFrequency) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN10 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, HypervisorExtension) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN10 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.HardwareConfigurationId) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.HalExtensionModuleList) == 0x8b8, "LOADER_PARAMETER_EXTENSION_WIN10 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.SystemTime) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.TimeStampAtSystemTimeRead) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN10 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.BootFlags) == 0x8d8, "LOADER_PARAMETER_EXTENSION_WIN10 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.InternalBootFlags) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN10 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.WfsFPData) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block4.WfsFPDataSize) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, HardwareConfigurationId) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, HalExtensionModuleList) == 0x8b8, "LOADER_PARAMETER_EXTENSION_WIN10 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SystemTime) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, TimeStampAtSystemTimeRead) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN10 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, BootFlags) == 0x8d8, "LOADER_PARAMETER_EXTENSION_WIN10 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, InternalBootFlags) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN10 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WfsFPData) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, WfsFPDataSize) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.BugcheckParameters) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN10 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block5a.ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN10 ApiSetSchemaSize");
@@ -1422,23 +1451,40 @@ typedef struct {
     BOOT_ENTROPY_LDR_RESULT_WIN81 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
     LOADER_PARAMETER_HYPERVISOR_EXTENSION HypervisorExtension;
-    LOADER_EXTENSION_BLOCK4 Block4;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
+#ifdef __x86_64__
+    uint32_t padding3;
+#endif
     LOADER_EXTENSION_BLOCK5A Block5a;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
-    uint32_t padding3;
+    uint32_t padding4;
     UNICODE_STRING ManufacturingProfile;
     void* BbtBuffer;
 #ifndef __x86_64__
-    uint32_t padding4;
+    uint32_t padding5;
 #endif
     uint64_t XsaveAllowedFeatures;
     uint32_t XsaveFlags;
 #ifdef __x86_64__
-    uint32_t padding5;
+    uint32_t padding6;
 #endif
     void* BootOptions;
     uint32_t IumEnablement;
@@ -1450,7 +1496,7 @@ typedef struct {
     LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
     uint32_t SoftRestartCount;
 #ifdef __x86_64__
-    uint32_t padding6;
+    uint32_t padding7;
 #endif
     int64_t SoftRestartTime;
 #ifdef __x86_64__
@@ -1494,14 +1540,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootEntropyResult) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ProcessorCounterFrequency) == 0x810, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, HypervisorExtension) == 0x818, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.HardwareConfigurationId) == 0x850, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.HalExtensionModuleList) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.SystemTime) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.TimeStampAtSystemTimeRead) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN10_1607 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.BootFlags) == 0x878, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.InternalBootFlags) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN10_1607 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.WfsFPData) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.WfsFPDataSize) == 0x88c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, HardwareConfigurationId) == 0x850, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, HalExtensionModuleList) == 0x860, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, SystemTime) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, TimeStampAtSystemTimeRead) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN10_1607 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootFlags) == 0x878, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, InternalBootFlags) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN10_1607 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WfsFPData) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WfsFPDataSize) == 0x88c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.BugcheckParameters) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchema) == 0x8a4, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaSize) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaSize");
@@ -1557,14 +1603,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootEntropyResult) == 0xf0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, ProcessorCounterFrequency) == 0x868, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, HypervisorExtension) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.HardwareConfigurationId) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.HalExtensionModuleList) == 0x8b8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.SystemTime) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.TimeStampAtSystemTimeRead) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.BootFlags) == 0x8d8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.InternalBootFlags) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.WfsFPData) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block4.WfsFPDataSize) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, HardwareConfigurationId) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, HalExtensionModuleList) == 0x8b8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, SystemTime) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, TimeStampAtSystemTimeRead) == 0x8d0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, BootFlags) == 0x8d8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, InternalBootFlags) == 0x8e0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WfsFPData) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, WfsFPDataSize) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.BugcheckParameters) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchema) == 0x920, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block5a.ApiSetSchemaSize) == 0x928, "LOADER_PARAMETER_EXTENSION_WIN10_1607 ApiSetSchemaSize");
@@ -1658,23 +1704,40 @@ typedef struct {
     BOOT_ENTROPY_LDR_RESULT_WIN1703 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
     LOADER_PARAMETER_HYPERVISOR_EXTENSION HypervisorExtension;
-    LOADER_EXTENSION_BLOCK4 Block4;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
+#ifdef __x86_64__
+    uint32_t padding3;
+#endif
     LOADER_EXTENSION_BLOCK5A Block5a;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
-    uint32_t padding3;
+    uint32_t padding4;
     UNICODE_STRING ManufacturingProfile;
     void* BbtBuffer;
 #ifndef __x86_64__
-    uint32_t padding4;
+    uint32_t padding5;
 #endif
     uint64_t XsaveAllowedFeatures;
     uint32_t XsaveFlags;
 #ifdef __x86_64__
-    uint32_t padding5;
+    uint32_t padding6;
 #endif
     void* BootOptions;
     uint32_t IumEnablement;
@@ -1686,7 +1749,7 @@ typedef struct {
     LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
     uint32_t SoftRestartCount;
 #ifdef __x86_64__
-    uint32_t padding6;
+    uint32_t padding7;
 #endif
     int64_t SoftRestartTime;
 #ifdef __x86_64__
@@ -1700,7 +1763,7 @@ typedef struct {
     char NtBuildLabEx[0xe0];
     LOADER_RESET_REASON ResetReason;
     uint32_t MaxPciBusNumber;
-    uint32_t padding7;
+    uint32_t padding8;
 } LOADER_PARAMETER_EXTENSION_WIN10_1703;
 
 #pragma pack(pop)
@@ -1735,14 +1798,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootEntropyResult) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ProcessorCounterFrequency) == 0x830, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, HypervisorExtension) == 0x838, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.HardwareConfigurationId) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.HalExtensionModuleList) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.SystemTime) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.TimeStampAtSystemTimeRead) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN10_1703 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.BootFlags) == 0x898, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.InternalBootFlags) == 0x8a0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.WfsFPData) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.WfsFPDataSize) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, HardwareConfigurationId) == 0x870, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, HalExtensionModuleList) == 0x880, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, SystemTime) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, TimeStampAtSystemTimeRead) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN10_1703 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootFlags) == 0x898, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, InternalBootFlags) == 0x8a0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WfsFPData) == 0x8a8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WfsFPDataSize) == 0x8ac, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.BugcheckParameters) == 0x8b0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchema) == 0x8c4, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaSize) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaSize");
@@ -1802,14 +1865,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootEntropyResult) == 0xf0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, ProcessorCounterFrequency) == 0x888, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, HypervisorExtension) == 0x890, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.HardwareConfigurationId) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.HalExtensionModuleList) == 0x8d8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.SystemTime) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.TimeStampAtSystemTimeRead) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.BootFlags) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.InternalBootFlags) == 0x900, "LOADER_PARAMETER_EXTENSION_WIN10_1703 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.WfsFPData) == 0x908, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block4.WfsFPDataSize) == 0x910, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, HardwareConfigurationId) == 0x8c8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, HalExtensionModuleList) == 0x8d8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, SystemTime) == 0x8e8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, TimeStampAtSystemTimeRead) == 0x8f0, "LOADER_PARAMETER_EXTENSION_WIN10_1703 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, BootFlags) == 0x8f8, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, InternalBootFlags) == 0x900, "LOADER_PARAMETER_EXTENSION_WIN10_1703 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WfsFPData) == 0x908, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, WfsFPDataSize) == 0x910, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.BugcheckParameters) == 0x918, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchema) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block5a.ApiSetSchemaSize) == 0x948, "LOADER_PARAMETER_EXTENSION_WIN10_1703 ApiSetSchemaSize");
@@ -1925,23 +1988,40 @@ typedef struct {
     BOOT_ENTROPY_LDR_RESULT_WIN1809 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
     LOADER_PARAMETER_HYPERVISOR_EXTENSION_1809 HypervisorExtension;
-    LOADER_EXTENSION_BLOCK4 Block4;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
+#ifdef __x86_64__
+    uint32_t padding3;
+#endif
     LOADER_EXTENSION_BLOCK5A Block5a;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
     OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
-    uint32_t padding3;
+    uint32_t padding4;
     UNICODE_STRING ManufacturingProfile;
     void* BbtBuffer;
 #ifndef __x86_64__
-    uint32_t padding4;
+    uint32_t padding5;
 #endif
     uint64_t XsaveAllowedFeatures;
     uint32_t XsaveFlags;
 #ifdef __x86_64__
-    uint32_t padding5;
+    uint32_t padding6;
 #endif
     void* BootOptions;
     uint32_t IumEnablement;
@@ -1953,7 +2033,7 @@ typedef struct {
     LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
     uint32_t SoftRestartCount;
 #ifdef __x86_64__
-    uint32_t padding6;
+    uint32_t padding7;
 #endif
     int64_t SoftRestartTime;
 #ifdef __x86_64__
@@ -1967,7 +2047,7 @@ typedef struct {
     char NtBuildLab[0xe0];
     char NtBuildLabEx[0xe0];
 #ifndef __x86_64__
-    uint32_t padding7;
+    uint32_t padding8;
 #endif
     LOADER_RESET_REASON ResetReason;
     uint32_t MaxPciBusNumber;
@@ -2008,14 +2088,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootEntropyResult) == 0xd8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ProcessorCounterFrequency) == 0x940, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HypervisorExtension) == 0x948, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.HardwareConfigurationId) == 0x988, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.HalExtensionModuleList) == 0x998, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.SystemTime) == 0x9a0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.TimeStampAtSystemTimeRead) == 0x9a8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.BootFlags) == 0x9b0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.InternalBootFlags) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.WfsFPData) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.WfsFPDataSize) == 0x9c4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HardwareConfigurationId) == 0x988, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HalExtensionModuleList) == 0x998, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, SystemTime) == 0x9a0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, TimeStampAtSystemTimeRead) == 0x9a8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootFlags) == 0x9b0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, InternalBootFlags) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WfsFPData) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WfsFPDataSize) == 0x9c4, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.BugcheckParameters) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchema) == 0x9dc, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaSize) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaSize");
@@ -2077,14 +2157,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootEntropyResult) == 0x130, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, ProcessorCounterFrequency) == 0x998, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HypervisorExtension) == 0x9a0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.HardwareConfigurationId) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.HalExtensionModuleList) == 0x9f0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.SystemTime) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.TimeStampAtSystemTimeRead) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN10_1809 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.BootFlags) == 0xa10, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.InternalBootFlags) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN10_1809 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.WfsFPData) == 0xa20, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block4.WfsFPDataSize) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HardwareConfigurationId) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HalExtensionModuleList) == 0x9f0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, SystemTime) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, TimeStampAtSystemTimeRead) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN10_1809 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, BootFlags) == 0xa10, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, InternalBootFlags) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN10_1809 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WfsFPData) == 0xa20, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, WfsFPDataSize) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.BugcheckParameters) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchema) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block5a.ApiSetSchemaSize) == 0xa60, "LOADER_PARAMETER_EXTENSION_WIN10_1809 ApiSetSchemaSize");
@@ -2181,7 +2261,21 @@ typedef struct {
     BOOT_ENTROPY_LDR_RESULT_WIN1809 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
     LOADER_PARAMETER_HYPERVISOR_EXTENSION_1809 HypervisorExtension;
-    LOADER_EXTENSION_BLOCK4 Block4;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
     LOADER_EXTENSION_BLOCK5A Block5a;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
@@ -2271,14 +2365,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootEntropyResult) == 0xf0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ProcessorCounterFrequency) == 0x958, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HypervisorExtension) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.HardwareConfigurationId) == 0x9a0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.HalExtensionModuleList) == 0x9b0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.SystemTime) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.TimeStampAtSystemTimeRead) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.BootFlags) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.InternalBootFlags) == 0x9d0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.WfsFPData) == 0x9d8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.WfsFPDataSize) == 0x9dc, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HardwareConfigurationId) == 0x9a0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HalExtensionModuleList) == 0x9b0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, SystemTime) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, TimeStampAtSystemTimeRead) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootFlags) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, InternalBootFlags) == 0x9d0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WfsFPData) == 0x9d8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WfsFPDataSize) == 0x9dc, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.BugcheckParameters) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchema) == 0x9f4, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaSize) == 0x9f8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaSize");
@@ -2343,14 +2437,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootEntropyResult) == 0x148, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, ProcessorCounterFrequency) == 0x9b0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HypervisorExtension) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.HardwareConfigurationId) == 0x9f8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.HalExtensionModuleList) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.SystemTime) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.TimeStampAtSystemTimeRead) == 0xa20, "LOADER_PARAMETER_EXTENSION_WIN10_1903 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.BootFlags) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.InternalBootFlags) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_1903 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.WfsFPData) == 0xa38, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block4.WfsFPDataSize) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HardwareConfigurationId) == 0x9f8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HalExtensionModuleList) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, SystemTime) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, TimeStampAtSystemTimeRead) == 0xa20, "LOADER_PARAMETER_EXTENSION_WIN10_1903 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, BootFlags) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, InternalBootFlags) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_1903 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WfsFPData) == 0xa38, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, WfsFPDataSize) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.BugcheckParameters) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchema) == 0xa70, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block5a.ApiSetSchemaSize) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN10_1903 ApiSetSchemaSize");
@@ -2446,7 +2540,21 @@ typedef struct {
     BOOT_ENTROPY_LDR_RESULT_WIN1809 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
     LOADER_PARAMETER_HYPERVISOR_EXTENSION_1809 HypervisorExtension;
-    LOADER_EXTENSION_BLOCK4 Block4;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
     LOADER_EXTENSION_BLOCK5A Block5a;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
@@ -2541,14 +2649,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootEntropyResult) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ProcessorCounterFrequency) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HypervisorExtension) == 0x968, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.HardwareConfigurationId) == 0x9a8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.HalExtensionModuleList) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.SystemTime) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.TimeStampAtSystemTimeRead) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.BootFlags) == 0x9d0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.InternalBootFlags) == 0x9d8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.WfsFPData) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.WfsFPDataSize) == 0x9e4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HardwareConfigurationId) == 0x9a8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HalExtensionModuleList) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SystemTime) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, TimeStampAtSystemTimeRead) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootFlags) == 0x9d0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, InternalBootFlags) == 0x9d8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WfsFPData) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WfsFPDataSize) == 0x9e4, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.BugcheckParameters) == 0x9e8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchema) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaSize) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaSize");
@@ -2618,14 +2726,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootEntropyResult) == 0x158, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, ProcessorCounterFrequency) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HypervisorExtension) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.HardwareConfigurationId) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.HalExtensionModuleList) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.SystemTime) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.TimeStampAtSystemTimeRead) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_2004 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.BootFlags) == 0xa38, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.InternalBootFlags) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_2004 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.WfsFPData) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block4.WfsFPDataSize) == 0xa50, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HardwareConfigurationId) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HalExtensionModuleList) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, SystemTime) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_2004 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, TimeStampAtSystemTimeRead) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_2004 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, BootFlags) == 0xa38, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, InternalBootFlags) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_2004 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WfsFPData) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, WfsFPDataSize) == 0xa50, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.BugcheckParameters) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchema) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block5a.ApiSetSchemaSize) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 ApiSetSchemaSize");
@@ -2756,7 +2864,21 @@ typedef struct {
     BOOT_ENTROPY_LDR_RESULT_WIN1809 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
     LOADER_PARAMETER_HYPERVISOR_EXTENSION_1809 HypervisorExtension;
-    LOADER_EXTENSION_BLOCK4 Block4;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
     LOADER_EXTENSION_BLOCK5A Block5a;
     UNICODE_STRING AcpiBiosVersion;
     UNICODE_STRING SmbiosVersion;
@@ -2855,14 +2977,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootEntropyResult) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ProcessorCounterFrequency) == 0x960, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HypervisorExtension) == 0x968, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.HardwareConfigurationId) == 0x9a8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.HalExtensionModuleList) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.SystemTime) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.TimeStampAtSystemTimeRead) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.BootFlags) == 0x9d0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.InternalBootFlags) == 0x9d8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.WfsFPData) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.WfsFPDataSize) == 0x9e4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HardwareConfigurationId) == 0x9a8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HalExtensionModuleList) == 0x9b8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SystemTime) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, TimeStampAtSystemTimeRead) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootFlags) == 0x9d0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, InternalBootFlags) == 0x9d8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WfsFPData) == 0x9e0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WfsFPDataSize) == 0x9e4, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.BugcheckParameters) == 0x9e8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchema) == 0x9fc, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaSize) == 0xa00, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaSize");
@@ -2933,14 +3055,14 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MemoryCachingRequi
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootEntropyResult) == 0x158, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootEntropyResult");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, ProcessorCounterFrequency) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ProcessorCounterFrequency");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HypervisorExtension) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HypervisorExtension");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.HardwareConfigurationId) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HardwareConfigurationId");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.HalExtensionModuleList) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalExtensionModuleList");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.SystemTime) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SystemTime");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.TimeStampAtSystemTimeRead) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 TimeStampAtSystemTimeRead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.BootFlags) == 0xa38, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.InternalBootFlags) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 InternalBootFlags");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.WfsFPData) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPData");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block4.WfsFPDataSize) == 0xa50, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HardwareConfigurationId) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HalExtensionModuleList) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, SystemTime) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, TimeStampAtSystemTimeRead) == 0xa30, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, BootFlags) == 0xa38, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, InternalBootFlags) == 0xa40, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WfsFPData) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, WfsFPDataSize) == 0xa50, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WfsFPDataSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.BugcheckParameters) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BugcheckParameters");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchema) == 0xa80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchema");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block5a.ApiSetSchemaSize) == 0xa88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 ApiSetSchemaSize");
