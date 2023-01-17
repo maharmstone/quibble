@@ -3272,8 +3272,9 @@ end:
     return Status;
 }
 
+template<typename T>
 static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** va,
-                                 uint16_t version, uint16_t build, void* bgc, LOADER_EXTENSION_BLOCK3* extblock3) {
+                                 uint16_t version, uint16_t build, void* bgc, T& extblock) {
     EFI_STATUS Status;
     unsigned int bg_version;
     bgblock1* block1;
@@ -3391,7 +3392,8 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
     if (bg_edid && have_edid)
         memcpy(bg_edid, edid, sizeof(edid));
 
-    extblock3->BgContext = bgc;
+    if constexpr (requires { T::Block3; })
+        extblock.Block3.BgContext = bgc;
 
     return Status;
 }
@@ -4411,7 +4413,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         Status = EFI_NOT_FOUND;
 
     if (!EFI_ERROR(Status)) {
-        Status = init_bgcontext(bs, &mappings, &va, version, build, &store->bgc, extblock3);
+        std::visit([&](auto&& e) {
+            Status = init_bgcontext(bs, &mappings, &va, version, build, &store->bgc, *e);
+        }, extension_block);
+
         if (EFI_ERROR(Status)) {
             print_error("init_bgcontext", Status);
             goto end;
