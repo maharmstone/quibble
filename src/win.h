@@ -3740,6 +3740,94 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, ArcOSDataDeviceName) == 0x1
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN10, ArcWindowsSysPartName) == 0x158, "LOADER_PARAMETER_BLOCK_WIN10 ArcWindowsSysPartName");
 #endif
 
+#ifdef __x86_64__
+
+typedef struct {
+    struct RTL_BALANCED_NODE* Root;
+    union {
+        uint8_t Encoded : 1;
+        struct RTL_BALANCED_NODE* Min;
+    };
+} RTL_RB_TREE;
+
+#pragma pack(push,1)
+
+typedef struct {
+    uint32_t OsMajorVersion;
+    uint32_t OsMinorVersion;
+    uint32_t Size;
+    uint32_t OsLoaderSecurityVersion;
+    LIST_ENTRY LoadOrderListHead;
+    LIST_ENTRY MemoryDescriptorListHead;
+    LIST_ENTRY BootDriverListHead;
+    LIST_ENTRY EarlyLaunchListHead;
+    LIST_ENTRY CoreDriverListHead;
+    LIST_ENTRY CoreExtensionsDriverListHead;
+    LIST_ENTRY TpmCoreDriverListHead;
+    void* KernelStack;
+    void* Prcb;
+    void* Process;
+    void* Thread;
+    uint32_t KernelStackSize;
+    uint32_t RegistryLength;
+    void* RegistryBase;
+    CONFIGURATION_COMPONENT_DATA* ConfigurationRoot;
+    char* ArcBootDeviceName;
+    char* ArcHalDeviceName;
+    char* NtBootPathName;
+    char* NtHalPathName;
+    char* LoadOptions;
+    NLS_DATA_BLOCK* NlsData;
+    ARC_DISK_INFORMATION* ArcDiskInformation;
+    void* Extension;
+    union {
+        I386_LOADER_BLOCK I386;
+    } u;
+    FIRMWARE_INFORMATION_LOADER_BLOCK_WIN81 FirmwareInformation;
+    char* OsBootstatPathName;
+    char* ArcOSDataDeviceName;
+    char* ArcWindowsSysPartName;
+    RTL_RB_TREE MemoryDescriptorTree;
+} LOADER_PARAMETER_BLOCK_WIN11;
+
+#pragma pack(pop)
+
+static_assert(sizeof(LOADER_PARAMETER_BLOCK_WIN11) == 0x170, "LOADER_PARAMETER_BLOCK_WIN11 has incorrect size.");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, OsMajorVersion) == 0x0, "LOADER_PARAMETER_BLOCK_WIN11 OsMajorVersion");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, OsMinorVersion) == 0x4, "LOADER_PARAMETER_BLOCK_WIN11 OsMinorVersion");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, Size) == 0x8, "LOADER_PARAMETER_BLOCK_WIN11 Size");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, OsLoaderSecurityVersion) == 0xc, "LOADER_PARAMETER_BLOCK_WIN11 Reserved");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, LoadOrderListHead) == 0x10, "LOADER_PARAMETER_BLOCK_WIN11 LoadOrderListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, MemoryDescriptorListHead) == 0x20, "LOADER_PARAMETER_BLOCK_WIN11 MemoryDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, BootDriverListHead) == 0x30, "LOADER_PARAMETER_BLOCK_WIN11 BootDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, EarlyLaunchListHead) == 0x40, "LOADER_PARAMETER_BLOCK_WIN11 EarlyLaunchListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, CoreDriverListHead) == 0x50, "LOADER_PARAMETER_BLOCK_WIN11 CoreDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, CoreExtensionsDriverListHead) == 0x60, "LOADER_PARAMETER_BLOCK_WIN11 CoreExtensionsDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, TpmCoreDriverListHead) == 0x70, "LOADER_PARAMETER_BLOCK_WIN11 TpmCoreDriverListHead");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, KernelStack) == 0x80, "LOADER_PARAMETER_BLOCK_WIN11 KernelStack");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, Prcb) == 0x88, "LOADER_PARAMETER_BLOCK_WIN11 Prcb");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, Process) == 0x90, "LOADER_PARAMETER_BLOCK_WIN11 Process");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, Thread) == 0x98, "LOADER_PARAMETER_BLOCK_WIN11 Thread");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, KernelStackSize) == 0xa0, "LOADER_PARAMETER_BLOCK_WIN11 KernelStackSize");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, RegistryLength) == 0xa4, "LOADER_PARAMETER_BLOCK_WIN11 RegistryLength");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, RegistryBase) == 0xa8, "LOADER_PARAMETER_BLOCK_WIN11 RegistryBase");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, ConfigurationRoot) == 0xb0, "LOADER_PARAMETER_BLOCK_WIN11 ConfigurationRoot");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, ArcBootDeviceName) == 0xb8, "LOADER_PARAMETER_BLOCK_WIN11 ArcBootDeviceName");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, ArcHalDeviceName) == 0xc0, "LOADER_PARAMETER_BLOCK_WIN11 ArcHalDeviceName");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, NtBootPathName) == 0xc8, "LOADER_PARAMETER_BLOCK_WIN11 NtBootPathName");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, NtHalPathName) == 0xd0, "LOADER_PARAMETER_BLOCK_WIN11 NtHalPathName");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, LoadOptions) == 0xd8, "LOADER_PARAMETER_BLOCK_WIN11 LoadOptions");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, NlsData) == 0xe0, "LOADER_PARAMETER_BLOCK_WIN11 NlsData");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, ArcDiskInformation) == 0xe8, "LOADER_PARAMETER_BLOCK_WIN11 ArcDiskInformation");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, Extension) == 0xf0, "LOADER_PARAMETER_BLOCK_WIN11 Extension");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, u.I386) == 0xf8, "LOADER_PARAMETER_BLOCK_WIN11 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, FirmwareInformation) == 0x108, "LOADER_PARAMETER_BLOCK_WIN11 FirmwareInformation");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, OsBootstatPathName) == 0x148, "LOADER_PARAMETER_BLOCK_WIN11 OsBootstatPathName");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, ArcOSDataDeviceName) == 0x150, "LOADER_PARAMETER_BLOCK_WIN11 ArcOSDataDeviceName");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, ArcWindowsSysPartName) == 0x158, "LOADER_PARAMETER_BLOCK_WIN11 ArcWindowsSysPartName");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, MemoryDescriptorTree) == 0x160, "LOADER_PARAMETER_BLOCK_WIN11 MemoryDescriptorTree");
+#endif
+
 typedef void (__stdcall* KERNEL_ENTRY_POINT)(void* LoaderBlock);
 
 typedef struct {
