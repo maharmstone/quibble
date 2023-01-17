@@ -441,7 +441,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     LOADER_EXTENSION_BLOCK2B* extblock2b;
     LOADER_EXTENSION_BLOCK3* extblock3;
     LOADER_EXTENSION_BLOCK4* extblock4;
-    LOADER_EXTENSION_BLOCK5A* extblock5a;
     uintptr_t* loader_pages_spanned;
 
     if constexpr (requires { T::Block2b; })
@@ -458,11 +457,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         extblock4 = &extblock.Block4;
     else
         extblock4 = NULL;
-
-    if constexpr (requires { T::Block5a; })
-        extblock5a = &extblock.Block5a;
-    else
-        extblock5a = NULL;
 
     if constexpr (requires { T::LoaderPagesSpanned; })
         loader_pages_spanned = &extblock.LoaderPagesSpanned;
@@ -580,10 +574,10 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         extblock4->DbgRtcBootTime = 1;
     }
 
-    if (extblock5a) {
-        extblock5a->ApiSetSchema = apisetva;
-        extblock5a->ApiSetSchemaSize = apisetsize;
-        InitializeListHead(&extblock5a->ApiSetSchemaExtensions);
+    if constexpr (requires { T::Block5a; }) {
+        extblock.Block5a.ApiSetSchema = apisetva;
+        extblock.Block5a.ApiSetSchemaSize = apisetsize;
+        InitializeListHead(&extblock.Block5a.ApiSetSchemaExtensions);
     }
 
     *pextblock3 = extblock3;
