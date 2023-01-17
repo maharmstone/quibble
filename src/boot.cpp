@@ -512,26 +512,24 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
             extblock.KdDebugDevice = &store->debug_device_descriptor;
     }
 
-    if (version == _WIN32_WINNT_WIN10) {
-        if (build >= WIN10_BUILD_21H1) {
-            store->extension_win10_21H1.MajorRelease = NTDDI_WIN10_20H1;
-        } else if (build >= WIN10_BUILD_2004) {
-            store->extension_win10_2004.MajorRelease = NTDDI_WIN10_20H1;
-        } else if (build >= WIN10_BUILD_1903) {
+    if constexpr (requires { T::MajorRelease; }) {
+        if (build >= WIN10_BUILD_21H1)
+            extblock.MajorRelease = NTDDI_WIN10_20H1;
+        else if (build >= WIN10_BUILD_2004)
+            extblock.MajorRelease = NTDDI_WIN10_20H1;
+        else if (build >= WIN10_BUILD_1903) {
             // contrary to what you might expect, both 1903 and 1909 use the same value here
-            store->extension_win10_1903.MajorRelease = NTDDI_WIN10_19H1;
-        } else if (build == WIN10_BUILD_1809) {
-            store->extension_win10_1809.MajorRelease = NTDDI_WIN10_RS5;
-        } else if (build >= WIN10_BUILD_1703) {
-            if (build == WIN10_BUILD_1703)
-                store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS2;
-            else if (build == WIN10_BUILD_1709)
-                store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS3;
-            else
-                store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS4;
-        } else if (build >= WIN10_BUILD_1607) {
-            store->extension_win10_1607.MajorRelease = NTDDI_WIN10_RS1;
-        }
+            extblock.MajorRelease = NTDDI_WIN10_19H1;
+        } else if (build >= WIN10_BUILD_1809)
+            extblock.MajorRelease = NTDDI_WIN10_RS5;
+        else if (build >= WIN10_BUILD_1803)
+            extblock.MajorRelease = NTDDI_WIN10_RS4;
+        else if (build >= WIN10_BUILD_1709)
+            extblock.MajorRelease = NTDDI_WIN10_RS3;
+        else if (build >= WIN10_BUILD_1703)
+            extblock.MajorRelease = NTDDI_WIN10_RS2;
+        else if (build >= WIN10_BUILD_1607)
+            extblock.MajorRelease = NTDDI_WIN10_RS1;
     }
 
     InitializeListHead(&extblock.Block1c.FirmwareDescriptorListHead);
