@@ -644,6 +644,19 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
     LOADER_EXTENSION_BLOCK4* extblock4;
     LOADER_EXTENSION_BLOCK5A* extblock5a;
 
+    if constexpr (requires { decltype(T::FirmwareInformation)::EfiInformation; }) {
+        loader_block.FirmwareInformation.EfiInformation.VirtualEfiRuntimeServices =
+            find_virtual_address(&systable->RuntimeServices->GetTime, mappings);
+
+        if constexpr (requires { decltype(decltype(T::FirmwareInformation)::EfiInformation)::FirmwareResourceList; })
+            fix_list_mapping(&loader_block.FirmwareInformation.EfiInformation.FirmwareResourceList, mappings);
+
+        if constexpr (requires { decltype(decltype(T::FirmwareInformation)::EfiInformation)::EfiMemoryMap; }) {
+            loader_block.FirmwareInformation.EfiInformation.EfiMemoryMap =
+                find_virtual_address(loader_block.FirmwareInformation.EfiInformation.EfiMemoryMap, mappings);
+        }
+    }
+
     if (version <= _WIN32_WINNT_WS03) {
         extblock1c = &store->extension_ws03.Block1c;
         extblock2b = NULL;
@@ -657,9 +670,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         extblock4 = NULL;
         extblock5a = NULL;
 
-        store->loader_block_vista.FirmwareInformation.EfiInformation.VirtualEfiRuntimeServices =
-            find_virtual_address(&systable->RuntimeServices->GetTime, mappings);
-
         store->extension_vista.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_vista.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WIN7) {
@@ -668,9 +678,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         extblock3 = &store->extension_win7.Block3;
         extblock4 = NULL;
         extblock5a = NULL;
-
-        store->loader_block_win7.FirmwareInformation.EfiInformation.VirtualEfiRuntimeServices =
-            find_virtual_address(&systable->RuntimeServices->GetTime, mappings);
 
         store->extension_win7.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win7.LoaderPerformanceData, mappings);
@@ -685,11 +692,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
 
         fix_driver_list_mapping(&store->loader_block_win8.CoreDriverListHead, mappings);
 
-        store->loader_block_win8.FirmwareInformation.EfiInformation.VirtualEfiRuntimeServices =
-            find_virtual_address(&systable->RuntimeServices->GetTime, mappings);
-
-        fix_list_mapping(&store->loader_block_win8.FirmwareInformation.EfiInformation.FirmwareResourceList, mappings);
-
         store->extension_win8.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win8.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WINBLUE) {
@@ -702,13 +704,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         fix_list_mapping(&store->loader_block_win81.EarlyLaunchListHead, mappings);
 
         fix_driver_list_mapping(&store->loader_block_win81.CoreDriverListHead, mappings);
-
-        store->loader_block_win81.FirmwareInformation.EfiInformation.VirtualEfiRuntimeServices =
-            find_virtual_address(&systable->RuntimeServices->GetTime, mappings);
-        store->loader_block_win81.FirmwareInformation.EfiInformation.EfiMemoryMap =
-            find_virtual_address(store->loader_block_win81.FirmwareInformation.EfiInformation.EfiMemoryMap, mappings);
-
-        fix_list_mapping(&store->loader_block_win81.FirmwareInformation.EfiInformation.FirmwareResourceList, mappings);
 
         store->extension_win81.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win81.LoaderPerformanceData, mappings);
@@ -723,13 +718,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         fix_list_mapping(&store->loader_block_win10.TpmCoreDriverListHead, mappings);
 
         fix_driver_list_mapping(&store->loader_block_win10.CoreDriverListHead, mappings);
-
-        store->loader_block_win10.FirmwareInformation.EfiInformation.VirtualEfiRuntimeServices =
-            find_virtual_address(&systable->RuntimeServices->GetTime, mappings);
-        store->loader_block_win10.FirmwareInformation.EfiInformation.EfiMemoryMap =
-            find_virtual_address(store->loader_block_win10.FirmwareInformation.EfiInformation.EfiMemoryMap, mappings);
-
-        fix_list_mapping(&store->loader_block_win10.FirmwareInformation.EfiInformation.FirmwareResourceList, mappings);
 
         if (build >= WIN10_BUILD_21H1) {
             extblock1c = &store->extension_win10_21H1.Block1c;
