@@ -657,6 +657,18 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         }
     }
 
+    if constexpr (requires { T::EarlyLaunchListHead; })
+        fix_list_mapping(&loader_block.EarlyLaunchListHead, mappings);
+
+    if constexpr (requires { T::CoreExtensionsDriverListHead; })
+        fix_list_mapping(&loader_block.CoreExtensionsDriverListHead, mappings);
+
+    if constexpr (requires { T::TpmCoreDriverListHead; })
+        fix_list_mapping(&loader_block.TpmCoreDriverListHead, mappings);
+
+    if constexpr (requires { T::CoreDriverListHead; })
+        fix_driver_list_mapping(&loader_block.CoreDriverListHead, mappings);
+
     if (version <= _WIN32_WINNT_WS03) {
         extblock1c = &store->extension_ws03.Block1c;
         extblock2b = NULL;
@@ -688,10 +700,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         extblock4 = &store->extension_win8.Block4;
         extblock5a = NULL;
 
-        fix_list_mapping(&store->loader_block_win8.EarlyLaunchListHead, mappings);
-
-        fix_driver_list_mapping(&store->loader_block_win8.CoreDriverListHead, mappings);
-
         store->extension_win8.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win8.LoaderPerformanceData, mappings);
     } else if (version == _WIN32_WINNT_WINBLUE) {
@@ -701,10 +709,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         extblock4 = &store->extension_win81.Block4;
         extblock5a = &store->extension_win81.Block5a;
 
-        fix_list_mapping(&store->loader_block_win81.EarlyLaunchListHead, mappings);
-
-        fix_driver_list_mapping(&store->loader_block_win81.CoreDriverListHead, mappings);
-
         store->extension_win81.LoaderPerformanceData =
             (LOADER_PERFORMANCE_DATA*)find_virtual_address(store->extension_win81.LoaderPerformanceData, mappings);
 
@@ -712,12 +716,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
             store->extension_win81.KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(store->extension_win81.KdDebugDevice, mappings);
     } else if (version == _WIN32_WINNT_WIN10) {
         DEBUG_DEVICE_DESCRIPTOR** ddd;
-
-        fix_list_mapping(&store->loader_block_win10.EarlyLaunchListHead, mappings);
-        fix_list_mapping(&store->loader_block_win10.CoreExtensionsDriverListHead, mappings);
-        fix_list_mapping(&store->loader_block_win10.TpmCoreDriverListHead, mappings);
-
-        fix_driver_list_mapping(&store->loader_block_win10.CoreDriverListHead, mappings);
 
         if (build >= WIN10_BUILD_21H1) {
             extblock1c = &store->extension_win10_21H1.Block1c;
