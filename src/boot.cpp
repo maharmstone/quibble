@@ -4275,15 +4275,13 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         return Status;
     }
 
-    if (version == _WIN32_WINNT_WINBLUE) {
-        store->loader_block_win81.FirmwareInformation.EfiInformation.EfiMemoryMap = efi_runtime_map;
-        store->loader_block_win81.FirmwareInformation.EfiInformation.EfiMemoryMapSize = efi_runtime_map_size;
-        store->loader_block_win81.FirmwareInformation.EfiInformation.EfiMemoryMapDescriptorSize = map_desc_size;
-    } else if (version == _WIN32_WINNT_WIN10) {
-        store->loader_block_win10.FirmwareInformation.EfiInformation.EfiMemoryMap = efi_runtime_map;
-        store->loader_block_win10.FirmwareInformation.EfiInformation.EfiMemoryMapSize = efi_runtime_map_size;
-        store->loader_block_win10.FirmwareInformation.EfiInformation.EfiMemoryMapDescriptorSize = map_desc_size;
-    }
+    std::visit([&](auto&& b) {
+        if constexpr (requires { b->FirmwareInformation.EfiInformation.EfiMemoryMap; }) {
+            b->FirmwareInformation.EfiInformation.EfiMemoryMap = efi_runtime_map;
+            b->FirmwareInformation.EfiInformation.EfiMemoryMapSize = efi_runtime_map_size;
+            b->FirmwareInformation.EfiInformation.EfiMemoryMapDescriptorSize = map_desc_size;
+        }
+    }, loader_block);
 
     Status = map_debug_descriptor(bs, &mappings, &va, &store->debug_device_descriptor);
     if (EFI_ERROR(Status)) {
