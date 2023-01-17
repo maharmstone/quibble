@@ -3135,6 +3135,259 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, IommuFaultPolicy) 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FeatureConfigurationInformation) == 0xdf0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FeatureConfigurationInformation");
 #endif
 
+#ifdef __x86_64__
+
+typedef struct {
+    uint32_t MaxLoggers;
+    LIST_ENTRY BootLoggersList;
+} ETW_BOOT_CONFIG;
+
+typedef struct {
+    uint32_t Version;
+    uint32_t BlockSize;
+    uint64_t BaseAddress;
+    uint64_t Size;
+} BOOT_FIRMWARE_RAMDISK_INFO;
+
+typedef struct {
+    uint64_t StartPage;
+    uint64_t NumberOfPages;
+} LOADER_MEMORY_RANGE;
+
+typedef struct {
+    uint32_t MemoryRangeCount;
+    uint32_t IoSpaceRangeCount;
+    LOADER_MEMORY_RANGE* MemoryRanges;
+    LOADER_MEMORY_RANGE* IoSpaceRanges;
+} MEMORY_MIRRORING_DATA;
+
+typedef struct {
+    uint64_t BasePage;
+    uint64_t PageCount;
+} INSTALLED_MEMORY_RANGE;
+
+#pragma pack(push,1)
+typedef struct {
+    uint32_t Size;
+    PROFILE_PARAMETER_BLOCK Profile;
+    uint32_t padding1;
+    void* EmInfFileImage;
+    uintptr_t EmInfFileSize;
+    void* TriageDumpBlock;
+    HEADLESS_LOADER_BLOCK* HeadlessLoaderBlock;
+    SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
+    void* DrvDBImage;
+    uintptr_t DrvDBSize;
+    void* DrvDBPatchImage;
+    uint32_t DrvDBPatchSize;
+    uint32_t padding2;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
+    struct {
+        uint32_t BootViaWinload:1;
+        uint32_t BootViaEFI:1;
+        uint32_t Reserved:30;
+    };
+    LOADER_PERFORMANCE_DATA_1903 LoaderPerformanceData;
+    LIST_ENTRY BootApplicationPersistentData;
+    void* WmdTestResult;
+    GUID BootIdentifier;
+    uintptr_t ResumePages;
+    void* DumpHeader;
+    void* BgContext;
+    void* NumaLocalityInfo;
+    void* NumaGroupAssignment;
+    LIST_ENTRY AttachedHives;
+    uintptr_t MemoryCachingRequirementsCount;
+    void* MemoryCachingRequirements;
+    BOOT_ENTROPY_LDR_RESULT_WIN1809 BootEntropyResult;
+    uint64_t ProcessorCounterFrequency;
+    LOADER_PARAMETER_HYPERVISOR_EXTENSION_1809 HypervisorExtension;
+    GUID HardwareConfigurationId;
+    LIST_ENTRY HalExtensionModuleList;
+    LIST_ENTRY PrmUpdateModuleList;
+    LIST_ENTRY PrmFirmwareModuleList;
+    int64_t SystemTime;
+    uint64_t TimeStampAtSystemTimeRead;
+    uint64_t BootFlags;
+    union {
+        uint64_t InternalBootFlags;
+        struct {
+            uint64_t DbgUtcBootTime : 1;
+            uint64_t DbgRtcBootTime : 1;
+            uint64_t DbgNoLegacyServices : 1;
+        };
+    };
+    void* WfsFPData;
+    uint32_t WfsFPDataSize;
+    uint32_t padding3;
+    LOADER_BUGCHECK_PARAMETERS BugcheckParameters;
+    void* ApiSetSchema;
+    uint32_t ApiSetSchemaSize;
+    uint32_t padding4;
+    LIST_ENTRY ApiSetSchemaExtensions;
+    UNICODE_STRING AcpiBiosVersion;
+    UNICODE_STRING SmbiosVersion;
+    UNICODE_STRING EfiVersion;
+    DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
+    OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
+    uint32_t padding5;
+    UNICODE_STRING ManufacturingProfile;
+    void* BbtBuffer;
+    uint64_t XsaveAllowedFeatures;
+    uint32_t XsaveFlags;
+    uint32_t padding6;
+    void* BootOptions;
+    uint32_t IumEnablement;
+    uint32_t IumPolicy;
+    uint32_t IumStatus;
+    uint32_t BootId;
+    LOADER_PARAMETER_CI_EXTENSION* CodeIntegrityData;
+    uint32_t CodeIntegrityDataSize;
+    LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
+    uint32_t SoftRestartCount;
+    uint32_t padding7;
+    int64_t SoftRestartTime;
+    void* HypercallCodeVa;
+    void* HalVirtualAddress;
+    uint64_t HalNumberOfBytes;
+    LEAP_SECOND_DATA* LeapSecondData;
+    uint32_t MajorRelease;
+    uint32_t Reserved1;
+    char NtBuildLab[0xe0];
+    char NtBuildLabEx[0xe0];
+    LOADER_RESET_REASON ResetReason;
+    uint32_t MaxPciBusNumber;
+    uint32_t FeatureSettings;
+    uint32_t HotPatchReserveSize;
+    uint32_t RetpolineReserveSize;
+    struct {
+        void* CodeBase;
+        uint32_t CodeSize;
+    } MiniExecutive;
+    uint32_t padding8;
+    VSM_PERFORMANCE_DATA VsmPerformanceData;
+    NUMA_MEMORY_RANGE* NumaMemoryRanges;
+    uint32_t NumaMemoryRangeCount;
+    uint32_t IommuFaultPolicy;
+    LOADER_FEATURE_CONFIGURATION_INFORMATION FeatureConfigurationInformation;
+    ETW_BOOT_CONFIG EtwBootConfig;
+    BOOT_FIRMWARE_RAMDISK_INFO* FwRamdiskInfo;
+    void* IpmiHwContext;
+    uint64_t IdleThreadShadowStack;
+    uint64_t TransitionShadowStack;
+    uint64_t* IstShadowStacksTable;
+    uint64_t ReservedForKernelCet[2];
+    MEMORY_MIRRORING_DATA* MirroringData;
+    int64_t Luid;
+    struct {
+        INSTALLED_MEMORY_RANGE* Ranges;
+        uint32_t RangeCount;
+    } InstalledMemory;
+    uint32_t padding9;
+    LIST_ENTRY HotPatchList;
+} LOADER_PARAMETER_EXTENSION_WIN11;
+#pragma pack(pop)
+
+static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN11) == 0xed8, "LOADER_PARAMETER_EXTENSION_WIN11 has incorrect size.");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WIN11 Size");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, Profile) == 0x4, "LOADER_PARAMETER_EXTENSION_WIN11 Profile");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, EmInfFileImage) == 0x18, "LOADER_PARAMETER_EXTENSION_WIN11 EmInfFileImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, EmInfFileSize) == 0x20, "LOADER_PARAMETER_EXTENSION_WIN11 EmInfFileSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, TriageDumpBlock) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN11 TriageDumpBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HeadlessLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN11 HeadlessLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN11 SMBiosEPSHeader");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN11 DrvDBImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN11 DrvDBSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, DrvDBPatchImage) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN11 DrvDBPatchImage");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, DrvDBPatchSize) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN11 DrvDBPatchSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN11 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN11 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN11 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN11 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, LoaderPerformanceData) == 0x88, "LOADER_PARAMETER_EXTENSION_WIN11 LoaderPerformanceData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, BootApplicationPersistentData) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN11 BootApplicationPersistentData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, WmdTestResult) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN11 WmdTestResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, BootIdentifier) == 0x100, "LOADER_PARAMETER_EXTENSION_WIN11 BootIdentifier");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, ResumePages) == 0x110, "LOADER_PARAMETER_EXTENSION_WIN11 ResumePages");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, DumpHeader) == 0x118, "LOADER_PARAMETER_EXTENSION_WIN11 DumpHeader");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, BgContext) == 0x120, "LOADER_PARAMETER_EXTENSION_WIN11 BgContext");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, NumaLocalityInfo) == 0x128, "LOADER_PARAMETER_EXTENSION_WIN11 NumaLocalityInfo");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, NumaGroupAssignment) == 0x130, "LOADER_PARAMETER_EXTENSION_WIN11 NumaGroupAssignment");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, AttachedHives) == 0x138, "LOADER_PARAMETER_EXTENSION_WIN11 AttachedHives");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, MemoryCachingRequirementsCount) == 0x148, "LOADER_PARAMETER_EXTENSION_WIN11 MemoryCachingRequirementsCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, MemoryCachingRequirements) == 0x150, "LOADER_PARAMETER_EXTENSION_WIN11 MemoryCachingRequirements");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, BootEntropyResult) == 0x158, "LOADER_PARAMETER_EXTENSION_WIN11 BootEntropyResult");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, ProcessorCounterFrequency) == 0x9c0, "LOADER_PARAMETER_EXTENSION_WIN11 ProcessorCounterFrequency");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HypervisorExtension) == 0x9c8, "LOADER_PARAMETER_EXTENSION_WIN11 HypervisorExtension");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HardwareConfigurationId) == 0xa08, "LOADER_PARAMETER_EXTENSION_WIN11 HardwareConfigurationId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HalExtensionModuleList) == 0xa18, "LOADER_PARAMETER_EXTENSION_WIN11 HalExtensionModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, PrmUpdateModuleList) == 0xa28, "LOADER_PARAMETER_EXTENSION_WIN11 PrmUpdateModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, PrmFirmwareModuleList) == 0xa38, "LOADER_PARAMETER_EXTENSION_WIN11 PrmFirmwareModuleList");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, SystemTime) == 0xa48, "LOADER_PARAMETER_EXTENSION_WIN11 SystemTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, TimeStampAtSystemTimeRead) == 0xa50, "LOADER_PARAMETER_EXTENSION_WIN11 TimeStampAtSystemTimeRead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, BootFlags) == 0xa58, "LOADER_PARAMETER_EXTENSION_WIN11 BootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, InternalBootFlags) == 0xa60, "LOADER_PARAMETER_EXTENSION_WIN11 InternalBootFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, WfsFPData) == 0xa68, "LOADER_PARAMETER_EXTENSION_WIN11 WfsFPData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, WfsFPDataSize) == 0xa70, "LOADER_PARAMETER_EXTENSION_WIN11 WfsFPDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, BugcheckParameters) == 0xa78, "LOADER_PARAMETER_EXTENSION_WIN11 BugcheckParameters");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, ApiSetSchema) == 0xaa0, "LOADER_PARAMETER_EXTENSION_WIN11 ApiSetSchema");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, ApiSetSchemaSize) == 0xaa8, "LOADER_PARAMETER_EXTENSION_WIN11 ApiSetSchemaSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, ApiSetSchemaExtensions) == 0xab0, "LOADER_PARAMETER_EXTENSION_WIN11 ApiSetSchemaExtensions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, AcpiBiosVersion) == 0xac0, "LOADER_PARAMETER_EXTENSION_WIN11 AcpiBiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, SmbiosVersion) == 0xad0, "LOADER_PARAMETER_EXTENSION_WIN11 SmbiosVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, EfiVersion) == 0xae0, "LOADER_PARAMETER_EXTENSION_WIN11 EfiVersion");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, KdDebugDevice) == 0xaf0, "LOADER_PARAMETER_EXTENSION_WIN11 KdDebugDevice");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, OfflineCrashdumpConfigurationTable) == 0xaf8, "LOADER_PARAMETER_EXTENSION_WIN11 OfflineCrashdumpConfigurationTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, ManufacturingProfile) == 0xb18, "LOADER_PARAMETER_EXTENSION_WIN11 ManufacturingProfile");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, BbtBuffer) == 0xb28, "LOADER_PARAMETER_EXTENSION_WIN11 BbtBuffer");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, XsaveAllowedFeatures) == 0xb30, "LOADER_PARAMETER_EXTENSION_WIN11 XsaveAllowedFeatures");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, XsaveFlags) == 0xb38, "LOADER_PARAMETER_EXTENSION_WIN11 XsaveFlags");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, BootOptions) == 0xb40, "LOADER_PARAMETER_EXTENSION_WIN11 BootOptions");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, IumEnablement) == 0xb48, "LOADER_PARAMETER_EXTENSION_WIN11 IumEnablement");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, IumPolicy) == 0xb4c, "LOADER_PARAMETER_EXTENSION_WIN11 IumPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, IumStatus) == 0xb50, "LOADER_PARAMETER_EXTENSION_WIN11 IumStatus");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, BootId) == 0xb54, "LOADER_PARAMETER_EXTENSION_WIN11 BootId");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, CodeIntegrityData) == 0xb58, "LOADER_PARAMETER_EXTENSION_WIN11 CodeIntegrityData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, CodeIntegrityDataSize) == 0xb60, "LOADER_PARAMETER_EXTENSION_WIN11 CodeIntegrityDataSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, SystemHiveRecoveryInfo) == 0xb64, "LOADER_PARAMETER_EXTENSION_WIN11 SystemHiveRecoveryInfo");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, SoftRestartCount) == 0xb78, "LOADER_PARAMETER_EXTENSION_WIN11 SoftRestartCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, SoftRestartTime) == 0xb80, "LOADER_PARAMETER_EXTENSION_WIN11 SoftRestartTime");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HypercallCodeVa) == 0xb88, "LOADER_PARAMETER_EXTENSION_WIN11 HypercallCodeVa");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HalVirtualAddress) == 0xb90, "LOADER_PARAMETER_EXTENSION_WIN11 HalVirtualAddress");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HalNumberOfBytes) == 0xb98, "LOADER_PARAMETER_EXTENSION_WIN11 HalNumberOfBytes");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, LeapSecondData) == 0xba0, "LOADER_PARAMETER_EXTENSION_WIN11 LeapSecondData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, MajorRelease) == 0xba8, "LOADER_PARAMETER_EXTENSION_WIN11 MajorRelease");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, Reserved1) == 0xbac, "LOADER_PARAMETER_EXTENSION_WIN11 Reserved1");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, NtBuildLab) == 0xbb0, "LOADER_PARAMETER_EXTENSION_WIN11 NtBuildLab");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, NtBuildLabEx) == 0xc90, "LOADER_PARAMETER_EXTENSION_WIN11 NtBuildLabEx");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, ResetReason) == 0xd70, "LOADER_PARAMETER_EXTENSION_WIN11 ResetReason");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, MaxPciBusNumber) == 0xda0, "LOADER_PARAMETER_EXTENSION_WIN11 MaxPciBusNumber");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, FeatureSettings) == 0xda4, "LOADER_PARAMETER_EXTENSION_WIN11 FeatureSettings");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HotPatchReserveSize) == 0xda8, "LOADER_PARAMETER_EXTENSION_WIN11 HotPatchReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, RetpolineReserveSize) == 0xdac, "LOADER_PARAMETER_EXTENSION_WIN11 RetpolineReserveSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, MiniExecutive) == 0xdb0, "LOADER_PARAMETER_EXTENSION_WIN11 MiniExecutive");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, VsmPerformanceData) == 0xdc0, "LOADER_PARAMETER_EXTENSION_WIN11 VsmPerformanceData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, NumaMemoryRanges) == 0xe00, "LOADER_PARAMETER_EXTENSION_WIN11 NumaMemoryRanges");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, NumaMemoryRangeCount) == 0xe08, "LOADER_PARAMETER_EXTENSION_WIN11 NumaMemoryRangeCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, IommuFaultPolicy) == 0xe0c, "LOADER_PARAMETER_EXTENSION_WIN11 IommuFaultPolicy");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, FeatureConfigurationInformation) == 0xe10, "LOADER_PARAMETER_EXTENSION_WIN11 FeatureConfigurationInformation");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, EtwBootConfig) == 0xe58, "LOADER_PARAMETER_EXTENSION_WIN11 EtwBootConfig");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, FwRamdiskInfo) == 0xe70, "LOADER_PARAMETER_EXTENSION_WIN11 FwRamdiskInfo");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, IpmiHwContext) == 0xe78, "LOADER_PARAMETER_EXTENSION_WIN11 IpmiHwContext");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, IdleThreadShadowStack) == 0xe80, "LOADER_PARAMETER_EXTENSION_WIN11 IdleThreadShadowStack");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, TransitionShadowStack) == 0xe88, "LOADER_PARAMETER_EXTENSION_WIN11 TransitionShadowStack");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, IstShadowStacksTable) == 0xe90, "LOADER_PARAMETER_EXTENSION_WIN11 IstShadowStacksTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, ReservedForKernelCet) == 0xe98, "LOADER_PARAMETER_EXTENSION_WIN11 ReservedForKernelCet");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, MirroringData) == 0xea8, "LOADER_PARAMETER_EXTENSION_WIN11 MirroringData");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, Luid) == 0xeb0, "LOADER_PARAMETER_EXTENSION_WIN11 Luid");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, InstalledMemory.Ranges) == 0xeb8, "LOADER_PARAMETER_EXTENSION_WIN11 InstalledMemory.Ranges");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, InstalledMemory.RangeCount) == 0xec0, "LOADER_PARAMETER_EXTENSION_WIN11 InstalledMemory.RangeCount");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HotPatchList) == 0xec8, "LOADER_PARAMETER_EXTENSION_WIN11 HotPatchList");
+#endif
+
 typedef struct {
     void* CommonDataArea;
     uint32_t MachineType;
