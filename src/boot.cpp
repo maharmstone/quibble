@@ -514,8 +514,8 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         InitializeListHead(&extblock.BootApplicationPersistentData);
     }
 
-    if constexpr (requires { T::Block3; }) {
-        InitializeListHead(&extblock.Block3.AttachedHives);
+    if constexpr (requires { T::AttachedHives; }) {
+        InitializeListHead(&extblock.AttachedHives);
     }
 
     if constexpr (requires { T::Block4; }) {
@@ -696,14 +696,8 @@ static void fix_loader_block_mapping(loader_store* store, void* va, T& loader_bl
 
 template<typename T>
 static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
-    LOADER_EXTENSION_BLOCK3* extblock3;
     LOADER_EXTENSION_BLOCK4* extblock4;
     LOADER_EXTENSION_BLOCK5A* extblock5a;
-
-    if constexpr (requires { T::Block3; })
-        extblock3 = &extblock.Block3;
-    else
-        extblock3 = NULL;
 
     if constexpr (requires { T::Block4; })
         extblock4 = &extblock.Block4;
@@ -733,12 +727,13 @@ static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
     if constexpr (requires { T::BootApplicationPersistentData; })
         fix_list_mapping(&extblock.BootApplicationPersistentData, mappings);
 
-    if (extblock3) {
-        if (extblock3->BgContext)
-            extblock3->BgContext = find_virtual_address(extblock3->BgContext, mappings);
-
-        fix_list_mapping(&extblock3->AttachedHives, mappings);
+    if constexpr (requires { T::BgContext; }) {
+        if (extblock.BgContext)
+            extblock.BgContext = find_virtual_address(extblock.BgContext, mappings);
     }
+
+    if constexpr (requires { T::AttachedHives; })
+        fix_list_mapping(&extblock.AttachedHives, mappings);
 
     if (extblock4)
         fix_list_mapping(&extblock4->HalExtensionModuleList, mappings);
@@ -3256,8 +3251,8 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
     if (bg_edid && have_edid)
         memcpy(bg_edid, edid, sizeof(edid));
 
-    if constexpr (requires { T::Block3; })
-        extblock.Block3.BgContext = bgc;
+    if constexpr (requires { T::BgContext; })
+        extblock.BgContext = bgc;
 
     return Status;
 }
