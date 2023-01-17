@@ -635,14 +635,9 @@ static void fix_arc_disk_mapping(T& loader_block, LIST_ENTRY* mappings, bool new
 }
 
 template<typename T>
-static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LIST_ENTRY* mappings,
-                              uint16_t version, uint16_t build) {
+static void fix_loader_block_mapping(loader_store* store, void* va, T& loader_block, LIST_ENTRY* mappings,
+                                     uint16_t version, uint16_t build) {
     void* ccd_va;
-    LOADER_EXTENSION_BLOCK1C* extblock1c;
-    LOADER_EXTENSION_BLOCK2B* extblock2b;
-    LOADER_EXTENSION_BLOCK3* extblock3;
-    LOADER_EXTENSION_BLOCK4* extblock4;
-    LOADER_EXTENSION_BLOCK5A* extblock5a;
 
     if constexpr (requires { decltype(T::FirmwareInformation)::EfiInformation; }) {
         loader_block.FirmwareInformation.EfiInformation.VirtualEfiRuntimeServices =
@@ -668,6 +663,43 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
 
     if constexpr (requires { T::CoreDriverListHead; })
         fix_driver_list_mapping(&loader_block.CoreDriverListHead, mappings);
+
+
+    fix_image_list_mapping(loader_block, mappings);
+
+    fix_driver_list_mapping(&loader_block.BootDriverListHead, mappings);
+
+    fix_config_mapping(loader_block.ConfigurationRoot, mappings, NULL, &ccd_va);
+    loader_block.ConfigurationRoot = (CONFIGURATION_COMPONENT_DATA*)ccd_va;
+
+    loader_block.Extension = fix_address_mapping(loader_block.Extension, store, va);
+    loader_block.NlsData = (NLS_DATA_BLOCK*)fix_address_mapping(loader_block.NlsData, store, va);
+
+    fix_arc_disk_mapping(loader_block, mappings, version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
+    loader_block.ArcDiskInformation = (ARC_DISK_INFORMATION*)fix_address_mapping(loader_block.ArcDiskInformation, store, va);
+
+    if (loader_block.ArcBootDeviceName)
+        loader_block.ArcBootDeviceName = (char*)find_virtual_address(loader_block.ArcBootDeviceName, mappings);
+
+    if (loader_block.ArcHalDeviceName)
+        loader_block.ArcHalDeviceName = (char*)find_virtual_address(loader_block.ArcHalDeviceName, mappings);
+
+    if (loader_block.NtBootPathName)
+        loader_block.NtBootPathName = (char*)find_virtual_address(loader_block.NtBootPathName, mappings);
+
+    if (loader_block.NtHalPathName)
+        loader_block.NtHalPathName = (char*)find_virtual_address(loader_block.NtHalPathName, mappings);
+
+    if (loader_block.LoadOptions)
+        loader_block.LoadOptions = (char*)find_virtual_address(loader_block.LoadOptions, mappings);
+}
+
+static void fix_extension_block_mapping(loader_store* store, LIST_ENTRY* mappings, uint16_t version, uint16_t build) {
+    LOADER_EXTENSION_BLOCK1C* extblock1c;
+    LOADER_EXTENSION_BLOCK2B* extblock2b;
+    LOADER_EXTENSION_BLOCK3* extblock3;
+    LOADER_EXTENSION_BLOCK4* extblock4;
+    LOADER_EXTENSION_BLOCK5A* extblock5a;
 
     if (version <= _WIN32_WINNT_WS03) {
         extblock1c = &store->extension_ws03.Block1c;
@@ -783,34 +815,6 @@ static void fix_store_mapping(loader_store* store, void* va, T& loader_block, LI
         print_string("Unsupported Windows version.\n");
         return;
     }
-
-    fix_image_list_mapping(loader_block, mappings);
-
-    fix_driver_list_mapping(&loader_block.BootDriverListHead, mappings);
-
-    fix_config_mapping(loader_block.ConfigurationRoot, mappings, NULL, &ccd_va);
-    loader_block.ConfigurationRoot = (CONFIGURATION_COMPONENT_DATA*)ccd_va;
-
-    loader_block.Extension = fix_address_mapping(loader_block.Extension, store, va);
-    loader_block.NlsData = (NLS_DATA_BLOCK*)fix_address_mapping(loader_block.NlsData, store, va);
-
-    fix_arc_disk_mapping(loader_block, mappings, version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
-    loader_block.ArcDiskInformation = (ARC_DISK_INFORMATION*)fix_address_mapping(loader_block.ArcDiskInformation, store, va);
-
-    if (loader_block.ArcBootDeviceName)
-        loader_block.ArcBootDeviceName = (char*)find_virtual_address(loader_block.ArcBootDeviceName, mappings);
-
-    if (loader_block.ArcHalDeviceName)
-        loader_block.ArcHalDeviceName = (char*)find_virtual_address(loader_block.ArcHalDeviceName, mappings);
-
-    if (loader_block.NtBootPathName)
-        loader_block.NtBootPathName = (char*)find_virtual_address(loader_block.NtBootPathName, mappings);
-
-    if (loader_block.NtHalPathName)
-        loader_block.NtHalPathName = (char*)find_virtual_address(loader_block.NtHalPathName, mappings);
-
-    if (loader_block.LoadOptions)
-        loader_block.LoadOptions = (char*)find_virtual_address(loader_block.LoadOptions, mappings);
 
     fix_list_mapping(&extblock1c->FirmwareDescriptorListHead, mappings);
 
@@ -4384,8 +4388,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     print_string("Booting Windows...\n");
 
     std::visit([&](auto&& b) {
-        fix_store_mapping(store, store_va, *b, &mappings, version, build);
+        fix_loader_block_mapping(store, store_va, *b, &mappings, version, build);
     }, loader_block);
+
+    fix_extension_block_mapping(store, &mappings, version, build);
 
     for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
         if (store->debug_device_descriptor.BaseAddress[i].Valid && store->debug_device_descriptor.BaseAddress[i].Type == CmResourceTypeMemory) {
