@@ -438,13 +438,7 @@ static std::optional<extension_block_variant> find_extension_block(loader_store*
 template<typename T>
 static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, uint16_t version, uint16_t build, uint16_t revision,
                                              uintptr_t** ploader_pages_spanned) {
-    LOADER_EXTENSION_BLOCK2B* extblock2b;
     uintptr_t* loader_pages_spanned;
-
-    if constexpr (requires { T::Block2b; })
-        extblock2b = &extblock.Block2b;
-    else
-        extblock2b = NULL;
 
     if constexpr (requires { T::LoaderPagesSpanned; })
         loader_pages_spanned = &extblock.LoaderPagesSpanned;
@@ -523,8 +517,8 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     InitializeListHead(&extblock.Block1c.FirmwareDescriptorListHead);
     extblock.Block1c.AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
 
-    if (extblock2b) {
-        InitializeListHead(&extblock2b->BootApplicationPersistentData);
+    if constexpr (requires { T::Block2b; }) {
+        InitializeListHead(&extblock.Block2b.BootApplicationPersistentData);
     }
 
     if constexpr (requires { T::Block3; }) {
