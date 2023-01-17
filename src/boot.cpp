@@ -507,8 +507,8 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
             extblock.MajorRelease = NTDDI_WIN10_RS1;
     }
 
-    InitializeListHead(&extblock.Block1c.FirmwareDescriptorListHead);
-    extblock.Block1c.AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
+    InitializeListHead(&extblock.FirmwareDescriptorListHead);
+    extblock.AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
 
     if constexpr (requires { T::Block2b; }) {
         InitializeListHead(&extblock.Block2b.BootApplicationPersistentData);
@@ -772,7 +772,7 @@ static void fix_extension_block_mapping(loader_store* store, T& extblock, LIST_E
         return;
     }
 
-    fix_list_mapping(&extblock.Block1c.FirmwareDescriptorListHead, mappings);
+    fix_list_mapping(&extblock.FirmwareDescriptorListHead, mappings);
 
     if (extblock2b)
         fix_list_mapping(&extblock2b->BootApplicationPersistentData, mappings);

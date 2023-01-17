@@ -310,17 +310,6 @@ typedef struct {
 #pragma pack(push,1)
 
 typedef struct {
-    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
-#ifndef __x86_64__
-    uint8_t* HalpIRQLToTPR;
-    uint8_t* HalpVectorToIRQL;
-#endif
-    LIST_ENTRY FirmwareDescriptorListHead;
-    void* AcpiTable;
-    uint32_t AcpiTableSize;
-} LOADER_EXTENSION_BLOCK1C;
-
-typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
     uint32_t MajorVersion;
@@ -336,7 +325,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
 #ifdef __x86_64__
     uint32_t padding2;
 #endif
@@ -358,10 +354,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, HeadlessLoaderBlock) == 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, SMBiosEPSHeader) == 0x30, "LOADER_PARAMETER_EXTENSION_WS03 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, DrvDBImage) == 0x34, "LOADER_PARAMETER_EXTENSION_WS03 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, DrvDBSize) == 0x38, "LOADER_PARAMETER_EXTENSION_WS03 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1c.NetworkLoaderBlock) == 0x3c, "LOADER_PARAMETER_EXTENSION_WS03 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1c.FirmwareDescriptorListHead) == 0x48, "LOADER_PARAMETER_EXTENSION_WS03 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1c.AcpiTable) == 0x50, "LOADER_PARAMETER_EXTENSION_WS03 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1c.AcpiTableSize) == 0x54, "LOADER_PARAMETER_EXTENSION_WS03 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, NetworkLoaderBlock) == 0x3c, "LOADER_PARAMETER_EXTENSION_WS03 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, FirmwareDescriptorListHead) == 0x48, "LOADER_PARAMETER_EXTENSION_WS03 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, AcpiTable) == 0x50, "LOADER_PARAMETER_EXTENSION_WS03 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, AcpiTableSize) == 0x54, "LOADER_PARAMETER_EXTENSION_WS03 AcpiTableSize");
 #elif defined(__x86_64__)
 static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WS03) == 0x88, "LOADER_PARAMETER_EXTENSION_WS03 has incorrect size.");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Size) == 0x0, "LOADER_PARAMETER_EXTENSION_WS03 Size");
@@ -376,10 +372,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, HeadlessLoaderBlock) == 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, SMBiosEPSHeader) == 0x48, "LOADER_PARAMETER_EXTENSION_WS03 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, DrvDBImage) == 0x50, "LOADER_PARAMETER_EXTENSION_WS03 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, DrvDBSize) == 0x58, "LOADER_PARAMETER_EXTENSION_WS03 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1c.NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_WS03 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1c.FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_WS03 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1c.AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_WS03 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, Block1c.AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_WS03 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_WS03 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_WS03 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_WS03 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WS03, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_WS03 AcpiTableSize");
 #endif
 
 typedef struct {
@@ -411,7 +407,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -437,10 +440,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, HeadlessLoaderBlock) ==
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, SMBiosEPSHeader) == 0x30, "LOADER_PARAMETER_EXTENSION_VISTA SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, DrvDBImage) == 0x34, "LOADER_PARAMETER_EXTENSION_VISTA DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, DrvDBSize) == 0x38, "LOADER_PARAMETER_EXTENSION_VISTA DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1c.NetworkLoaderBlock) == 0x3c, "LOADER_PARAMETER_EXTENSION_VISTA NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1c.FirmwareDescriptorListHead) == 0x48, "LOADER_PARAMETER_EXTENSION_VISTA FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1c.AcpiTable) == 0x50, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1c.AcpiTableSize) == 0x54, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, NetworkLoaderBlock) == 0x3c, "LOADER_PARAMETER_EXTENSION_VISTA NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, FirmwareDescriptorListHead) == 0x48, "LOADER_PARAMETER_EXTENSION_VISTA FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, AcpiTable) == 0x50, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, AcpiTableSize) == 0x54, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, LoaderPerformanceData) == 0x5c, "LOADER_PARAMETER_EXTENSION_VISTA LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.BootApplicationPersistentData) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.WmdTestResult) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA WmdTestResult");
@@ -459,10 +462,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, HeadlessLoaderBlock) ==
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, SMBiosEPSHeader) == 0x48, "LOADER_PARAMETER_EXTENSION_VISTA SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, DrvDBImage) == 0x50, "LOADER_PARAMETER_EXTENSION_VISTA DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, DrvDBSize) == 0x58, "LOADER_PARAMETER_EXTENSION_VISTA DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1c.NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1c.FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1c.AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block1c.AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_VISTA AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, LoaderPerformanceData) == 0x88, "LOADER_PARAMETER_EXTENSION_VISTA LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.BootApplicationPersistentData) == 0x90, "LOADER_PARAMETER_EXTENSION_VISTA BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA, Block2b.WmdTestResult) == 0xa0, "LOADER_PARAMETER_EXTENSION_VISTA WmdTestResult");
@@ -487,7 +490,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -515,10 +525,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, HeadlessLoaderBlock
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, SMBiosEPSHeader) == 0x30, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, DrvDBImage) == 0x34, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, DrvDBSize) == 0x38, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1c.NetworkLoaderBlock) == 0x3c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1c.FirmwareDescriptorListHead) == 0x48, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1c.AcpiTable) == 0x50, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1c.AcpiTableSize) == 0x54, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, NetworkLoaderBlock) == 0x3c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, FirmwareDescriptorListHead) == 0x48, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, AcpiTable) == 0x50, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, AcpiTableSize) == 0x54, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, LoaderPerformanceData) == 0x5c, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.BootApplicationPersistentData) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.WmdTestResult) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 WmdTestResult");
@@ -539,10 +549,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, HeadlessLoaderBlock
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, SMBiosEPSHeader) == 0x48, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, DrvDBImage) == 0x50, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, DrvDBSize) == 0x58, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1c.NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1c.FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1c.AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block1c.AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, LoaderPerformanceData) == 0x88, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.BootApplicationPersistentData) == 0x90, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_VISTA_SP2, Block2b.WmdTestResult) == 0xa0, "LOADER_PARAMETER_EXTENSION_VISTA_SP2 WmdTestResult");
@@ -595,7 +605,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -623,10 +640,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, HeadlessLoaderBlock) == 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, SMBiosEPSHeader) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN7 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, DrvDBImage) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN7 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, DrvDBSize) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN7 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1c.NetworkLoaderBlock) == 0x34, "LOADER_PARAMETER_EXTENSION_WIN7 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1c.FirmwareDescriptorListHead) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN7 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1c.AcpiTable) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1c.AcpiTableSize) == 0x4c, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, NetworkLoaderBlock) == 0x34, "LOADER_PARAMETER_EXTENSION_WIN7 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, FirmwareDescriptorListHead) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN7 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, AcpiTable) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, AcpiTableSize) == 0x4c, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, LoaderPerformanceData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN7 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.BootApplicationPersistentData) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN7 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.WmdTestResult) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN7 WmdTestResult");
@@ -653,10 +670,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, HeadlessLoaderBlock) == 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, SMBiosEPSHeader) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN7 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, DrvDBImage) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN7 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, DrvDBSize) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN7 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1c.NetworkLoaderBlock) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN7 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1c.FirmwareDescriptorListHead) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN7 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1c.AcpiTable) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block1c.AcpiTableSize) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, NetworkLoaderBlock) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN7 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, FirmwareDescriptorListHead) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN7 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, AcpiTable) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, AcpiTableSize) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN7 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, LoaderPerformanceData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN7 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.BootApplicationPersistentData) == 0x88, "LOADER_PARAMETER_EXTENSION_WIN7 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN7, Block2b.WmdTestResult) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN7 WmdTestResult");
@@ -764,7 +781,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -805,10 +829,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, HeadlessLoaderBlock) == 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN8 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN8 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, DrvDBSize) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN8 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1c.NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN8 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1c.FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN8 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1c.AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1c.AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN8 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN8 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN8 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN8 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN8 WmdTestResult");
@@ -846,10 +870,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, HeadlessLoaderBlock) == 
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN8 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN8 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN8 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1c.NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN8 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1c.FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN8 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1c.AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block1c.AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN8 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN8 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN8 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN8 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN8 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN8, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN8 WmdTestResult");
@@ -1004,7 +1028,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -1045,10 +1076,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, HeadlessLoaderBlock) ==
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN81 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN81 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, DrvDBSize) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN81 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1c.NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN81 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1c.FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN81 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1c.AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1c.AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN81 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN81 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN81 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN81 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN81 WmdTestResult");
@@ -1092,10 +1123,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, HeadlessLoaderBlock) ==
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN81 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN81 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN81 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1c.NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN81 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1c.FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN81 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1c.AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block1c.AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN81 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN81 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN81 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN81 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN81 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN81, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN81 WmdTestResult");
@@ -1160,7 +1191,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -1218,10 +1256,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, HeadlessLoaderBlock) ==
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, DrvDBSize) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN10 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1c.NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1c.FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1c.AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1c.AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN10 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN10 WmdTestResult");
@@ -1274,10 +1312,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, HeadlessLoaderBlock) ==
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1c.NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1c.FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1c.AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block1c.AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN10 WmdTestResult");
@@ -1336,7 +1374,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -1406,10 +1451,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, HeadlessLoaderBloc
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1607 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, DrvDBSize) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1c.NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1607 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1c.FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1c.AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1c.AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1607 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1607 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WmdTestResult");
@@ -1469,10 +1514,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, HeadlessLoaderBloc
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1607 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_1607 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1607 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1c.NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1607 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1c.FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_1607 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1c.AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block1c.AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1607 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_1607 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1607 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1607 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_1607 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1607, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN10_1607 WmdTestResult");
@@ -1558,7 +1603,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -1633,10 +1685,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, HeadlessLoaderBloc
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1703 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, DrvDBSize) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN10_1703 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1c.NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1703 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1c.FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_1703 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1c.AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1c.AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1703 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_1703 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1703 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.BootApplicationPersistentData) == 0x54, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.WmdTestResult) == 0x5c, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WmdTestResult");
@@ -1700,10 +1752,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, HeadlessLoaderBloc
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1703 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_1703 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1703 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1c.NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1703 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1c.FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_1703 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1c.AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block1c.AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1703 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_1703 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1703 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1703 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.BootApplicationPersistentData) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_1703 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1703, Block2b.WmdTestResult) == 0x90, "LOADER_PARAMETER_EXTENSION_WIN10_1703 WmdTestResult");
@@ -1814,7 +1866,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -1890,12 +1949,12 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HeadlessLoaderBloc
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1809 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, DrvDBSize) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN10_1809 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1809 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.HalpIRQLToTPR) == 0x34, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HalpIRQLtoTPR");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.HalpVectorToIRQL) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HalpVectorToIRQL");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_1809 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1809 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HalpIRQLToTPR) == 0x34, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HalpIRQLtoTPR");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HalpVectorToIRQL) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1809 HalpVectorToIRQL");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_1809 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1809 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.BootApplicationPersistentData) == 0x98, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.WmdTestResult) == 0xa0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WmdTestResult");
@@ -1961,10 +2020,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, HeadlessLoaderBloc
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1809 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_1809 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1809 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1809 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_1809 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block1c.AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1809 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_1809 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1809 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1809 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.BootApplicationPersistentData) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1809, Block2b.WmdTestResult) == 0xd0, "LOADER_PARAMETER_EXTENSION_WIN10_1809 WmdTestResult");
@@ -2056,7 +2115,14 @@ typedef struct {
     SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
     uintptr_t DrvDBSize;
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -2139,12 +2205,12 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HeadlessLoaderBloc
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, SMBiosEPSHeader) == 0x24, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, DrvDBImage) == 0x28, "LOADER_PARAMETER_EXTENSION_WIN10_1903 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, DrvDBSize) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN10_1903 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1903 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.HalpIRQLToTPR) == 0x34, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HalpIRQLtoTPR");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.HalpVectorToIRQL) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HalpVectorToIRQL");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_1903 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, NetworkLoaderBlock) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_1903 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HalpIRQLToTPR) == 0x34, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HalpIRQLtoTPR");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HalpVectorToIRQL) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1903 HalpVectorToIRQL");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, FirmwareDescriptorListHead) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_1903 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiTable) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiTableSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, LoaderPerformanceData) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1903 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.BootApplicationPersistentData) == 0xb0, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.WmdTestResult) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WmdTestResult");
@@ -2213,10 +2279,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, HeadlessLoaderBloc
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, SMBiosEPSHeader) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_1903 SMBiosEPSHeader");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, DrvDBImage) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_1903 DrvDBImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_1903 DrvDBSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1903 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_1903 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block1c.AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, NetworkLoaderBlock) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_1903 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, FirmwareDescriptorListHead) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_1903 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiTable) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, AcpiTableSize) == 0x70, "LOADER_PARAMETER_EXTENSION_WIN10_1903 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, LoaderPerformanceData) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_1903 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.BootApplicationPersistentData) == 0xd8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_1903, Block2b.WmdTestResult) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_1903 WmdTestResult");
@@ -2307,7 +2373,14 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding2;
 #endif
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -2395,12 +2468,12 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DrvDBImage) == 0x2
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DrvDBSize) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DrvDBSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DrvDBPatchImage) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DrvDBPatchImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DrvDBPatchSize) == 0x34, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DrvDBPatchSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.NetworkLoaderBlock) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.HalpIRQLToTPR) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalpIRQLtoTPR");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.HalpVectorToIRQL) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalpVectorToIRQL");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.FirmwareDescriptorListHead) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_2004 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.AcpiTable) == 0x4c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.AcpiTableSize) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NetworkLoaderBlock) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HalpIRQLToTPR) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalpIRQLtoTPR");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, HalpVectorToIRQL) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_2004 HalpVectorToIRQL");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, FirmwareDescriptorListHead) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_2004 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiTable) == 0x4c, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiTableSize) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, LoaderPerformanceData) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_2004 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.BootApplicationPersistentData) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.WmdTestResult) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WmdTestResult");
@@ -2474,10 +2547,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DrvDBImage) == 0x4
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DrvDBSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DrvDBPatchImage) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DrvDBPatchImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, DrvDBPatchSize) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_2004 DrvDBPatchSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_2004 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block1c.AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10_2004 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_2004 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_2004 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, LoaderPerformanceData) == 0x88, "LOADER_PARAMETER_EXTENSION_WIN10_2004 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.BootApplicationPersistentData) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_2004, Block2b.WmdTestResult) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN10_2004 WmdTestResult");
@@ -2603,7 +2676,14 @@ typedef struct {
 #ifdef __x86_64__
     uint32_t padding2;
 #endif
-    LOADER_EXTENSION_BLOCK1C Block1c;
+    NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
+#ifndef __x86_64__
+    uint8_t* HalpIRQLToTPR;
+    uint8_t* HalpVectorToIRQL;
+#endif
+    LIST_ENTRY FirmwareDescriptorListHead;
+    void* AcpiTable;
+    uint32_t AcpiTableSize;
     struct {
         uint32_t BootViaWinload:1;
         uint32_t BootViaEFI:1;
@@ -2695,12 +2775,12 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DrvDBImage) == 0x2
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DrvDBSize) == 0x2c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DrvDBSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DrvDBPatchImage) == 0x30, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DrvDBPatchImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DrvDBPatchSize) == 0x34, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DrvDBPatchSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.NetworkLoaderBlock) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.HalpIRQLToTPR) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalpIRQLtoTPR");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.HalpVectorToIRQL) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalpVectorToIRQL");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.FirmwareDescriptorListHead) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.AcpiTable) == 0x4c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.AcpiTableSize) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NetworkLoaderBlock) == 0x38, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HalpIRQLToTPR) == 0x3c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalpIRQLtoTPR");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HalpVectorToIRQL) == 0x40, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HalpVectorToIRQL");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FirmwareDescriptorListHead) == 0x44, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiTable) == 0x4c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiTableSize) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, LoaderPerformanceData) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.BootApplicationPersistentData) == 0xb8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.WmdTestResult) == 0xc0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WmdTestResult");
@@ -2775,10 +2855,10 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DrvDBImage) == 0x4
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DrvDBSize) == 0x48, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DrvDBSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DrvDBPatchImage) == 0x50, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DrvDBPatchImage");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, DrvDBPatchSize) == 0x58, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 DrvDBPatchSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NetworkLoaderBlock");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FirmwareDescriptorListHead");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTable");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block1c.AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTableSize");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NetworkLoaderBlock) == 0x60, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NetworkLoaderBlock");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FirmwareDescriptorListHead) == 0x68, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FirmwareDescriptorListHead");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiTable) == 0x78, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTable");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, AcpiTableSize) == 0x80, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 AcpiTableSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, LoaderPerformanceData) == 0x88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 LoaderPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.BootApplicationPersistentData) == 0xe8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 BootApplicationPersistentData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, Block2b.WmdTestResult) == 0xf8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 WmdTestResult");
