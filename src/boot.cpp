@@ -697,13 +697,10 @@ static void fix_loader_block_mapping(loader_store* store, void* va, T& loader_bl
 template<typename T>
 static void fix_extension_block_mapping(loader_store* store, T& extblock, LIST_ENTRY* mappings,
                                         uint16_t version, uint16_t build) {
-    LOADER_EXTENSION_BLOCK1C* extblock1c;
     LOADER_EXTENSION_BLOCK2B* extblock2b;
     LOADER_EXTENSION_BLOCK3* extblock3;
     LOADER_EXTENSION_BLOCK4* extblock4;
     LOADER_EXTENSION_BLOCK5A* extblock5a;
-
-    extblock1c = &extblock.Block1c;
 
     if constexpr (requires { T::Block2b; })
         extblock2b = &extblock.Block2b;
@@ -775,7 +772,7 @@ static void fix_extension_block_mapping(loader_store* store, T& extblock, LIST_E
         return;
     }
 
-    fix_list_mapping(&extblock1c->FirmwareDescriptorListHead, mappings);
+    fix_list_mapping(&extblock.Block1c.FirmwareDescriptorListHead, mappings);
 
     if (extblock2b)
         fix_list_mapping(&extblock2b->BootApplicationPersistentData, mappings);
