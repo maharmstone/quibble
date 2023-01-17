@@ -695,8 +695,7 @@ static void fix_loader_block_mapping(loader_store* store, void* va, T& loader_bl
 }
 
 template<typename T>
-static void fix_extension_block_mapping(loader_store* store, T& extblock, LIST_ENTRY* mappings,
-                                        uint16_t version, uint16_t build) {
+static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
     LOADER_EXTENSION_BLOCK2B* extblock2b;
     LOADER_EXTENSION_BLOCK3* extblock3;
     LOADER_EXTENSION_BLOCK4* extblock4;
@@ -730,33 +729,9 @@ static void fix_extension_block_mapping(loader_store* store, T& extblock, LIST_E
         }
     }
 
-    if (version == _WIN32_WINNT_WINBLUE) {
-        if (store->extension_win81.KdDebugDevice)
-            store->extension_win81.KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(store->extension_win81.KdDebugDevice, mappings);
-    } else if (version == _WIN32_WINNT_WIN10) {
-        DEBUG_DEVICE_DESCRIPTOR** ddd;
-
-        if (build >= WIN10_BUILD_21H1) {
-            ddd = &store->extension_win10_21H1.KdDebugDevice;
-        } else if (build >= WIN10_BUILD_2004) {
-            ddd = &store->extension_win10_2004.KdDebugDevice;
-        } else if (build >= WIN10_BUILD_1903) {
-            ddd = &store->extension_win10_1903.KdDebugDevice;
-        } else if (build == WIN10_BUILD_1809) {
-            ddd = &store->extension_win10_1809.KdDebugDevice;
-        } else if (build >= WIN10_BUILD_1703) {
-            ddd = &store->extension_win10_1703.KdDebugDevice;
-        } else if (build >= WIN10_BUILD_1607) {
-            ddd = &store->extension_win10_1607.KdDebugDevice;
-        } else {
-            ddd = &store->extension_win10.KdDebugDevice;
-        }
-
-        if (*ddd)
-            *ddd = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(*ddd, mappings);
-    } else {
-        print_string("Unsupported Windows version.\n");
-        return;
+    if constexpr (requires { T::KdDebugDevice; }) {
+        if (extblock.KdDebugDevice)
+            extblock.KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(extblock.KdDebugDevice, mappings);
     }
 
     fix_list_mapping(&extblock.FirmwareDescriptorListHead, mappings);
@@ -4335,7 +4310,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }, loader_block);
 
     std::visit([&](auto&& e) {
-        fix_extension_block_mapping(store, *e, &mappings, version, build);
+        fix_extension_block_mapping(*e, &mappings);
     }, extension_block);
 
     for (unsigned int i = 0; i < MAXIMUM_DEBUG_BARS; i++) {
