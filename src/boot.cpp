@@ -439,18 +439,12 @@ template<typename T>
 static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, uint16_t version, uint16_t build, uint16_t revision,
                                              uintptr_t** ploader_pages_spanned) {
     LOADER_EXTENSION_BLOCK2B* extblock2b;
-    LOADER_EXTENSION_BLOCK4* extblock4;
     uintptr_t* loader_pages_spanned;
 
     if constexpr (requires { T::Block2b; })
         extblock2b = &extblock.Block2b;
     else
         extblock2b = NULL;
-
-    if constexpr (requires { T::Block4; })
-        extblock4 = &extblock.Block4;
-    else
-        extblock4 = NULL;
 
     if constexpr (requires { T::LoaderPagesSpanned; })
         loader_pages_spanned = &extblock.LoaderPagesSpanned;
@@ -537,11 +531,11 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         InitializeListHead(&extblock.Block3.AttachedHives);
     }
 
-    if (extblock4) {
-        InitializeListHead(&extblock4->HalExtensionModuleList);
+    if constexpr (requires { T::Block4; }) {
+        InitializeListHead(&extblock.Block4.HalExtensionModuleList);
 
-        get_system_time(&extblock4->SystemTime);
-        extblock4->DbgRtcBootTime = 1;
+        get_system_time(&extblock.Block4.SystemTime);
+        extblock.Block4.DbgRtcBootTime = 1;
     }
 
     if constexpr (requires { T::Block5a; }) {
