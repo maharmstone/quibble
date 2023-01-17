@@ -505,34 +505,24 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     if constexpr (requires { T::ProcessorCounterFrequency; })
         extblock.ProcessorCounterFrequency = cpu_frequency;
 
-    if (version == _WIN32_WINNT_WINBLUE) {
-        if (kdnet_loaded) {
-            memcpy(&store->debug_device_descriptor, &debug_device_descriptor, sizeof(debug_device_descriptor));
-            store->extension_win81.KdDebugDevice = &store->debug_device_descriptor;
-        }
-    } else if (version == _WIN32_WINNT_WIN10) {
-        DEBUG_DEVICE_DESCRIPTOR** ddd;
+    if (kdnet_loaded) {
+        memcpy(&store->debug_device_descriptor, &debug_device_descriptor, sizeof(debug_device_descriptor));
 
+        if constexpr (requires { T::KdDebugDevice; })
+            extblock.KdDebugDevice = &store->debug_device_descriptor;
+    }
+
+    if (version == _WIN32_WINNT_WIN10) {
         if (build >= WIN10_BUILD_21H1) {
-            ddd = &store->extension_win10_21H1.KdDebugDevice;
-
             store->extension_win10_21H1.Block7.MajorRelease = NTDDI_WIN10_20H1;
         } else if (build >= WIN10_BUILD_2004) {
-            ddd = &store->extension_win10_2004.KdDebugDevice;
-
             store->extension_win10_2004.Block7.MajorRelease = NTDDI_WIN10_20H1;
         } else if (build >= WIN10_BUILD_1903) {
-            ddd = &store->extension_win10_1903.KdDebugDevice;
-
             // contrary to what you might expect, both 1903 and 1909 use the same value here
             store->extension_win10_1903.MajorRelease = NTDDI_WIN10_19H1;
         } else if (build == WIN10_BUILD_1809) {
-            ddd = &store->extension_win10_1809.KdDebugDevice;
-
             store->extension_win10_1809.MajorRelease = NTDDI_WIN10_RS5;
         } else if (build >= WIN10_BUILD_1703) {
-            ddd = &store->extension_win10_1703.KdDebugDevice;
-
             if (build == WIN10_BUILD_1703)
                 store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS2;
             else if (build == WIN10_BUILD_1709)
@@ -540,20 +530,8 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
             else
                 store->extension_win10_1703.MajorRelease = NTDDI_WIN10_RS4;
         } else if (build >= WIN10_BUILD_1607) {
-            ddd = &store->extension_win10_1607.KdDebugDevice;
-
             store->extension_win10_1607.MajorRelease = NTDDI_WIN10_RS1;
-        } else {
-            ddd = &store->extension_win10.KdDebugDevice;
         }
-
-        if (kdnet_loaded) {
-            memcpy(&store->debug_device_descriptor, &debug_device_descriptor, sizeof(debug_device_descriptor));
-            *ddd = &store->debug_device_descriptor;
-        }
-    } else {
-        print_string("Unsupported Windows version.\n");
-        return EFI_INVALID_PARAMETER;
     }
 
     InitializeListHead(&extblock.Block1c.FirmwareDescriptorListHead);
