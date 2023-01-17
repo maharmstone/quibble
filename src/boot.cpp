@@ -437,9 +437,8 @@ static std::optional<extension_block_variant> find_extension_block(loader_store*
 
 template<typename T>
 static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, uint16_t version, uint16_t build, uint16_t revision,
-                                             LOADER_EXTENSION_BLOCK3** pextblock3, uintptr_t** ploader_pages_spanned) {
+                                             uintptr_t** ploader_pages_spanned) {
     LOADER_EXTENSION_BLOCK2B* extblock2b;
-    LOADER_EXTENSION_BLOCK3* extblock3;
     LOADER_EXTENSION_BLOCK4* extblock4;
     uintptr_t* loader_pages_spanned;
 
@@ -447,11 +446,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         extblock2b = &extblock.Block2b;
     else
         extblock2b = NULL;
-
-    if constexpr (requires { T::Block3; })
-        extblock3 = &extblock.Block3;
-    else
-        extblock3 = NULL;
 
     if constexpr (requires { T::Block4; })
         extblock4 = &extblock.Block4;
@@ -539,8 +533,8 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         InitializeListHead(&extblock2b->BootApplicationPersistentData);
     }
 
-    if (extblock3) {
-        InitializeListHead(&extblock3->AttachedHives);
+    if constexpr (requires { T::Block3; }) {
+        InitializeListHead(&extblock.Block3.AttachedHives);
     }
 
     if (extblock4) {
@@ -556,7 +550,6 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         InitializeListHead(&extblock.Block5a.ApiSetSchemaExtensions);
     }
 
-    *pextblock3 = extblock3;
     *ploader_pages_spanned = loader_pages_spanned;
 
     return EFI_SUCCESS;
@@ -3493,7 +3486,6 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     uint32_t version_ms, version_ls;
     uint16_t version;
     uint16_t build, revision;
-    LOADER_EXTENSION_BLOCK3* extblock3;
     uintptr_t* loader_pages_spanned;
     unsigned int pathlen, pathwlen;
     wchar_t* pathw;
@@ -3994,7 +3986,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
     std::visit([&](auto&& e) {
-        Status = initialize_extension_block(store, *e, version, build, revision, &extblock3, &loader_pages_spanned);
+        Status = initialize_extension_block(store, *e, version, build, revision, &loader_pages_spanned);
     }, extension_block);
 
     if (EFI_ERROR(Status)) {
