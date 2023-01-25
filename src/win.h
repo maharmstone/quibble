@@ -3685,6 +3685,10 @@ typedef struct {
     uint32_t VirtualBias;
 } I386_LOADER_BLOCK;
 
+typedef struct {
+    uint32_t PlaceHolder;
+} ARM_LOADER_BLOCK;
+
 typedef struct _SETUP_LOADER_BLOCK SETUP_LOADER_BLOCK;
 
 typedef struct {
@@ -4326,6 +4330,7 @@ typedef struct {
     void* Extension;
     union {
         I386_LOADER_BLOCK I386;
+        ARM_LOADER_BLOCK Arm;
     } u;
     FIRMWARE_INFORMATION_LOADER_BLOCK_WIN81 FirmwareInformation;
     char* OsBootstatPathName;
@@ -4365,6 +4370,7 @@ static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, NlsData) == 0xe0, "LOADER_P
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, ArcDiskInformation) == 0xe8, "LOADER_PARAMETER_BLOCK_WIN11 ArcDiskInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, Extension) == 0xf0, "LOADER_PARAMETER_BLOCK_WIN11 Extension");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, u.I386) == 0xf8, "LOADER_PARAMETER_BLOCK_WIN11 I386");
+static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, u.Arm) == 0xf8, "LOADER_PARAMETER_BLOCK_WIN11 Arm");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, FirmwareInformation) == 0x108, "LOADER_PARAMETER_BLOCK_WIN11 FirmwareInformation");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, OsBootstatPathName) == 0x148, "LOADER_PARAMETER_BLOCK_WIN11 OsBootstatPathName");
 static_assert(offsetof(LOADER_PARAMETER_BLOCK_WIN11, ArcOSDataDeviceName) == 0x150, "LOADER_PARAMETER_BLOCK_WIN11 ArcOSDataDeviceName");
