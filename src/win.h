@@ -3603,7 +3603,8 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, MaxPciBusNumber) =
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, FeatureSettings) == 0xda4, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 FeatureSettings");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, HotPatchReserveSize) == 0xda8, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 HotPatchReserveSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, RetpolineReserveSize) == 0xdac, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 RetpolineReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, MiniExecutive) == 0xdb0, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 MiniExecutive");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, MiniExecutive.CodeBase) == 0xdb0, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 MiniExecutive.CodeBase");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, MiniExecutive.CodeSize) == 0xdb8, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 MiniExecutive.CodeSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, VsmPerformanceData) == 0xdc0, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 VsmPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, NumaMemoryRanges) == 0xe00, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 NumaMemoryRanges");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, NumaMemoryRangeCount) == 0xe08, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 NumaMemoryRangeCount");
