@@ -2844,23 +2844,54 @@ static_assert(sizeof(LOADER_FEATURE_CONFIGURATION_INFORMATION) == 0x48, "LOADER_
 #endif
 
 typedef struct {
+    uint8_t Signature[5];
+    uint8_t Checksum;
+    uint8_t Length;
+    uint8_t MajorVersion;
+    uint8_t MinorVersion;
+    uint8_t Docrev;
+    uint8_t EntryPointRevision;
+    uint8_t Reserved;
+    uint32_t StructureTableMaximumSize;
+    uint64_t StructureTableAddress;
+} SMBIOS3_TABLE_HEADER;
+
+typedef struct {
+    uint32_t Version;
+    uint32_t AbnormalResetOccurred;
+    uint32_t OfflineMemoryDumpCapable;
+    int64_t ResetDataAddress;
+    uint32_t ResetDataSize;
+} OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_V2;
+
+static_assert(sizeof(OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_V2) == 0x20);
+static_assert(offsetof(OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_V2, Version) == 0x0);
+static_assert(offsetof(OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_V2, AbnormalResetOccurred) == 0x4);
+static_assert(offsetof(OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_V2, OfflineMemoryDumpCapable) == 0x8);
+static_assert(offsetof(OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_V2, ResetDataAddress) == 0x10);
+static_assert(offsetof(OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_V2, ResetDataSize) == 0x18);
+
+typedef struct {
     uint32_t Size;
     PROFILE_PARAMETER_BLOCK Profile;
 #ifdef __x86_64__
     uint32_t padding1;
 #endif
     void* EmInfFileImage;
-    uintptr_t EmInfFileSize;
-    void* TriageDumpBlock;
-    HEADLESS_LOADER_BLOCK* HeadlessLoaderBlock;
-    SMBIOS_TABLE_HEADER* SMBiosEPSHeader;
-    void* DrvDBImage;
-    uintptr_t DrvDBSize;
-    void* DrvDBPatchImage;
-    uint32_t DrvDBPatchSize;
+    uint32_t EmInfFileSize;
 #ifdef __x86_64__
     uint32_t padding2;
 #endif
+    void* TriageDumpBlock;
+    HEADLESS_LOADER_BLOCK* HeadlessLoaderBlock;
+    SMBIOS3_TABLE_HEADER* SMBiosEPSHeader;
+    void* DrvDBImage;
+    uint32_t DrvDBSize;
+#ifdef __x86_64__
+    uint32_t padding3;
+#endif
+    void* DrvDBPatchImage;
+    uint32_t DrvDBPatchSize;
     NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
 #ifndef __x86_64__
     uint8_t* HalpIRQLToTPR;
@@ -2870,21 +2901,47 @@ typedef struct {
     void* AcpiTable;
     uint32_t AcpiTableSize;
     struct {
-        uint32_t BootViaWinload:1;
-        uint32_t BootViaEFI:1;
-        uint32_t Reserved:30;
+        uint32_t LastBootSucceeded : 1;
+        uint32_t LastBootShutdown : 1;
+        uint32_t IoPortAccessSupported : 1;
+        uint32_t BootDebuggerActive : 1;
+        uint32_t StrongCodeGuarantees : 1;
+        uint32_t HardStrongCodeGuarantees : 1;
+        uint32_t SidSharingDisabled : 1;
+        uint32_t TpmInitialized : 1;
+        uint32_t VsmConfigured : 1;
+        uint32_t IumEnabled : 1;
+        uint32_t IsSmbboot : 1;
+        uint32_t BootLogEnabled : 1;
+        uint32_t DriverVerifierEnabled : 1;
+        uint32_t SuppressMonitorX : 1;
+        uint32_t KernelCetEnabled : 1;
+        uint32_t SuppressSmap : 1;
+        uint32_t Unused : 5;
+        uint32_t FeatureSimulations : 6;
+        uint32_t MicrocodeSelfHosting : 1;
+        uint32_t XhciLegacyHandoffSkip : 1;
+        uint32_t DisableInsiderOptInHVCI : 1;
+        uint32_t MicrocodeMinVerSupported : 1;
+        uint32_t GpuIommuEnabled : 1;
     };
     LOADER_PERFORMANCE_DATA_1903 LoaderPerformanceData;
     LIST_ENTRY BootApplicationPersistentData;
     void* WmdTestResult;
     GUID BootIdentifier;
-    uintptr_t ResumePages;
+    uint32_t ResumePages;
+#ifdef __x86_64__
+    uint32_t padding4;
+#endif
     void* DumpHeader;
     void* BgContext;
     void* NumaLocalityInfo;
     void* NumaGroupAssignment;
     LIST_ENTRY AttachedHives;
-    uintptr_t MemoryCachingRequirementsCount;
+    uint32_t MemoryCachingRequirementsCount;
+#ifdef __x86_64__
+    uint32_t padding5;
+#endif
     void* MemoryCachingRequirements;
     BOOT_ENTROPY_LDR_RESULT_WIN1809 BootEntropyResult;
     uint64_t ProcessorCounterFrequency;
@@ -2893,7 +2950,15 @@ typedef struct {
     LIST_ENTRY HalExtensionModuleList;
     int64_t SystemTime;
     uint64_t TimeStampAtSystemTimeRead;
-    uint64_t BootFlags;
+    union {
+        uint64_t BootFlags;
+        struct {
+            uint64_t DbgMenuOsSelection : 1;
+            uint64_t DbgHiberBoot : 1;
+            uint64_t DbgSoftRestart : 1;
+            uint64_t DbgMeasuredLaunch : 1;
+        };
+    };
     union {
         uint64_t InternalBootFlags;
         struct {
@@ -2912,30 +2977,26 @@ typedef struct {
     UNICODE_STRING SmbiosVersion;
     UNICODE_STRING EfiVersion;
     DEBUG_DEVICE_DESCRIPTOR* KdDebugDevice;
-    OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_WIN10 OfflineCrashdumpConfigurationTable;
-    uint32_t padding3;
+    OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_V2 OfflineCrashdumpConfigurationTable;
     UNICODE_STRING ManufacturingProfile;
     void* BbtBuffer;
 #ifndef __x86_64__
-    uint32_t padding4;
+    uint32_t padding6;
 #endif
     uint64_t XsaveAllowedFeatures;
     uint32_t XsaveFlags;
 #ifdef __x86_64__
-    uint32_t padding5;
+    uint32_t padding7;
 #endif
     void* BootOptions;
     uint32_t IumEnablement;
     uint32_t IumPolicy;
-    uint32_t IumStatus;
+    int32_t IumStatus;
     uint32_t BootId;
     LOADER_PARAMETER_CI_EXTENSION* CodeIntegrityData;
     uint32_t CodeIntegrityDataSize;
     LOADER_HIVE_RECOVERY_INFO SystemHiveRecoveryInfo;
     uint32_t SoftRestartCount;
-#ifdef __x86_64__
-    uint32_t padding6;
-#endif
     int64_t SoftRestartTime;
 #ifdef __x86_64__
     void* HypercallCodeVa;
@@ -2948,7 +3009,7 @@ typedef struct {
     char NtBuildLab[0xe0];
     char NtBuildLabEx[0xe0];
 #ifndef __x86_64__
-    uint32_t padding7;
+    uint32_t padding8;
 #endif
     LOADER_RESET_REASON ResetReason;
     uint32_t MaxPciBusNumber;
@@ -2958,7 +3019,7 @@ typedef struct {
 #ifdef __x86_64__
     struct {
         void* CodeBase;
-        uint32_t CodeSize;
+        uint64_t CodeSize;
     } MiniExecutive;
 #endif
     VSM_PERFORMANCE_DATA VsmPerformanceData;
@@ -2966,7 +3027,7 @@ typedef struct {
     uint32_t NumaMemoryRangeCount;
     uint32_t IommuFaultPolicy;
 #ifndef __x86_64__
-    uint32_t padding8;
+    uint32_t padding9;
 #endif
     LOADER_FEATURE_CONFIGURATION_INFORMATION FeatureConfigurationInformation;
 } LOADER_PARAMETER_EXTENSION_WIN10_21H1;
@@ -3127,7 +3188,8 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MaxPciBusNumber) =
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, FeatureSettings) == 0xd84, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 FeatureSettings");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, HotPatchReserveSize) == 0xd88, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 HotPatchReserveSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, RetpolineReserveSize) == 0xd8c, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 RetpolineReserveSize");
-static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MiniExecutive) == 0xd90, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MiniExecutive");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MiniExecutive.CodeBase) == 0xd90, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MiniExecutive.CodeBase");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, MiniExecutive.CodeSize) == 0xd98, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 MiniExecutive.CodeSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, VsmPerformanceData) == 0xda0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 VsmPerformanceData");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NumaMemoryRanges) == 0xde0, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRanges");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN10_21H1, NumaMemoryRangeCount) == 0xde8, "LOADER_PARAMETER_EXTENSION_WIN10_21H1 NumaMemoryRangeCount");
@@ -3386,19 +3448,6 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, Luid) == 0xeb0, "LOADER
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, InstalledMemory.Ranges) == 0xeb8, "LOADER_PARAMETER_EXTENSION_WIN11 InstalledMemory.Ranges");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, InstalledMemory.RangeCount) == 0xec0, "LOADER_PARAMETER_EXTENSION_WIN11 InstalledMemory.RangeCount");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11, HotPatchList) == 0xec8, "LOADER_PARAMETER_EXTENSION_WIN11 HotPatchList");
-
-typedef struct {
-    uint8_t Signature[5];
-    uint8_t Checksum;
-    uint8_t Length;
-    uint8_t MajorVersion;
-    uint8_t MinorVersion;
-    uint8_t Docrev;
-    uint8_t EntryPointRevision;
-    uint8_t Reserved;
-    uint32_t StructureTableMaximumSize;
-    uint64_t StructureTableAddress;
-} SMBIOS3_TABLE_HEADER;
 
 #pragma pack(push,1)
 typedef struct {
