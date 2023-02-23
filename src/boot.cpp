@@ -130,6 +130,13 @@ typedef void (EFIAPI* change_stack_cb) (
 
 static const wchar_t system_root[] = L"\\SystemRoot\\";
 
+extern "C"
+void abort() {
+    // won't ever be called, but defined so GCC won't pull in msvcrt
+
+    while (1) { }
+}
+
 // FIXME - calls to protocols should include pointer to callback to display any errors (and also TRACE etc.?)
 
 EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const wchar_t* name, TYPE_OF_MEMORY memory_type,
