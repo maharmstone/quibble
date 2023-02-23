@@ -3819,7 +3819,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         goto end;
     }
 
-    loader_block = loader_block_opt.value();
+    loader_block = *loader_block_opt;
 
     extension_block_opt = find_extension_block(store, version, build);
 
@@ -3828,7 +3828,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         goto end;
     }
 
-    extension_block = extension_block_opt.value();
+    extension_block = *extension_block_opt;
 
     std::visit([&](auto&& b) {
         Status = initialize_loader_block(bs, store, *b, options, path, arc_name, &va, &mappings, &drivers, image_handle,
