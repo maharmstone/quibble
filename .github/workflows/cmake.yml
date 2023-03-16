@@ -20,8 +20,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        ref: '6af4222daf646e294d362630e2740039ceb637df'
+    #   with:
+    #     ref: '6af4222daf646e294d362630e2740039ceb637df'
 
     - name: Install MinGW
       uses: egor-tensin/setup-mingw@v2.2.0
