@@ -1,0 +1,54 @@
+name: Mingw-x86
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  TOOLCHAIN_TYPE: mingw-x86.cmake
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    #   with:
+    #     ref: '6af4222daf646e294d362630e2740039ceb637df'
+
+    - name: Install MinGW
+      uses: egor-tensin/setup-mingw@v2.2.0
+      with:
+        platform: x86
+    
+    # - name: Install dependencies
+    #   run: sudo apt-get install -y zlib1g-dev
+
+
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: mkdir ${{github.workspace}}/build ; cd ${{github.workspace}}/build && cmake -DCMAKE_TOOLCHAIN_FILE=../${{env.TOOLCHAIN_TYPE}} ..
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cd ${{github.workspace}}/build && make 
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      # Execute tests defined by the CMake configuration.
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ctest -C ${{env.BUILD_TYPE}}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: quibble-debug-x86-mingw
+        path: |
+          ${{github.workspace}}/build/quibble.efi
+          ${{github.workspace}}/build/btrfs.efi
