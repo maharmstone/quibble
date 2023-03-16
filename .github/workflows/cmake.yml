@@ -9,7 +9,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   TOOLCHAIN_TYPE: mingw-amd64.cmake
-  BUILD_TYPE: Release
+  BUILD_TYPE: Debug
 
 jobs:
   build:
@@ -48,7 +48,7 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
     - uses: actions/upload-artifact@v3
       with:
-        name: quibble-debug
+        name: quibble-debug-x64
         path: |
           ${{github.workspace}}/build/quibble.efi
           ${{github.workspace}}/build/btrfs.efi
