@@ -1,4 +1,4 @@
-name: CMake
+name: Mingw-amd64
 
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
     - uses: actions/upload-artifact@v3
       with:
-        name: quibble-debug-x64
+        name: quibble-debug-x64-mingw
         path: |
           ${{github.workspace}}/build/quibble.efi
           ${{github.workspace}}/build/btrfs.efi
