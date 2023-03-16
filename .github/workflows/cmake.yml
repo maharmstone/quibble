@@ -29,7 +29,7 @@ jobs:
         platform: x64
     
     - name: Install dependencies
-      run: apt install zlib1g-dev
+      run: sudo apt-get install -y zlib1g-dev
 
 
     - name: Configure CMake
