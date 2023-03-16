@@ -31,7 +31,7 @@
 # HARFBUZZ_LIBRARIES - containg the HarfBuzz library
 
 include(FindPkgConfig)
-pkg_check_modules(PC_HARFBUZZ QUIET harfbuzz)
+pkg_check_modules(PC_HARFBUZZ QUIET HarfBuzz)
 
 find_path(HARFBUZZ_INCLUDE_DIRS
     NAMES hb.h
