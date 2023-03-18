@@ -407,7 +407,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
     UINT32 version;
     EFI_MEMORY_DESCRIPTOR* desc = NULL;
     uint8_t* va2 = (uint8_t*)*va;
-    bool map_video_ram = true;
+    bool map_video_ram = true, map_first_page = true;
 
     efi_map_size = 0;
 
@@ -474,6 +474,9 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
 
             if (desc->PhysicalStart <= 0xa0000 && desc->PhysicalStart + (desc->NumberOfPages << EFI_PAGE_SHIFT) > 0xa0000)
                 map_video_ram = false;
+
+            if (desc->PhysicalStart == 0)
+                map_first_page = false;
         } else {
             Status = add_mapping(bs, mappings, NULL, (void*)(uintptr_t)desc->PhysicalStart,
                                  desc->NumberOfPages, LoaderFree);
@@ -499,6 +502,14 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
     // add video RAM and BIOS ROM, if not reported by GetMemoryMap
     if (map_video_ram) {
         Status = add_mapping(bs, mappings, NULL, (void*)0xa0000, 0x60, LoaderFirmwarePermanent);
+        if (EFI_ERROR(Status)) {
+            print_error("add_mapping", Status);
+            return Status;
+        }
+    }
+
+    if (map_first_page) {
+        Status = add_mapping(bs, mappings, NULL, (void*)0, 1, LoaderFirmwarePermanent);
         if (EFI_ERROR(Status)) {
             print_error("add_mapping", Status);
             return Status;
