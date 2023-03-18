@@ -1047,6 +1047,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     }
 
     // map first page (doesn't get mapped above because VA is 0)
+    // needed by HalInitializeBios unless DbgNoLegacyServices is set
     Status = map_memory(bs, mappings, 0, 0, 1);
     if (EFI_ERROR(Status)) {
         print_error("map_memory", Status);
