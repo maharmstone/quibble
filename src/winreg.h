@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #define HV_HBLOCK_SIGNATURE 0x66676572  // "regf"
+#define HV_HBIN_SIGNATURE   0x6e696268  // "hbin"
 
 #define HSYS_MAJOR 1
 #define HSYS_MINOR 3
@@ -71,6 +72,15 @@ typedef struct {
     uint32_t BootType;
     uint32_t BootRecover;
 } HBASE_BLOCK;
+
+typedef struct {
+    uint32_t Signature;
+    uint32_t FileOffset;
+    uint32_t Size;
+    uint32_t Reserved[2];
+    uint64_t TimeStamp;
+    uint32_t Spare;
+} HBIN;
 
 typedef struct {
     uint16_t Signature;

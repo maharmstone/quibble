@@ -17,6 +17,7 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include <span>
 #include "reg.h"
 #include "misc.h"
 #include "winreg.h"
@@ -34,6 +35,8 @@ static EFI_REGISTRY_PROTOCOL proto;
 static EFI_BOOT_SERVICES* bs;
 
 static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive);
+
+using namespace std;
 
 EFI_STATUS reg_register(EFI_BOOT_SERVICES* BootServices) {
     EFI_GUID reg_guid = WINDOWS_REGISTRY_PROTOCOL;
@@ -720,6 +723,71 @@ static void clear_volatile(hive* h, HKEY key) {
     }
 }
 
+static bool validate_bins(span<const uint8_t> data) {
+    size_t off = 0;
+
+    data = data.subspan(0x1000);
+
+    while (!data.empty()) {
+        const auto& hb = *(HBIN*)data.data();
+
+        if (hb.Signature != HV_HBIN_SIGNATURE) {
+            char s[255], *p;
+
+            p = stpcpy(s, "Invalid hbin signature in hive at offset ");
+            p = hex_to_str(p, off);
+            p = stpcpy(p, ".\n");
+
+            print_string(s);
+
+            return false;
+        }
+
+        if (hb.FileOffset != off) {
+            char s[255], *p;
+
+            p = stpcpy(s, "hbin FileOffset in hive was ");
+            p = hex_to_str(p, hb.FileOffset);
+            p = stpcpy(p, ", expected ");
+            p = hex_to_str(p, off);
+            p = stpcpy(p, ".\n");
+
+            print_string(s);
+
+            return false;
+        }
+
+        if (hb.Size > data.size()) {
+            char s[255], *p;
+
+            p = stpcpy(s, "hbin overrun in hive at offset ");
+            p = hex_to_str(p, off);
+            p = stpcpy(p, ".\n");
+
+            print_string(s);
+
+            return false;
+        }
+
+        if (hb.Size & 0xfff) {
+            char s[255], *p;
+
+            p = stpcpy(s, "hbin Size in hive at offset ");
+            p = hex_to_str(p, off);
+            p = stpcpy(p, " was not multiple of 1000.\n");
+
+            print_string(s);
+
+            return false;
+        }
+
+        off += hb.Size;
+        data = data.subspan(hb.Size);
+    }
+
+    return true;
+}
+
 static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive) {
     EFI_STATUS Status;
     EFI_FILE_INFO file_info;
@@ -794,6 +862,13 @@ static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive
 
     if (!check_header(h)) {
         print_string("Header check failed.\n");
+        bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)h->data, h->pages);
+        bs->FreePool(h);
+        return EFI_INVALID_PARAMETER;
+    }
+
+    // do sanity-checking of hive, to avoid a bug check 74 later on
+    if (!validate_bins(span((uint8_t*)h->data, h->pages << EFI_PAGE_SHIFT))) {
         bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)h->data, h->pages);
         bs->FreePool(h);
         return EFI_INVALID_PARAMETER;

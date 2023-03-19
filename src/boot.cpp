@@ -2505,6 +2505,14 @@ EFI_STATUS load_image(image* img, const wchar_t* name, EFI_PE_LOADER_PROTOCOL* p
 
     Status = pe->Load(file, !is_kdstub ? va : NULL, &img->img);
     if (EFI_ERROR(Status)) {
+        char s[255], *p;
+
+        p = stpcpy(s, "Loading of ");
+        p = stpcpy_utf16(p, name);
+        p = stpcpy(p, " failed.\n");
+
+        print_string(s);
+
         print_error("PE load", Status);
         file->Close(file);
         return Status;

@@ -15,7 +15,8 @@ typedef int32_t NTSTATUS;
 typedef struct {
     void* scratch;
     DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
-    // FIXME - Windows 8.1 wants some more stuff here
+    uint8_t* mac_address;
+    // FIXME - Windows 8.1 wants some more stuff here(?)
 } KD_NET_DATA;
 
 typedef NTSTATUS (__stdcall *KD_INITIALIZE_CONTROLLER) (
@@ -167,6 +168,7 @@ KD_INITIALIZE_LIBRARY KdInitializeLibrary = NULL;
 KD_INITIALIZE_CONTROLLER KdInitializeController = NULL;
 static DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
 void* kdnet_scratch = NULL;
+static uint8_t mac_address[6];
 
 EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub, uint16_t build) {
     UINT64 addr;
@@ -485,6 +487,7 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
 
     kd_net_data.scratch = kdnet_scratch;
     kd_net_data.debug_device_descriptor = ddd;
+    kd_net_data.mac_address = mac_address;
 
     if (build >= WIN10_BUILD_1507)
         Status = funcs.KdInitializeController(&kd_net_data);
