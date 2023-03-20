@@ -406,7 +406,7 @@ using extension_block_variant = std::variant<LOADER_PARAMETER_EXTENSION_WS03*,
                                              LOADER_PARAMETER_EXTENSION_WIN10_21H1*>;
 
 static std::optional<extension_block_variant> find_extension_block(loader_store* store, uint16_t version,
-                                                                   uint16_t build) {
+                                                                   uint16_t build, uint16_t revision) {
     if (version <= _WIN32_WINNT_WS03)
         return &store->extension_ws03;
     else if (version == _WIN32_WINNT_VISTA) {
@@ -422,7 +422,7 @@ static std::optional<extension_block_variant> find_extension_block(loader_store*
     else if (version == _WIN32_WINNT_WINBLUE)
         return &store->extension_win81;
     else if (version == _WIN32_WINNT_WIN10) {
-        if (build >= WIN10_BUILD_21H1)
+        if (build >= WIN10_BUILD_21H1 || (build == WIN10_BUILD_2004 || revision >= 572))
             return &store->extension_win10_21H1;
         else if (build >= WIN10_BUILD_2004)
             return &store->extension_win10_2004;
@@ -3836,7 +3836,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     loader_block = *loader_block_opt;
 
-    extension_block_opt = find_extension_block(store, version, build);
+    extension_block_opt = find_extension_block(store, version, build, revision);
 
     if (!extension_block_opt.has_value()) {
         Status = EFI_INVALID_PARAMETER;
