@@ -867,14 +867,16 @@ static EFI_STATUS EFIAPI OpenHive(EFI_FILE_HANDLE File, EFI_REGISTRY_HIVE** Hive
         return EFI_INVALID_PARAMETER;
     }
 
+    const auto& base_block = *(HBASE_BLOCK*)h->data;
+
     // do sanity-checking of hive, to avoid a bug check 74 later on
-    if (!validate_bins(span((uint8_t*)h->data, h->pages << EFI_PAGE_SHIFT))) {
+    if (!validate_bins(span((uint8_t*)h->data, 0x1000 + base_block.Length))) {
         bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)h->data, h->pages);
         bs->FreePool(h);
         return EFI_INVALID_PARAMETER;
     }
 
-    clear_volatile(h, 0x1000 + ((HBASE_BLOCK*)h->data)->RootCell);
+    clear_volatile(h, 0x1000 + base_block.RootCell);
 
     h->pub.Close = close_hive;
     h->pub.FindRoot = find_root;
