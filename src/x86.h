@@ -108,7 +108,14 @@ typedef struct {
 #define TYPE_TSS32A 0x09
 
 #define PAGE_COUNT(s) ((s + EFI_PAGE_SIZE - 1) / EFI_PAGE_SIZE)
+
+#ifdef _X86_
+// Windows 10 20H2+ stores something or other at the end of the GDT (see nt!KeStartAllProcessors)
+#define GDT_PAGES 3
+#else
 #define GDT_PAGES PAGE_COUNT(NUM_GDT*sizeof(gdt_entry))
+#endif
+
 #define IDT_PAGES PAGE_COUNT(NUM_IDT*sizeof(idt_entry))
 
 #define IOPM_COUNT              1
