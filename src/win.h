@@ -4557,6 +4557,18 @@ typedef enum {
     LoaderHALCachedMemory,
     LoaderLargePageFiller,
     LoaderErrorLogMemory,
+    LoaderVsmMemory,
+    LoaderFirmwareCode,
+    LoaderFirmwareData,
+    LoaderFirmwareReserved,
+    LoaderEnclaveMemory,
+    LoaderFirmwareKsr,
+    LoaderEnclaveKsr,
+    LoaderSkMemory,
+    LoaderSkFirmwareReserved,
+    LoaderIoSpaceMemoryZeroed,
+    LoaderIoSpaceMemoryFree,
+    LoaderIoSpaceMemoryKsr,
     LoaderMaximum
 } TYPE_OF_MEMORY;
 
