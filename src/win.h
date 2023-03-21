@@ -62,7 +62,6 @@
 #define APIC_BASE               0xfffe0000
 #define KI_USER_SHARED_DATA     0xffdf0000
 #define KIP0PCRADDRESS          0xffdff000
-#define PCR_PAGES               7 // 0x6020 bytes as of 2004
 #elif defined(__x86_64__)
 #define SELFMAP                 0xfffff68000000000
 #define SELFMAP_PD              0xfffff6fb40000000
@@ -4768,8 +4767,37 @@ typedef struct {
 } API_SET_NAMESPACE_HEADER_10;
 
 #ifdef _X86_
+typedef struct _EXCEPTION_REGISTRATION_RECORD {
+    struct _EXCEPTION_REGISTRATION_RECORD* Next;
+    void* Handler;
+} EXCEPTION_REGISTRATION_RECORD;
+
+typedef struct _NT_TIB {
+    EXCEPTION_REGISTRATION_RECORD* ExceptionList;
+    void* StackBase;
+    void* StackLimit;
+    void* SubSystemTib;
+    union {
+        void* FiberData;
+        uint32_t Version;
+    };
+    void* ArbitraryUserPointer;
+    struct _NT_TIB* Self;
+} NT_TIB;
+
 typedef struct _KPCR {
-    uint8_t NtTib[0x1c];
+    union {
+        NT_TIB NtTib;
+        struct {
+            EXCEPTION_REGISTRATION_RECORD* Used_ExceptionList;
+            void* Used_StackBase;
+            unsigned long MxCsr;
+            void* TssCopy;
+            unsigned long ContextSwitches;
+            unsigned long SetMemberCopy;
+            void* Used_Self;
+        };
+    };
     struct _KPCR* SelfPcr;
     void* Prcb;
     uint32_t Irql;
@@ -4795,10 +4823,44 @@ typedef struct _KPCR {
     uint32_t InterruptMode;
     uint32_t Spare1;
     uint32_t KernelReserved2[17];
-    uint8_t PrcbData;
+    uint8_t PrcbData[0x5f00];
 } KPCR;
 
-static_assert(offsetof(KPCR, PrcbData) == 0x120, "KPCR PrcbData has incorrect offset.");
+static_assert(sizeof(KPCR) == 0x6020);
+static_assert(offsetof(KPCR, NtTib) == 0x0);
+static_assert(offsetof(KPCR, Used_ExceptionList) == 0x0);
+static_assert(offsetof(KPCR, Used_StackBase) == 0x4);
+static_assert(offsetof(KPCR, MxCsr) == 0x8);
+static_assert(offsetof(KPCR, TssCopy) == 0xc);
+static_assert(offsetof(KPCR, ContextSwitches) == 0x10);
+static_assert(offsetof(KPCR, SetMemberCopy) == 0x14);
+static_assert(offsetof(KPCR, Used_Self) == 0x18);
+static_assert(offsetof(KPCR, SelfPcr) == 0x1c);
+static_assert(offsetof(KPCR, Prcb) == 0x20);
+static_assert(offsetof(KPCR, Irql) == 0x24);
+static_assert(offsetof(KPCR, IRR) == 0x28);
+static_assert(offsetof(KPCR, IrrActive) == 0x2c);
+static_assert(offsetof(KPCR, IDR) == 0x30);
+static_assert(offsetof(KPCR, KdVersionBlock) == 0x34);
+static_assert(offsetof(KPCR, IDT) == 0x38);
+static_assert(offsetof(KPCR, GDT) == 0x3c);
+static_assert(offsetof(KPCR, TSS) == 0x40);
+static_assert(offsetof(KPCR, MajorVersion) == 0x44);
+static_assert(offsetof(KPCR, MinorVersion) == 0x46);
+static_assert(offsetof(KPCR, SetMember) == 0x48);
+static_assert(offsetof(KPCR, StallScaleFactor) == 0x4c);
+static_assert(offsetof(KPCR, SpareUnused) == 0x50);
+static_assert(offsetof(KPCR, Number) == 0x51);
+static_assert(offsetof(KPCR, Spare0) == 0x52);
+static_assert(offsetof(KPCR, SecondLevelCacheAssociativity) == 0x53);
+static_assert(offsetof(KPCR, VdmAlert) == 0x54);
+static_assert(offsetof(KPCR, KernelReserved) == 0x58);
+static_assert(offsetof(KPCR, SecondLevelCacheSize) == 0x90);
+static_assert(offsetof(KPCR, HalReserved) == 0x94);
+static_assert(offsetof(KPCR, InterruptMode) == 0xd4);
+static_assert(offsetof(KPCR, Spare1) == 0xd8);
+static_assert(offsetof(KPCR, KernelReserved2) == 0xdc);
+static_assert(offsetof(KPCR, PrcbData) == 0x120);
 
 #elif defined(__x86_64__)
 

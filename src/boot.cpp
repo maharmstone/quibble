@@ -2922,7 +2922,13 @@ static EFI_STATUS allocate_pcr(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void
     UNUSED(build);
 #endif
 
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PCR_PAGES, &addr);
+#ifdef _X86_
+    static constexpr size_t pages = (sizeof(KPCR) + EFI_PAGE_SIZE - 1) / EFI_PAGE_SIZE;
+#else
+    static constexpr size_t pages = PCR_PAGES;
+#endif
+
+    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, pages, &addr);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePages", Status);
         return Status;
@@ -2930,7 +2936,7 @@ static EFI_STATUS allocate_pcr(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void
 
     pcr = (void*)(uintptr_t)addr;
 
-    memset(pcr, 0, EFI_PAGE_SIZE * PCR_PAGES);
+    memset(pcr, 0, EFI_PAGE_SIZE * pages);
 
 #ifdef _X86_
     if (build < WIN10_BUILD_1703)
@@ -2938,12 +2944,12 @@ static EFI_STATUS allocate_pcr(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void
     else {
 #endif
         *pcrva = *va;
-        *va = (uint8_t*)*va + (PCR_PAGES * EFI_PAGE_SIZE);
+        *va = (uint8_t*)*va + (pages * EFI_PAGE_SIZE);
 #ifdef _X86_
     }
 #endif
 
-    Status = add_mapping(bs, mappings, *pcrva, pcr, PCR_PAGES, LoaderStartupPcrPage);
+    Status = add_mapping(bs, mappings, *pcrva, pcr, pages, LoaderStartupPcrPage);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
