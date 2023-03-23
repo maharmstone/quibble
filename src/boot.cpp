@@ -768,12 +768,8 @@ static void set_gdt_entry(gdt_entry* gdt, uint16_t selector, uint32_t base, uint
         entry->Granularity = true;
 }
 
-static void* initialize_gdt(EFI_BOOT_SERVICES* bs, KTSS* tss, KTSS* nmitss, KTSS* dftss, KTSS* mctss,
-                            uint16_t version, void* pcrva) {
-    EFI_STATUS Status;
-    gdt_entry* gdt;
-    EFI_PHYSICAL_ADDRESS addr;
-
+static void initialize_gdt(gdt_entry* gdt, KTSS* tss, KTSS* nmitss, KTSS* dftss, KTSS* mctss,
+                           uint16_t version, void* pcrva) {
 #ifdef __x86_64__
     UNUSED(version);
     UNUSED(pcrva);
@@ -781,16 +777,6 @@ static void* initialize_gdt(EFI_BOOT_SERVICES* bs, KTSS* tss, KTSS* nmitss, KTSS
     UNUSED(dftss);
     UNUSED(mctss);
 #endif
-
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, GDT_PAGES, &addr);
-    if (EFI_ERROR(Status)) {
-        print_error("AllocatePages", Status);
-        return NULL;
-    }
-
-    gdt = (gdt_entry*)(uintptr_t)addr;
-
-    memset(gdt, 0, GDT_PAGES * EFI_PAGE_SIZE);
 
 #ifdef _X86_
     set_gdt_entry(gdt, KGDT_NULL, 0x0000, 0, 0, 0, false, 0, false);
@@ -841,8 +827,6 @@ static void* initialize_gdt(EFI_BOOT_SERVICES* bs, KTSS* tss, KTSS* nmitss, KTSS
     set_gdt_entry(gdt, KGDT_R3_CMTEB, 0, 0xfff, TYPE_DATA, 3, false, 2, false);
     set_gdt_entry(gdt, KGDT_R0_LDT, 0, 0xffffffff, TYPE_CODE, 0, true, 2, false);
 #endif
-
-    return gdt;
 }
 
 #ifdef DEBUG_EARLY_FAULTS
@@ -919,21 +903,8 @@ static void page_fault_wrapper() {
 }
 #endif
 
-static void* initialize_idt(EFI_BOOT_SERVICES* bs) {
-    EFI_STATUS Status;
-    idt_entry* idt;
+static void initialize_idt(idt_entry* idt) {
     GDTIDT old;
-    EFI_PHYSICAL_ADDRESS addr;
-
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, IDT_PAGES, &addr);
-    if (EFI_ERROR(Status)) {
-        print_error("AllocatePages", Status);
-        return NULL;
-    }
-
-    idt = (idt_entry*)(uintptr_t)addr;
-
-    memset(idt, 0, IDT_PAGES * EFI_PAGE_SIZE);
 
 #ifdef _MSC_VER
     __sidt(&old);
@@ -945,7 +916,10 @@ static void* initialize_idt(EFI_BOOT_SERVICES* bs) {
     );
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
     memcpy(idt, (void*)(uintptr_t)old.Base, old.Limit + 1);
+#pragma GCC diagnostic pop
 
 #ifdef DEBUG_EARLY_FAULTS
     uintptr_t func = (uintptr_t)(void*)page_fault_wrapper;
@@ -959,8 +933,6 @@ static void* initialize_idt(EFI_BOOT_SERVICES* bs) {
     idt[0xe].offset_3 = func >> 32;
     idt[0xe].zero = 0;
 #endif
-
-    return idt;
 }
 
 #ifdef _MSC_VER
@@ -4059,37 +4031,38 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 #endif
 
-    gdt = (gdt_entry*)initialize_gdt(bs, tss, nmitss, dftss, mctss, version, pcrva);
-    if (!gdt) {
-        print_string("initialize_gdt failed\n");
-        Status = EFI_OUT_OF_RESOURCES;
-        goto end;
+    /* This is what Windows expects from 10 20H2 on - the GDT and IDT allocated
+     * together in a block of 7 pages, with the gaps used for unknown purposes.
+     * Something to do with "KVA shadowing" for Spectre / Meltdown mitigation? */
+
+    {
+        EFI_PHYSICAL_ADDRESS addr;
+        uint8_t* idtgdt;
+
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, IDTGDT_PAGES, &addr);
+        if (EFI_ERROR(Status)) {
+            print_error("AllocatePages", Status);
+            goto end;
+        }
+
+        idtgdt = (uint8_t*)(uintptr_t)addr;
+
+        Status = add_mapping(bs, &mappings, va, idtgdt, IDTGDT_PAGES, LoaderMemoryData);
+        if (EFI_ERROR(Status)) {
+            print_error("add_mapping", Status);
+            goto end;
+        }
+
+        memset(idtgdt, 0, IDTGDT_PAGES << EFI_PAGE_SHIFT);
+
+        initialize_gdt((gdt_entry*)idtgdt, tss, nmitss, dftss, mctss, version, pcrva);
+        gdt = (gdt_entry*)va;
+
+        initialize_idt((idt_entry*)(idtgdt + (3 << EFI_PAGE_SHIFT)));
+        idt = (idt_entry*)((uint8_t*)va + (3 << EFI_PAGE_SHIFT));
+
+        va = (uint8_t*)va + (IDTGDT_PAGES << EFI_PAGE_SHIFT);
     }
-
-    Status = add_mapping(bs, &mappings, va, gdt, GDT_PAGES, LoaderMemoryData);
-    if (EFI_ERROR(Status)) {
-        print_error("add_mapping", Status);
-        goto end;
-    }
-
-    gdt = (gdt_entry*)va;
-    va = (uint8_t*)va + (GDT_PAGES * EFI_PAGE_SIZE);
-
-    idt = (idt_entry*)initialize_idt(bs);
-    if (!gdt) {
-        print_string("initialize_idt failed\n");
-        Status = EFI_OUT_OF_RESOURCES;
-        goto end;
-    }
-
-    Status = add_mapping(bs, &mappings, va, idt, IDT_PAGES, LoaderMemoryData);
-    if (EFI_ERROR(Status)) {
-        print_error("add_mapping", Status);
-        goto end;
-    }
-
-    idt = (idt_entry*)va;
-    va = (uint8_t*)va + (IDT_PAGES * EFI_PAGE_SIZE);
 
     {
         EFI_PHYSICAL_ADDRESS addr;
