@@ -422,7 +422,7 @@ static std::optional<extension_block_variant> find_extension_block(loader_store*
     else if (version == _WIN32_WINNT_WINBLUE)
         return &store->extension_win81;
     else if (version == _WIN32_WINNT_WIN10) {
-        if (build >= WIN10_BUILD_21H1 || (build == WIN10_BUILD_2004 || revision >= 572))
+        if (build >= WIN10_BUILD_21H1 || (build == WIN10_BUILD_2004 && revision >= 572))
             return &store->extension_win10_21H1;
         else if (build >= WIN10_BUILD_2004)
             return &store->extension_win10_2004;
