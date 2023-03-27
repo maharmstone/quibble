@@ -3071,7 +3071,8 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
             // FIXME - allow user to override this
 
             if (info->PixelFormat == PixelBlueGreenRedReserved8BitPerColor &&
-                info->HorizontalResolution * info->VerticalResolution > pixels) {
+                info->HorizontalResolution * info->VerticalResolution > pixels &&
+                info->HorizontalResolution > info->VerticalResolution) { // avoid OVMF's square resolutions
                 mode = j;
                 pixels = info->HorizontalResolution * info->VerticalResolution;
             }
