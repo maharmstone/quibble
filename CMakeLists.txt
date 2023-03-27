@@ -69,6 +69,8 @@ elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "X86")
     add_definitions(-D_X86_)
 endif()
 
+target_compile_definitions(quibble PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
 target_compile_options(quibble PRIVATE "-ffreestanding")
 target_compile_options(quibble PRIVATE "-fno-stack-protector")

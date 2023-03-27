@@ -5011,6 +5011,25 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
         return;
     }
 
+#ifdef DEBUG
+    {
+        EFI_LOADED_IMAGE *loaded_image = nullptr;
+        EFI_GUID li_guid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
+
+        if (!EFI_ERROR(bs->HandleProtocol(image_handle, &li_guid, (void**)&loaded_image))) {
+            char s[255], *p;
+
+            p = stpcpy(s, "Image loaded at ");
+            p = hex_to_str(p, (uintptr_t)loaded_image->ImageBase);
+            p = stpcpy(p, ", press any key to continue...\n");
+
+            print_string(s);
+
+            bs->WaitForEvent(1, &systable->ConIn->WaitForKey, &Event);
+        }
+    }
+#endif
+
     if (!opt->system_path) {
         print_string("SystemPath not set.\n");
         bs->WaitForEvent(1, &systable->ConIn->WaitForKey, &Event);
