@@ -1064,6 +1064,14 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
         return Status;
     }
 
+    if (apic) {
+        Status = map_memory(bs, mappings, APIC_BASE, (uintptr_t)apic, 1);
+        if (EFI_ERROR(Status)) {
+            print_error("map_memory", Status);
+            return Status;
+        }
+    }
+
 #ifdef _X86_
     if (pae) { // map cr3
         Status = map_memory(bs, mappings, ((uintptr_t)pdpt + MM_KSEG0_BASE), (uintptr_t)pdpt, 1);
@@ -1113,14 +1121,6 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
         return Status;
     }
 #endif
-
-    if (apic) {
-        Status = map_memory(bs, mappings, APIC_BASE, (uintptr_t)apic, 1);
-        if (EFI_ERROR(Status)) {
-            print_error("map_memory", Status);
-            return Status;
-        }
-    }
 
     Status = allocate_mdl(bs, mappings, va, &mdl_pa, &mdl_pages);
     if (EFI_ERROR(Status)) {
