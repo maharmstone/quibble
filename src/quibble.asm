@@ -65,7 +65,7 @@ PUBLIC call_startup
 
 ; rcx = stack
 ; rdx = loader_block
-; r8 = KiSystemStarutp
+; r8 = KiSystemStartup
 
 call_startup:
     mov rsp, rcx
