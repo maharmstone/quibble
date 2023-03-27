@@ -44,6 +44,7 @@ set(CMAKE_DISABLE_FIND_PACKAGE_BZip2 TRUE)
 set(CMAKE_DISABLE_FIND_PACKAGE_HARFBUZZ TRUE)
 add_definitions(-DFT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT)
 add_subdirectory(freetype)
+add_subdirectory(ntfs)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(freetype/include)

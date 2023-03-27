@@ -1,0 +1,3 @@
+[submodule "src/ntfs-efi"]
+	path = ntfs
+	url = https://github.com/maharmstone/ntfs-efi
