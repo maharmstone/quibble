@@ -833,8 +833,10 @@ EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs) {
                 continue;
             }
 
+            // FIXME - better way of ignoring CD drives? Does Windows give USB keys etc. an ARC name?
+
             if (time == 0) {
-                if (!io->Media->LogicalPartition) { // disk
+                if (!io->Media->LogicalPartition && !io->Media->RemovableMedia) { // non-removable disk
                     disk_num = next_disk_num;
                     part_num = 0;
 
@@ -845,7 +847,7 @@ EFI_STATUS look_for_block_devices(EFI_BOOT_SERVICES* bs) {
                     continue;
                 }
             } else {
-                if (io->Media->LogicalPartition) { // partition
+                if (io->Media->LogicalPartition && !io->Media->RemovableMedia) { // partition on non-removable disk
                     LIST_ENTRY* le = block_devices.Flink;
                     bool found = false;
 
