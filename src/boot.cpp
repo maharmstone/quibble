@@ -1016,26 +1016,6 @@ static void set_idt(idt_entry* idt) {
 #endif
 }
 
-#ifndef _X86_
-static KTSS* allocate_tss(EFI_BOOT_SERVICES* bs) {
-    EFI_STATUS Status;
-    EFI_PHYSICAL_ADDRESS addr;
-    KTSS* tss;
-
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(sizeof(KTSS)), &addr);
-    if (EFI_ERROR(Status)) {
-        print_error("AllocatePages", Status);
-        return NULL;
-    }
-
-    tss = (KTSS*)(uintptr_t)addr;
-
-    memset(tss, 0, PAGE_COUNT(sizeof(KTSS)) * EFI_PAGE_SIZE);
-
-    return tss;
-}
-#endif
-
 static void* allocate_page(EFI_BOOT_SERVICES* bs) {
     EFI_STATUS Status;
     EFI_PHYSICAL_ADDRESS addr;
@@ -3926,26 +3906,6 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     }
 
 #ifndef _X86_
-    {
-        tssphys = allocate_tss(bs);
-        if (!tssphys) {
-            print_string("out of memory\n");
-            Status = EFI_OUT_OF_RESOURCES;
-            goto end;
-        }
-
-        Status = add_mapping(bs, &mappings, va, tssphys, PAGE_COUNT(sizeof(KTSS)), LoaderMemoryData);
-        if (EFI_ERROR(Status)) {
-            print_error("add_mapping", Status);
-            goto end;
-        }
-
-        tss = (KTSS*)va;
-        va = (uint8_t*)va + (PAGE_COUNT(sizeof(KTSS)) * EFI_PAGE_SIZE);
-    }
-#endif
-
-#ifndef _X86_
     if (build >= WIN10_BUILD_1703) {
 #endif
         Status = allocate_pcr(bs, &mappings, &va, build, (void**)&pcrva);
@@ -4065,6 +4025,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         memset(idtgdt, 0, IDTGDT_PAGES << EFI_PAGE_SHIFT);
 
         tss = (KTSS*)((uint8_t*)va + 0x400);
+#ifndef _X86_
+        tssphys = (KTSS*)((uint8_t*)idtgdt + 0x400);
+#endif
 
         initialize_gdt((gdt_entry*)idtgdt, tss, nmitss, dftss, mctss, version, pcrva);
         gdt = (gdt_entry*)va;
