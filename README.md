@@ -180,7 +180,7 @@ The Btrfs EFI driver contains portions of the following software:
 
 ### LZO
 
-WinBtrfs contains portions of an early version of lzo, which is copyright 1996
+btrfs-efi contains portions of an early version of lzo, which is copyright 1996
 Markus Oberhumer. Modern versions are licensed under the GPL, but this was
 licensed under the LGPL, so I believe it is okay to use.
 
