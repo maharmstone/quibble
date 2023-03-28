@@ -45,6 +45,7 @@ set(CMAKE_DISABLE_FIND_PACKAGE_HARFBUZZ TRUE)
 add_definitions(-DFT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT)
 add_subdirectory(freetype)
 add_subdirectory(ntfs)
+add_subdirectory(btrfs)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(freetype/include)
@@ -98,57 +99,3 @@ target_link_options(quibble PRIVATE "/SUBSYSTEM:EFI_APPLICATION")
 endif()
 
 target_link_libraries(quibble freetype)
-
-# -----------------------------------
-
-set(SRC_FILES src/btrfs/btrfs.c
-    src/btrfs/crc32c.c
-    src/misc.cpp
-    src/btrfs/zlib/adler32.c
-    src/btrfs/zlib/deflate.c
-    src/btrfs/zlib/inffast.c
-    src/btrfs/zlib/inflate.c
-    src/btrfs/zlib/inftrees.c
-    src/btrfs/zlib/trees.c
-    src/btrfs/zlib/zutil.c
-    src/btrfs/lzo.c
-    src/btrfs/xxhash.c
-    src/btrfs/zstd/entropy_common.c
-    src/btrfs/zstd/error_private.c
-    src/btrfs/zstd/fse_decompress.c
-    src/btrfs/zstd/huf_decompress.c
-    src/btrfs/zstd/zstd_common.c
-    src/btrfs/zstd/zstd_ddict.c
-    src/btrfs/zstd/zstd_decompress.c
-    src/btrfs/zstd/zstd_decompress_block.c)
-
-add_executable(btrfs ${SRC_FILES})
-
-set_target_properties(btrfs PROPERTIES SUFFIX ".efi")
-
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
-target_compile_options(btrfs PRIVATE "-ffreestanding")
-target_compile_options(btrfs PRIVATE "-fno-stack-protector")
-target_compile_options(btrfs PRIVATE "-fno-stack-check")
-target_compile_options(btrfs PRIVATE "-mno-stack-arg-probe")
-target_compile_options(btrfs PRIVATE "-Werror-implicit-function-declaration")
-
-target_link_options(btrfs PRIVATE "-nostartfiles")
-target_link_options(btrfs PRIVATE "-shared")
-
-if(${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
-    target_link_options(btrfs PRIVATE "-Wl,--subsystem,efi_boot_service_driver")
-else()
-    target_link_options(btrfs PRIVATE "-Wl,--subsystem,11")
-endif()
-
-if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "X86")
-target_link_options(btrfs PRIVATE "-e_efi_main")
-else()
-target_link_options(btrfs PRIVATE "-eefi_main")
-endif()
-
-elseif(MSVC)
-target_link_options(btrfs PRIVATE "/SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER")
-target_compile_options(btrfs PRIVATE "/Oi-")
-endif()
