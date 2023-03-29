@@ -2,8 +2,8 @@ Quibble
 -------
 
 Quibble is the custom Windows bootloader - an open-source reimplementation of the
-files bootmgfw.efi and winload.efi, able to boot every version of Windows from XP
-to Windows 10 2009. Unlike the official bootloader, it is extensible, allowing you
+files bootmgfw.efi and winload.efi, able to boot versions of Windows from XP
+to Windows 10 22H2. Unlike the official bootloader, it is extensible, allowing you
 to boot from other filesystems than just NTFS.
 
 This is only a proof of concept at this stage - don't use this for anything serious.
@@ -26,24 +26,25 @@ If you're booting Windows 7 or earlier in a VM, you will need the OVMF firmware 
 in as the Compatibility Support Module (CSM), which isn't normally included. Precompiled version are
 available: [x86](https://github.com/maharmstone/quibble/blob/fw/OVMF_CODE.fd?raw=true) and [amd64](https://github.com/maharmstone/quibble/blob/fw/OVMF_CODE64.fd?raw=true).
 
-This has been tested successfully in Qemu v5.0 and on EFI version F50 of a Gigabyte motherboard. The quality of
-EFI implementations varies significantly, so if you're testing on real hardware it may or may not work
+This has been tested successfully in Qemu v7.2, VirtualBox v7, and on EFI version F50 of a Gigabyte motherboard.
+The quality of EFI implementations varies significantly, so if you're testing on real hardware it may or may not work
 for you.
 
 * Install Windows on an NTFS volume.
 
-* Install [WinBtrfs](https://github.com/maharmstone/btrfs) - you will need version 1.6 at least, but the later the better.
+* On modern versions of Windows, turn off Fast Startup in the Control Panel, or run `powercfg /h off` from an admin command prompt.
 
-* On modern versions of Windows, turn off Fast Startup in the Control Panel.
+* For Btrfs:
 
-* Shutdown your PC or VM, and copy its hard disk to a Btrfs partition. The best way is to use [Ntfs2btrfs](https://github.com/maharmstone/ntfs2btrfs)
-to do in-place conversion, which will also preserve your metadata.
+  * Install [WinBtrfs](https://github.com/maharmstone/btrfs) - you will need version 1.6 at least, but the later the better.
+
+  * Shutdown your PC or VM, and copy its hard disk to a Btrfs partition. The best way is to use [Ntfs2btrfs](https://github.com/maharmstone/ntfs2btrfs) to do in-place conversion, which will also preserve your metadata.
 
 * Extract the Quibble package into your EFI System Partition. It's supposed to work in a subdirectory,
 but if you have trouble you might need to put it in the root.
 
-* Adjust the file freeldr.ini, if necessary - the default is for it to boot from the first partition
-of the first disk. You can also change the SystemPath to e.g. `SystemPath=btrfs(1e10b60a-8e9d-466b-a33a-21760829cf3a)\Windows`,
+* Adjust the file freeldr.ini, if necessary - the default is for it to boot from the third partition
+of the first disk, which is where Windows normally installs itself. You can also change the SystemPath to e.g. `SystemPath=btrfs(1e10b60a-8e9d-466b-a33a-21760829cf3a)\Windows`,
 referring to the partition by UUID rather than number. This is the Btrfs UUID, i.e. what shows up in
 the drive properties box on WinBtrfs, or what shows in `btrfs check` on Linux.
 
@@ -51,6 +52,13 @@ the drive properties box on WinBtrfs, or what shows in `btrfs check` on Linux.
 
 Changelog
 ---------
+
+* 20230328
+  * Added NTFS driver
+  * Added support for versions of Windows 10 up to 22H2
+  * CD drives no longer get allocated ARC names
+  * Switched to C++
+  * Lots of miscellaneous bug fixes
 
 * 20210111
   * Added support for GOP graphics
@@ -106,8 +114,8 @@ from booting.
 
 * Which versions of Windows does this work on?
 
-With the Btrfs driver, this should work on XP, Vista, Windows 7, Windows 8, Windows 8.1,
-and Windows 10 versions 1507 to 2009.
+With the Btrfs driver or NTFS drivers, this should work on XP, Vista, Windows 7, Windows 8,
+Windows 8.1, and Windows 10 versions 1507 to 22H2.
 
 * Which filesystems does this support?
 
@@ -130,7 +138,7 @@ Yes - add /SUBVOL=xxx to your Options in freeldr.ini. You can find the number to
 Properties page of your subvolume. On Linux you can use `btrfs subvol list`, but bear in mind
 that you will need to translate the number to hexadecimal.
 
-* Why can't I access any NTFS volumes in Windows?
+* Why can't I access any NTFS volumes in Windows when booting from Btrfs?
 
 Because Windows only loads ntfs.sys when it's booting from NTFS. To start it as a one-off, run
 `sc start ntfs` from an elevated command prompt. To get it to start every time, open regedit and
@@ -140,11 +148,6 @@ change HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ntfs\Start to 1.
 
 The boot graphics code isn't completed yet - you won't see either the Windows logo or the progress
 indicator, just a few seconds of blackness.
-
-* Why does it hang on startup?
-
-There's a race condition in the latest version of WinBtrfs, which manifests itself on some hardware.
-Try adding /ONECPU to your boot options, to see if that makes a difference.
 
 Licences and Thanks
 -------------------
@@ -218,7 +221,6 @@ To-do list
 
 * Get working with XP and Vista on amd64 (done?)
 * Add proper Registry recovery
-* Add NTFS driver
 * Parse BCD files
 * Get tested on more hardware
 * Slipstream into Windows ISO(?)
