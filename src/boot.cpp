@@ -4271,7 +4271,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         store->debug_device_descriptor.Memory.VirtualAddress = find_virtual_address(store->debug_device_descriptor.Memory.VirtualAddress, &mappings);
 
     std::visit([&](auto&& b) {
-        Status = enable_paging(image_handle, bs, &mappings, *b, va, loader_pages_spanned);
+        Status = enable_paging(image_handle, bs, &mappings, b->MemoryDescriptorListHead,
+                               va, loader_pages_spanned);
     }, loader_block);
 
     if (EFI_ERROR(Status)) {

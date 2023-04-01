@@ -115,11 +115,8 @@ void* find_virtual_address(void* pa, LIST_ENTRY* mappings);
 void* fix_address_mapping(void* addr, void* pa, void* va);
 EFI_STATUS add_mapping(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, void* pa, unsigned int pages,
                        TYPE_OF_MEMORY type);
-
-template<typename T>
 EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
-                         T& loader_block, void* va, uintptr_t* loader_pages_spanned);
-
+                         LIST_ENTRY& mdl_head, void* va, uintptr_t* loader_pages_spanned);
 EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mappings);
 EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** va, uint16_t version);
 void merge_mappings(LIST_ENTRY* mappings);
