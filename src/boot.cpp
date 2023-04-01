@@ -2157,8 +2157,7 @@ static void add_loader_entry(image* img, LIST_ENTRY& load_order_list_head, void*
     *pa = pa2;
 }
 
-template<typename T>
-static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, T& loader_block,
+static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, LIST_ENTRY& load_order_list_head,
                                        void** va, LIST_ENTRY* mappings) {
     EFI_STATUS Status;
     LIST_ENTRY* le;
@@ -2192,7 +2191,7 @@ static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images
     while (le != images) {
         image* img = _CR(le, image, list_entry);
 
-        add_loader_entry(img, loader_block.LoadOrderListHead, &pa, img->dll,
+        add_loader_entry(img, load_order_list_head, &pa, img->dll,
                          img->bdle, img->no_reloc);
 
         le = le->Flink;
@@ -3897,7 +3896,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     va = (uint8_t*)va + (page_count(sizeof(loader_store)) * EFI_PAGE_SIZE);
 
     std::visit([&](auto&& b) {
-        Status = generate_images_list(bs, &images, *b, &va, &mappings);
+        Status = generate_images_list(bs, &images, b->LoadOrderListHead, &va, &mappings);
     }, loader_block);
 
     if (EFI_ERROR(Status)) {
