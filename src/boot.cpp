@@ -2103,8 +2103,7 @@ static EFI_STATUS map_errata_inf(EFI_BOOT_SERVICES* bs, T& extblock, void** va,
     return EFI_SUCCESS;
 }
 
-template<typename T>
-static void add_loader_entry(image* img, T& loader_block, void** pa, bool dll,
+static void add_loader_entry(image* img, LIST_ENTRY& load_order_list_head, void** pa, bool dll,
                              BOOT_DRIVER_LIST_ENTRY* bdle, bool no_reloc) {
     KLDR_DATA_TABLE_ENTRY* dte;
     void* pa2 = *pa;
@@ -2150,7 +2149,7 @@ static void add_loader_entry(image* img, T& loader_block, void** pa, bool dll,
     if (no_reloc)
         dte->DontRelocate = 1;
 
-    InsertTailList(&loader_block.LoadOrderListHead, &dte->InLoadOrderLinks);
+    InsertTailList(&load_order_list_head, &dte->InLoadOrderLinks);
 
     if (bdle)
         bdle->LdrEntry = dte;
@@ -2193,7 +2192,8 @@ static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images
     while (le != images) {
         image* img = _CR(le, image, list_entry);
 
-        add_loader_entry(img, loader_block, &pa, img->dll, img->bdle, img->no_reloc);
+        add_loader_entry(img, loader_block.LoadOrderListHead, &pa, img->dll,
+                         img->bdle, img->no_reloc);
 
         le = le->Flink;
     }
