@@ -611,7 +611,7 @@ static EFI_STATUS allocate_mdl(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void
     num_entries++;
 
     // allocate pages for list
-    pages = PAGE_COUNT(num_entries * sizeof(MEMORY_ALLOCATION_DESCRIPTOR));
+    pages = page_count(num_entries * sizeof(MEMORY_ALLOCATION_DESCRIPTOR));
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, pages, &addr);
     if (EFI_ERROR(Status)) {
@@ -830,7 +830,7 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
         return EFI_SUCCESS;
     }
 
-    Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, PAGE_COUNT(efi_runtime_map_size), &addr);
+    Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, page_count(efi_runtime_map_size), &addr);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePages", Status);
         return Status;
@@ -873,13 +873,13 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
 
     if (version >= _WIN32_WINNT_WINBLUE) {
         Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)efi_runtime_map,
-                             PAGE_COUNT(efi_runtime_map_size), LoaderFirmwarePermanent);
+                             page_count(efi_runtime_map_size), LoaderFirmwarePermanent);
         if (EFI_ERROR(Status)) {
             print_error("add_mapping", Status);
             return Status;
         }
 
-        va2 = (uint8_t*)va2 + (PAGE_COUNT(efi_runtime_map_size) * EFI_PAGE_SIZE);
+        va2 = (uint8_t*)va2 + (page_count(efi_runtime_map_size) * EFI_PAGE_SIZE);
     }
 
     *va = va2;

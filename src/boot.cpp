@@ -1728,7 +1728,7 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
         void* va2 = *va;
         unsigned int imgnum = 1;
 
-        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(boot_list_size), &addr);
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, page_count(boot_list_size), &addr);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePages", Status);
             goto end;
@@ -1797,13 +1797,13 @@ static EFI_STATUS load_drivers(EFI_BOOT_SERVICES* bs, EFI_REGISTRY_HIVE* hive, H
             le = le->Flink;
         }
 
-        Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)addr, PAGE_COUNT(boot_list_size), LoaderSystemBlock);
+        Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)addr, page_count(boot_list_size), LoaderSystemBlock);
         if (EFI_ERROR(Status)) {
             print_error("add_mapping", Status);
             goto end;
         }
 
-        va2 = (uint8_t*)va2 + (PAGE_COUNT(boot_list_size) * EFI_PAGE_SIZE);
+        va2 = (uint8_t*)va2 + (page_count(boot_list_size) * EFI_PAGE_SIZE);
         *va = va2;
     }
 
@@ -2048,34 +2048,34 @@ static EFI_STATUS map_nls(EFI_BOOT_SERVICES* bs, NLS_DATA_BLOCK* nls, void** va,
     void* va2 = *va;
 
     Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)nls->AnsiCodePageData,
-                         PAGE_COUNT(acp_size), LoaderNlsData);
+                         page_count(acp_size), LoaderNlsData);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
     }
 
     nls->AnsiCodePageData = va2;
-    va2 = (uint8_t*)va2 + (PAGE_COUNT(acp_size) * EFI_PAGE_SIZE);
+    va2 = (uint8_t*)va2 + (page_count(acp_size) * EFI_PAGE_SIZE);
 
     Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)nls->OemCodePageData,
-                         PAGE_COUNT(oemcp_size), LoaderNlsData);
+                         page_count(oemcp_size), LoaderNlsData);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
     }
 
     nls->OemCodePageData = va2;
-    va2 = (uint8_t*)va2 + (PAGE_COUNT(oemcp_size) * EFI_PAGE_SIZE);
+    va2 = (uint8_t*)va2 + (page_count(oemcp_size) * EFI_PAGE_SIZE);
 
     Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)nls->UnicodeCodePageData,
-                         PAGE_COUNT(lang_size), LoaderNlsData);
+                         page_count(lang_size), LoaderNlsData);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
     }
 
     nls->UnicodeCodePageData = va2;
-    va2 = (uint8_t*)va2 + (PAGE_COUNT(lang_size) * EFI_PAGE_SIZE);
+    va2 = (uint8_t*)va2 + (page_count(lang_size) * EFI_PAGE_SIZE);
 
     *va = va2;
 
@@ -2088,7 +2088,7 @@ static EFI_STATUS map_errata_inf(EFI_BOOT_SERVICES* bs, T& extblock, void** va,
     EFI_STATUS Status;
     void* va2 = *va;
 
-    Status = add_mapping(bs, mappings, va2, errata_inf, PAGE_COUNT(errata_inf_size), LoaderRegistryData);
+    Status = add_mapping(bs, mappings, va2, errata_inf, page_count(errata_inf_size), LoaderRegistryData);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
@@ -2097,7 +2097,7 @@ static EFI_STATUS map_errata_inf(EFI_BOOT_SERVICES* bs, T& extblock, void** va,
     extblock.EmInfFileImage = va2;
     extblock.EmInfFileSize = errata_inf_size;
 
-    va2 = (uint8_t*)va2 + (PAGE_COUNT(errata_inf_size) * EFI_PAGE_SIZE);
+    va2 = (uint8_t*)va2 + (page_count(errata_inf_size) * EFI_PAGE_SIZE);
 
     *va = va2;
 
@@ -2182,7 +2182,7 @@ static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images
         le = le->Flink;
     }
 
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(size), &addr);
+    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, page_count(size), &addr);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePages", Status);
         return Status;
@@ -2199,13 +2199,13 @@ static EFI_STATUS generate_images_list(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images
         le = le->Flink;
     }
 
-    Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)addr, PAGE_COUNT(size), LoaderSystemBlock);
+    Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)addr, page_count(size), LoaderSystemBlock);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
     }
 
-    *va = (uint8_t*)*va + (PAGE_COUNT(size) * EFI_PAGE_SIZE);
+    *va = (uint8_t*)*va + (page_count(size) * EFI_PAGE_SIZE);
 
     return EFI_SUCCESS;
 }
@@ -2288,7 +2288,7 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
     if (size == 0)
         return EFI_SUCCESS;
 
-    Status = add_mapping(bs, mappings, *va, data, PAGE_COUNT(size), LoaderRegistryData);
+    Status = add_mapping(bs, mappings, *va, data, page_count(size), LoaderRegistryData);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
@@ -2297,7 +2297,7 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
     extblock.DrvDBImage = *va;
     extblock.DrvDBSize = size;
 
-    *va = (uint8_t*)*va + (PAGE_COUNT(size) * EFI_PAGE_SIZE);
+    *va = (uint8_t*)*va + (page_count(size) * EFI_PAGE_SIZE);
 
     return EFI_SUCCESS;
 }
@@ -2971,7 +2971,7 @@ static void mark_framebuffer_wc() {
     cr0 = __readcr0();
     __writecr0(cr0 & ~CR0_WP);
 
-    for (unsigned int i = 0; i < PAGE_COUNT(framebuffer_size); i++) {
+    for (unsigned int i = 0; i < page_count(framebuffer_size); i++) {
         HARDWARE_PTE_PAE* pdpt;
         HARDWARE_PTE_PAE* pd;
         HARDWARE_PTE_PAE* pt;
@@ -3078,7 +3078,7 @@ static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_hand
         mark_framebuffer_wc();
 #endif
 
-        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(framebuffer_size), (EFI_PHYSICAL_ADDRESS*)&shadow_fb);
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, page_count(framebuffer_size), (EFI_PHYSICAL_ADDRESS*)&shadow_fb);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePages", Status);
             goto end;
@@ -3140,7 +3140,7 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
 
     // map framebuffer
 
-    Status = add_mapping(bs, mappings, *va, framebuffer, PAGE_COUNT(framebuffer_size), LoaderFirmwarePermanent);
+    Status = add_mapping(bs, mappings, *va, framebuffer, page_count(framebuffer_size), LoaderFirmwarePermanent);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
@@ -3162,20 +3162,20 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
 
     framebuffer_va = *va;
 
-    *va = (uint8_t*)*va + (PAGE_COUNT(framebuffer_size) * EFI_PAGE_SIZE);
+    *va = (uint8_t*)*va + (page_count(framebuffer_size) * EFI_PAGE_SIZE);
 
     // allocate and map reserve pool (used as scratch space?)
 
     block2->reserve_pool_size = 0x4000;
 
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(block2->reserve_pool_size), &rp);
+    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, page_count(block2->reserve_pool_size), &rp);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePages", Status);
         return Status;
     }
 
     Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)rp,
-                            PAGE_COUNT(block2->reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
+                            page_count(block2->reserve_pool_size), LoaderFirmwarePermanent); // FIXME - what should the memory type be?
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
@@ -3183,12 +3183,12 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
 
     block2->reserve_pool = *va;
 
-    *va = (uint8_t*)*va + (PAGE_COUNT(block2->reserve_pool_size) * EFI_PAGE_SIZE);
+    *va = (uint8_t*)*va + (page_count(block2->reserve_pool_size) * EFI_PAGE_SIZE);
 
     // map fonts
 
     if (system_font) {
-        Status = add_mapping(bs, mappings, *va, system_font, PAGE_COUNT(system_font_size),
+        Status = add_mapping(bs, mappings, *va, system_font, page_count(system_font_size),
                                 LoaderFirmwarePermanent); // FIXME - what should the memory type be?
         if (EFI_ERROR(Status)) {
             print_error("add_mapping", Status);
@@ -3198,11 +3198,11 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
         block1->system_font = *va;
         block1->system_font_size = system_font_size;
 
-        *va = (uint8_t*)*va + (PAGE_COUNT(system_font_size) * EFI_PAGE_SIZE);
+        *va = (uint8_t*)*va + (page_count(system_font_size) * EFI_PAGE_SIZE);
     }
 
     if (console_font) {
-        Status = add_mapping(bs, mappings, *va, console_font, PAGE_COUNT(console_font_size),
+        Status = add_mapping(bs, mappings, *va, console_font, page_count(console_font_size),
                                 LoaderFirmwarePermanent); // FIXME - what should the memory type be?
         if (EFI_ERROR(Status)) {
             print_error("add_mapping", Status);
@@ -3212,7 +3212,7 @@ static EFI_STATUS init_bgcontext(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, vo
         block1->console_font = *va;
         block1->console_font_size = console_font_size;
 
-        *va = (uint8_t*)*va + (PAGE_COUNT(console_font_size) * EFI_PAGE_SIZE);
+        *va = (uint8_t*)*va + (page_count(console_font_size) * EFI_PAGE_SIZE);
     }
 
     if (bg_edid && have_edid)
@@ -3232,13 +3232,13 @@ static EFI_STATUS map_debug_descriptor(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappin
         if (ddd->BaseAddress[i].Valid && ddd->BaseAddress[i].Type == CmResourceTypeMemory) {
             // FIXME - disable write-caching etc.
             Status = add_mapping(bs, mappings, va2, ddd->BaseAddress[i].TranslatedAddress,
-                                 PAGE_COUNT(ddd->BaseAddress[i].Length), LoaderFirmwarePermanent);
+                                 page_count(ddd->BaseAddress[i].Length), LoaderFirmwarePermanent);
             if (EFI_ERROR(Status)) {
                 print_error("add_mapping", Status);
                 return Status;
             }
 
-            va2 = (uint8_t*)va2 + (PAGE_COUNT(ddd->BaseAddress[i].Length) * EFI_PAGE_SIZE);
+            va2 = (uint8_t*)va2 + (page_count(ddd->BaseAddress[i].Length) * EFI_PAGE_SIZE);
         }
     }
 
@@ -3780,7 +3780,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     {
         EFI_PHYSICAL_ADDRESS addr;
 
-        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(sizeof(loader_store)), &addr);
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, page_count(sizeof(loader_store)), &addr);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePages", Status);
             goto end;
@@ -3816,7 +3816,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     if (EFI_ERROR(Status)) {
         print_error("initialize_loader_block", Status);
-        bs->FreePages((uintptr_t)store, PAGE_COUNT(sizeof(loader_store)));
+        bs->FreePages((uintptr_t)store, page_count(sizeof(loader_store)));
         goto end;
     }
 
@@ -3826,7 +3826,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     if (EFI_ERROR(Status)) {
         print_error("initialize_extension_block", Status);
-        bs->FreePages((uintptr_t)store, PAGE_COUNT(sizeof(loader_store)));
+        bs->FreePages((uintptr_t)store, page_count(sizeof(loader_store)));
         goto end;
     }
 
@@ -3888,14 +3888,14 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         }
     }
 
-    Status = add_mapping(bs, &mappings, va, store, PAGE_COUNT(sizeof(loader_store)), LoaderSystemBlock);
+    Status = add_mapping(bs, &mappings, va, store, page_count(sizeof(loader_store)), LoaderSystemBlock);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         goto end;
     }
 
     store_va = (loader_store*)va;
-    va = (uint8_t*)va + (PAGE_COUNT(sizeof(loader_store)) * EFI_PAGE_SIZE);
+    va = (uint8_t*)va + (page_count(sizeof(loader_store)) * EFI_PAGE_SIZE);
 
     std::visit([&](auto&& b) {
         Status = generate_images_list(bs, &images, *b, &va, &mappings);
@@ -4112,7 +4112,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         }
     }
 
-    Status = add_mapping(bs, &mappings, va, registry, PAGE_COUNT(reg_size), LoaderRegistryData);
+    Status = add_mapping(bs, &mappings, va, registry, page_count(reg_size), LoaderRegistryData);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         goto end;
@@ -4135,7 +4135,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         b->RegistryLength = reg_size;
     }, loader_block);
 
-    va = (uint8_t*)va + (PAGE_COUNT(reg_size) * EFI_PAGE_SIZE);
+    va = (uint8_t*)va + (page_count(reg_size) * EFI_PAGE_SIZE);
 
     Status = map_efi_runtime(bs, &mappings, &va, version);
     if (EFI_ERROR(Status)) {
@@ -4209,14 +4209,14 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     if (kdstub_export_loaded && kdnet_scratch) {
         Status = add_mapping(bs, &mappings, va, kdnet_scratch,
-                             PAGE_COUNT(store->debug_device_descriptor.TransportData.HwContextSize), LoaderFirmwarePermanent);
+                             page_count(store->debug_device_descriptor.TransportData.HwContextSize), LoaderFirmwarePermanent);
         if (EFI_ERROR(Status)) {
             print_error("add_mapping", Status);
             goto end;
         }
 
         kdnet_scratch = va;
-        va = (uint8_t*)va + (PAGE_COUNT(store->debug_device_descriptor.TransportData.HwContextSize) * EFI_PAGE_SIZE);
+        va = (uint8_t*)va + (page_count(store->debug_device_descriptor.TransportData.HwContextSize) * EFI_PAGE_SIZE);
     }
 
     if (version >= _WIN32_WINNT_WIN8) {

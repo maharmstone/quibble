@@ -107,7 +107,9 @@ typedef struct {
 #define TYPE_DATA   (0x10 | DESCRIPTOR_READ_WRITE)
 #define TYPE_TSS32A 0x09
 
-#define PAGE_COUNT(s) ((s + EFI_PAGE_SIZE - 1) / EFI_PAGE_SIZE)
+static constexpr size_t page_count(size_t s) {
+    return (s + EFI_PAGE_SIZE - 1) / EFI_PAGE_SIZE;
+}
 
 #define IDTGDT_PAGES 7
 

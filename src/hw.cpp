@@ -71,7 +71,7 @@ static EFI_STATUS add_ccd(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* p
     if (resource_list)
         size += resource_list_size;
 
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(size), &addr);
+    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, page_count(size), &addr);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePages", Status);
         return Status;
@@ -110,13 +110,13 @@ static EFI_STATUS add_ccd(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA* p
         parent->Child = ccd;
     }
 
-    Status = add_mapping(bs, mappings, *va, ccd, PAGE_COUNT(size), LoaderSystemBlock);
+    Status = add_mapping(bs, mappings, *va, ccd, page_count(size), LoaderSystemBlock);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
     }
 
-    *va = (uint8_t*)*va + (PAGE_COUNT(size) * EFI_PAGE_SIZE);
+    *va = (uint8_t*)*va + (page_count(size) * EFI_PAGE_SIZE);
 
     if (pccd)
         *pccd = ccd;
@@ -570,7 +570,7 @@ EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** v
         le = le->Flink;
     }
 
-    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(disk_list_size), &addr);
+    Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, page_count(disk_list_size), &addr);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePages", Status);
         return Status;
@@ -639,13 +639,13 @@ EFI_STATUS find_disks(EFI_BOOT_SERVICES* bs, LIST_ENTRY* disk_sig_list, void** v
         le = le->Flink;
     }
 
-    Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)addr, PAGE_COUNT(disk_list_size), LoaderSystemBlock);
+    Status = add_mapping(bs, mappings, *va, (void*)(uintptr_t)addr, page_count(disk_list_size), LoaderSystemBlock);
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         return Status;
     }
 
-    *va = (uint8_t*)*va + (PAGE_COUNT(disk_list_size) * EFI_PAGE_SIZE);
+    *va = (uint8_t*)*va + (page_count(disk_list_size) * EFI_PAGE_SIZE);
 
     le = block_devices.Flink;
     while (le != &block_devices) {

@@ -110,7 +110,7 @@ EFI_STATUS load_api_set(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, EFI_PE_LOADER
         EFI_PHYSICAL_ADDRESS addr;
         void* newapiset;
 
-        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(apisetsize), &addr);
+        Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, page_count(apisetsize), &addr);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePages", Status);
             return Status;
@@ -124,13 +124,13 @@ EFI_STATUS load_api_set(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, EFI_PE_LOADER
 
         apisetva = *va;
 
-        Status = add_mapping(bs, mappings, *va, apiset, PAGE_COUNT(apisetsize), LoaderSystemBlock);
+        Status = add_mapping(bs, mappings, *va, apiset, page_count(apisetsize), LoaderSystemBlock);
         if (EFI_ERROR(Status)) {
             print_error("add_mapping", Status);
             return Status;
         }
 
-        *va = (uint8_t*)*va + (PAGE_COUNT(apisetsize) * EFI_PAGE_SIZE);
+        *va = (uint8_t*)*va + (page_count(apisetsize) * EFI_PAGE_SIZE);
 
         dll->Free(dll);
     }

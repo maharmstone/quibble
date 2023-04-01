@@ -444,7 +444,7 @@ end:
     }
 
     if (data)
-        bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)data, PAGE_COUNT(size));
+        bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)data, page_count(size));
 
     bs->CloseProtocol(image->DeviceHandle, &guid2, image_handle, NULL);
 

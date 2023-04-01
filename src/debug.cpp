@@ -229,7 +229,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
         ddd->TransportData.HwContextSize = ddd->Memory.Length; // set by KdInitializeLibrary
 
     if (ddd->TransportData.HwContextSize != 0) {
-        Status = systable->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, PAGE_COUNT(ddd->TransportData.HwContextSize), &addr);
+        Status = systable->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, page_count(ddd->TransportData.HwContextSize), &addr);
         if (EFI_ERROR(Status)) {
             print_error("AllocatePages", Status);
             return Status;
