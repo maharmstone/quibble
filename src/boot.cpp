@@ -622,12 +622,11 @@ static void fix_driver_list_mapping(LIST_ENTRY* list, LIST_ENTRY* mappings) {
     fix_list_mapping(list, mappings);
 }
 
-template<typename T>
-static void fix_arc_disk_mapping(T& loader_block, LIST_ENTRY* mappings, bool new_disk_format) {
+static void fix_arc_disk_mapping(ARC_DISK_INFORMATION* arc_disk_info, LIST_ENTRY* mappings, bool new_disk_format) {
     LIST_ENTRY* le;
 
-    le = loader_block.ArcDiskInformation->DiskSignatureListHead.Flink;
-    while (le != &loader_block.ArcDiskInformation->DiskSignatureListHead) {
+    le = arc_disk_info->DiskSignatureListHead.Flink;
+    while (le != &arc_disk_info->DiskSignatureListHead) {
         if (new_disk_format) {
             ARC_DISK_SIGNATURE_WIN7* arc = _CR(le, ARC_DISK_SIGNATURE_WIN7, ListEntry);
 
@@ -641,7 +640,7 @@ static void fix_arc_disk_mapping(T& loader_block, LIST_ENTRY* mappings, bool new
         le = le->Flink;
     }
 
-    fix_list_mapping(&loader_block.ArcDiskInformation->DiskSignatureListHead, mappings);
+    fix_list_mapping(&arc_disk_info->DiskSignatureListHead, mappings);
 }
 
 template<typename T>
@@ -685,7 +684,8 @@ static void fix_loader_block_mapping(loader_store* store, void* va, T& loader_bl
     loader_block.Extension = fix_address_mapping(loader_block.Extension, store, va);
     loader_block.NlsData = (NLS_DATA_BLOCK*)fix_address_mapping(loader_block.NlsData, store, va);
 
-    fix_arc_disk_mapping(loader_block, mappings, version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
+    fix_arc_disk_mapping(loader_block.ArcDiskInformation, mappings,
+                         version >= _WIN32_WINNT_WIN7 || (version == _WIN32_WINNT_VISTA && build >= 6002));
     loader_block.ArcDiskInformation = (ARC_DISK_INFORMATION*)fix_address_mapping(loader_block.ArcDiskInformation, store, va);
 
     if (loader_block.ArcBootDeviceName)
