@@ -345,9 +345,8 @@ static EFI_STATUS add_pci_config(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_
 }
 #endif
 
-template<typename T>
-EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, T& loader_block, void** va, LIST_ENTRY* mappings,
-                         EFI_HANDLE image_handle, uint16_t version) {
+EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, CONFIGURATION_COMPONENT_DATA*& config_root, void** va,
+                         LIST_ENTRY* mappings, EFI_HANDLE image_handle, uint16_t version) {
     EFI_STATUS Status;
     CONFIGURATION_COMPONENT_DATA* system_key;
 
@@ -375,23 +374,10 @@ EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, T& loader_block, void** va, LIST
     }
 #endif
 
-    loader_block.ConfigurationRoot = system_key;
+    config_root = system_key;
 
     return EFI_SUCCESS;
 }
-
-template EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_PARAMETER_BLOCK_WS03& loader_block,
-                                  void** va, LIST_ENTRY* mappings, EFI_HANDLE image_handle, uint16_t version);
-template EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_PARAMETER_BLOCK_VISTA& loader_block,
-                                  void** va, LIST_ENTRY* mappings, EFI_HANDLE image_handle, uint16_t version);
-template EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_PARAMETER_BLOCK_WIN7& loader_block,
-                                  void** va, LIST_ENTRY* mappings, EFI_HANDLE image_handle, uint16_t version);
-template EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_PARAMETER_BLOCK_WIN8& loader_block,
-                                  void** va, LIST_ENTRY* mappings, EFI_HANDLE image_handle, uint16_t version);
-template EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_PARAMETER_BLOCK_WIN81& loader_block,
-                                  void** va, LIST_ENTRY* mappings, EFI_HANDLE image_handle, uint16_t version);
-template EFI_STATUS find_hardware(EFI_BOOT_SERVICES* bs, LOADER_PARAMETER_BLOCK_WIN10& loader_block,
-                                  void** va, LIST_ENTRY* mappings, EFI_HANDLE image_handle, uint16_t version);
 
 static EFI_STATUS found_block_device(EFI_BOOT_SERVICES* bs, EFI_BLOCK_IO* io, unsigned int disk_num, unsigned int part_num,
                                      EFI_DEVICE_PATH_PROTOCOL* device_path) {
