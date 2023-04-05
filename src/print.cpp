@@ -18,12 +18,22 @@ bool gop_console = false;
 
 unsigned int font_height = 0;
 
+static constexpr size_t FT_POOL_PAGES = 16777216 >> EFI_PAGE_SHIFT; // 16 MB
+static uint8_t* ft_pool = nullptr;
+
 extern void* framebuffer;
 extern void* shadow_fb;
 extern size_t framebuffer_size;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 extern bool have_edid;
 extern uint8_t edid[128];
+
+struct alloc_header {
+    uint32_t size : 31;
+    uint32_t free : 1;
+};
+
+static_assert(sizeof(alloc_header) == 4);
 
 EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     EFI_GUID info_guid = EFI_QUIBBLE_INFO_PROTOCOL_GUID;
@@ -346,52 +356,111 @@ void print_error(const char* func, EFI_STATUS Status) {
     print_string(s);
 }
 
-static void* ft_alloc(FT_Memory memory, long size) {
-    EFI_STATUS Status;
-    void* ret;
+static void* ft_alloc(FT_Memory, long size) {
+    if (size < 0)
+        return nullptr;
 
-    UNUSED(memory);
+    // round to multiple of 4
+    if (size & 3)
+        size = ((size >> 2) + 1) << 2;
 
-    Status = systable->BootServices->AllocatePool(EfiLoaderData, size, &ret);
-    if (EFI_ERROR(Status))
-        return NULL;
+    if (size == 0)
+        return nullptr;
 
-    return ret;
+    auto h = (alloc_header*)ft_pool;
+    alloc_header* last = nullptr;
+
+    do {
+        if (h->free) {
+            if (last && last->free) { // merge adjacent free entries
+                last->size += h->size + sizeof(alloc_header);
+                h = last;
+            }
+
+            auto ptr = (uint8_t*)h + sizeof(alloc_header);
+
+            if (h->size == size) {
+                h->free = 0;
+                return ptr;
+            }
+
+            if (h->size > size) {
+                auto& nh = *(alloc_header*)((uint8_t*)h + sizeof(alloc_header) + size);
+
+                if (&nh < (void*)((uintptr_t)ft_pool + (FT_POOL_PAGES << EFI_PAGE_SHIFT))) {
+                    nh.free = 1;
+                    nh.size = h->size - size - sizeof(alloc_header);
+                }
+
+                h->free = 0;
+                h->size = size;
+
+                return ptr;
+            }
+        }
+
+        last = h;
+        h = (alloc_header*)((uint8_t*)h + sizeof(alloc_header) + h->size);
+    } while (h < (void*)((uintptr_t)ft_pool + (FT_POOL_PAGES << EFI_PAGE_SHIFT)));
+
+    return nullptr;
+}
+
+static void ft_free(FT_Memory, void* block) {
+    auto& ah = *(alloc_header*)((uint8_t*)block - sizeof(alloc_header));
+
+    ah.free = 1;
 }
 
 static void* ft_realloc(FT_Memory memory, long cur_size, long new_size, void* block) {
-    EFI_STATUS Status;
     void* ret;
 
-    UNUSED(memory);
+    // FIXME - do actual realloc if possible
 
-    Status = systable->BootServices->AllocatePool(EfiLoaderData, new_size, &ret);
-    if (EFI_ERROR(Status))
-        return NULL;
+    if (new_size < cur_size)
+        return block;
 
-    memcpy(ret, block, cur_size < new_size ? new_size : cur_size);
+    ret = ft_alloc(memory, new_size);
+    if (!ret)
+        return nullptr;
 
-    systable->BootServices->FreePool(block);
+    memcpy(ret, block, new_size < cur_size ? new_size : cur_size);
+
+    ft_free(memory, block);
 
     return ret;
-}
-
-void ft_free(FT_Memory memory, void* block) {
-    UNUSED(memory);
-
-    systable->BootServices->FreePool(block);
 }
 
 extern "C"
 FT_Memory FT_New_Memory() {
     EFI_STATUS Status;
     FT_Memory memory;
+    EFI_PHYSICAL_ADDRESS addr;
+
+    /* We use our own allocation functions here, rather than relying on
+     * AllocatePool, so that we can carry on using FreeType after exiting
+     * boot services. */
 
     Status = systable->BootServices->AllocatePool(EfiLoaderData, sizeof(*memory), (void**)&memory);
     if (EFI_ERROR(Status))
-        return NULL;
+        return nullptr;
 
-    memory->user = NULL;
+    Status = systable->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, FT_POOL_PAGES, &addr);
+    if (EFI_ERROR(Status)) {
+        systable->BootServices->FreePool(memory);
+        return nullptr;
+    }
+
+    ft_pool = (uint8_t*)addr;
+
+    memset(ft_pool, 0, FT_POOL_PAGES << EFI_PAGE_SHIFT);
+
+    auto& h = *(alloc_header*)ft_pool;
+
+    h.size = (FT_POOL_PAGES << EFI_PAGE_SHIFT) - sizeof(alloc_header);
+    h.free = 1;
+
+    memory->user = nullptr;
     memory->alloc = ft_alloc;
     memory->realloc = ft_realloc;
     memory->free = ft_free;
