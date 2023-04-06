@@ -31,8 +31,6 @@
 #include "quibbleproto.h"
 #include "print.h"
 
-// #define DEBUG_EARLY_FAULTS
-
 typedef struct {
     LIST_ENTRY list_entry;
     wchar_t* name;
@@ -829,60 +827,41 @@ static void initialize_gdt(gdt_entry* gdt, KTSS* tss, KTSS* nmitss, KTSS* dftss,
 #endif
 }
 
-#ifdef DEBUG_EARLY_FAULTS
-static void draw_text_hex(uint64_t v, text_pos* p) {
-    char s[17], *t;
+#ifdef __x86_64__
+static void page_fault(uintptr_t error_code, uintptr_t rip, uintptr_t cs/*, uintptr_t* stack*/) {
+    if (framebuffer) {
+        char s[255], *p;
 
-    if (v == 0) {
-        draw_text("0", p);
-        return;
-    }
+        print_string("Page fault!\n");
 
-    s[16] = 0;
-    t = &s[16];
+        p = stpcpy(s, "cr2: ");
+        p = hex_to_str(p, __readcr2());
+        p = stpcpy(p, "\n");
+        print_string(s);
 
-    while (v != 0) {
-        t = &t[-1];
+        s[0] = 0;
+        p = stpcpy(s, "error code: ");
+        p = hex_to_str(p, error_code);
+        p = stpcpy(p, "\n");
+        print_string(s);
 
-        if ((v & 0xf) >= 10)
-            *t = (v & 0xf) - 10 + 'a';
-        else
-            *t = (v & 0xf) + '0';
+        s[0] = 0;
+        p = stpcpy(s, "rip: ");
+        p = hex_to_str(p, rip);
+        p = stpcpy(p, "\n");
+        print_string(s);
 
-        v >>= 4;
-    }
+        s[0] = 0;
+        p = stpcpy(s, "cs: ");
+        p = hex_to_str(p, cs);
+        p = stpcpy(p, "\n");
+        print_string(s);
 
-    draw_text(t, p);
-}
-
-static void page_fault(uintptr_t error_code, uintptr_t rip, uintptr_t cs, uintptr_t* stack) {
-    if (store2->bgc.internal.framebuffer) {
-        text_pos p;
-
-        p.x = p.y = 0;
-        draw_text("Page fault!\n", &p);
-
-        draw_text("cr2: ", &p);
-        draw_text_hex(__readcr2(), &p);
-        draw_text("\n", &p);
-
-        draw_text("error code: ", &p);
-        draw_text_hex(error_code, &p);
-        draw_text("\n", &p);
-
-        draw_text("rip: ", &p);
-        draw_text_hex(rip, &p);
-        draw_text("\n", &p);
-
-        draw_text("cs: ", &p);
-        draw_text_hex(cs, &p);
-        draw_text("\n", &p);
-
-        draw_text("stack:\n", &p);
-        for (unsigned int i = 0; i < 16; i++) {
-            draw_text_hex(stack[i+3], &p);
-            draw_text("\n", &p);
-        }
+        // draw_text("stack:\n", &p);
+        // for (unsigned int i = 0; i < 16; i++) {
+        //     draw_text_hex(stack[i+3], &p);
+        //     draw_text("\n", &p);
+        // }
     }
 
     halt();
@@ -891,12 +870,12 @@ static void page_fault(uintptr_t error_code, uintptr_t rip, uintptr_t cs, uintpt
 __attribute__((naked))
 static void page_fault_wrapper() {
     __asm__ __volatile__ (
-        "pop rcx\n\t"
-        "mov rdx, [rsp]\n\t"
-        "mov r8, [rsp+8]\n\t"
-        "mov r9, rsp\n\t"
-        "call %0\n\t"
-        "iret\n\t"
+        "pop %%rcx\n\t"
+        "mov (%%rsp), %%rdx\n\t"
+        "mov 0x8(%%rsp), %%r8\n\t"
+        // "mov %%rsp, %%r9\n\t"
+        "call *%0\n\t"
+        "iretq\n\t"
         :
         : "a" (page_fault)
     );
@@ -921,12 +900,19 @@ static void initialize_idt(idt_entry* idt) {
     memcpy(idt, (void*)(uintptr_t)old.Base, old.Limit + 1);
 #pragma GCC diagnostic pop
 
-#ifdef DEBUG_EARLY_FAULTS
+#ifdef __x86_64__
     uintptr_t func = (uintptr_t)(void*)page_fault_wrapper;
+    uint16_t cs;
+
+    __asm__ __volatile__ (
+        "mov %%cs, %0\n\t"
+        :
+        : "m" (cs)
+    );
 
     // page fault
     idt[0xe].offset_1 = func & 0xffff;
-    idt[0xe].selector = KGDT_R0_CODE;
+    idt[0xe].selector = cs;
     idt[0xe].ist = 0;
     idt[0xe].type_attr = 0x8f;
     idt[0xe].offset_2 = (func >> 16) & 0xffff;
@@ -3303,6 +3289,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     loader_store* store;
     gdt_entry* gdt;
     idt_entry* idt;
+    idt_entry* idt_pa;
     KTSS* tss;
 #ifndef _X86_
     KTSS* tssphys;
@@ -4031,8 +4018,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         initialize_gdt((gdt_entry*)idtgdt, tss, nmitss, dftss, mctss, version, pcrva);
         gdt = (gdt_entry*)va;
 
-        initialize_idt((idt_entry*)(idtgdt + (3 << EFI_PAGE_SHIFT)));
+        idt_pa = (idt_entry*)(idtgdt + (3 << EFI_PAGE_SHIFT));
         idt = (idt_entry*)((uint8_t*)va + (3 << EFI_PAGE_SHIFT));
+
+        initialize_idt(idt_pa);
 
         va = (uint8_t*)va + (IDTGDT_PAGES << EFI_PAGE_SHIFT);
     }
@@ -4271,6 +4260,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     if (store->debug_device_descriptor.Memory.VirtualAddress)
         store->debug_device_descriptor.Memory.VirtualAddress = find_virtual_address(store->debug_device_descriptor.Memory.VirtualAddress, &mappings);
 
+    set_idt(idt_pa);
+
     std::visit([&](auto&& b) {
         Status = enable_paging(image_handle, bs, &mappings, b->MemoryDescriptorListHead,
                                va, loader_pages_spanned);
@@ -4280,6 +4271,10 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         print_error("enable_paging", Status);
         goto end;
     }
+
+#ifdef __x86_64__
+    idt[0xe].selector = KGDT_R0_CODE;
+#endif
 
     store = (loader_store*)store_va;
     store2 = store;
