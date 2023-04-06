@@ -4249,7 +4249,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     merge_mappings(&mappings);
 
+#ifndef DEBUG
     print_string("Booting Windows...\n");
+#endif
 
     std::visit([&](auto&& b) {
         fix_loader_block_mapping(store, store_va, *b, &mappings, version, build);
@@ -4285,6 +4287,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     if (framebuffer)
         framebuffer = framebuffer_va;
 
+    print_string("Paging enabled.\n");
+
     set_gdt(gdt);
     set_idt(idt);
 
@@ -4297,8 +4301,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
 //     halt();
 
-    if (kdstub_export_loaded)
+    if (kdstub_export_loaded) {
+#ifdef DEBUG
+        print_string("Calling kdstub_init\n");
+#endif
         kdstub_init(&store->debug_device_descriptor, build);
+    }
 
     // FIXME - can we print net_error_string and net_error_status somehow if this fails?
 
@@ -4307,6 +4315,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     __writemsr(0xc0000080, __readmsr(0xc0000080) | 1);
 
 #ifndef _MSC_VER
+    print_string("Calling KiSystemStartup...\n");
+
     __asm__ __volatile__ (
         "mov %0, %%rsp\n\t"
         "lea %1, %%rcx\n\t"

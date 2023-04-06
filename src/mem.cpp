@@ -1186,11 +1186,19 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
         return Status;
     }
 
+#ifdef DEBUG
+    print_string("Calling ExitBootServices...\n");
+#endif
+
     Status = bs->ExitBootServices(image_handle, key);
     if (EFI_ERROR(Status)) {
         print_error("ExitBootServices", Status);
         return Status;
     }
+
+#ifdef DEBUG
+    print_string("Calling SetVirtualAddressMap...\n");
+#endif
 
     Status = systable->RuntimeServices->SetVirtualAddressMap(efi_runtime_map_size, map_desc_size,
                                                              EFI_MEMORY_DESCRIPTOR_VERSION, efi_runtime_map);
@@ -1198,6 +1206,10 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
         print_error("SetVirtualAddressMap", Status);
         return Status;
     }
+
+#ifdef DEBUG
+    print_string("Enabling paging...\n");
+#endif
 
     if (loader_pages_spanned)
         *loader_pages_spanned = ((uintptr_t)va - MM_KSEG0_BASE) / EFI_PAGE_SIZE;
