@@ -95,6 +95,8 @@ typedef struct _command_line command_line;
 extern void* stack;
 extern EFI_HANDLE image_handle;
 extern uint64_t cpu_frequency;
+extern void* shadow_fb;
+extern size_t framebuffer_size;
 EFI_STATUS add_image(EFI_BOOT_SERVICES* bs, LIST_ENTRY* images, const wchar_t* name, TYPE_OF_MEMORY memory_type,
                      const wchar_t* dir, bool dll, BOOT_DRIVER_LIST_ENTRY* bdle, unsigned int order,
                      bool no_reloc);
@@ -145,6 +147,13 @@ extern void* kdnet_scratch;
 EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub, uint16_t build);
 EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build);
 EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build);
+
+// print.cpp
+extern uint8_t* ft_pool;
+extern void* font_data;
+extern size_t font_size;
+
+static constexpr size_t FT_POOL_PAGES = 16777216 >> EFI_PAGE_SHIFT; // 16 MB
 
 // CSM (not in gnu-efi)
 

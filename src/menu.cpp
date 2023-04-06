@@ -44,7 +44,6 @@ static boot_option* options = NULL;
 static unsigned int num_options, selected_option;
 
 extern void* framebuffer;
-extern void* shadow_fb;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 extern unsigned int font_height;
 extern text_pos console_pos;

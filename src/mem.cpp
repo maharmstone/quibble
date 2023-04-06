@@ -1071,6 +1071,30 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
         }
     }
 
+    if (ft_pool) {
+        Status = map_memory(bs, mappings, (uintptr_t)ft_pool, (uintptr_t)ft_pool, FT_POOL_PAGES);
+        if (EFI_ERROR(Status)) {
+            print_error("map_memory", Status);
+            return Status;
+        }
+    }
+
+    if (font_data) {
+        Status = map_memory(bs, mappings, (uintptr_t)font_data, (uintptr_t)font_data, page_count(font_size));
+        if (EFI_ERROR(Status)) {
+            print_error("map_memory", Status);
+            return Status;
+        }
+    }
+
+    if (shadow_fb) {
+        Status = map_memory(bs, mappings, (uintptr_t)shadow_fb, (uintptr_t)shadow_fb, page_count(framebuffer_size));
+        if (EFI_ERROR(Status)) {
+            print_error("map_memory", Status);
+            return Status;
+        }
+    }
+
 #ifdef _X86_
     if (pae) { // map cr3
         Status = map_memory(bs, mappings, ((uintptr_t)pdpt + MM_KSEG0_BASE), (uintptr_t)pdpt, 1);

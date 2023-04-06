@@ -12,18 +12,14 @@ text_pos console_pos;
 static unsigned int console_width, console_height;
 static FT_Library ft = NULL;
 static FT_Face face = NULL;
-static void* font_data = NULL;
-static size_t font_size;
+void* font_data = nullptr;
+size_t font_size;
 bool gop_console = false;
-
 unsigned int font_height = 0;
-
-static constexpr size_t FT_POOL_PAGES = 16777216 >> EFI_PAGE_SHIFT; // 16 MB
-static uint8_t* ft_pool = nullptr;
+uint8_t* ft_pool = nullptr;
+static FT_MemoryRec_ ftmem;
 
 extern void* framebuffer;
-extern void* shadow_fb;
-extern size_t framebuffer_size;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 extern bool have_edid;
 extern uint8_t edid[128];
@@ -434,22 +430,15 @@ static void* ft_realloc(FT_Memory memory, long cur_size, long new_size, void* bl
 extern "C"
 FT_Memory FT_New_Memory() {
     EFI_STATUS Status;
-    FT_Memory memory;
     EFI_PHYSICAL_ADDRESS addr;
 
     /* We use our own allocation functions here, rather than relying on
      * AllocatePool, so that we can carry on using FreeType after exiting
      * boot services. */
 
-    Status = systable->BootServices->AllocatePool(EfiLoaderData, sizeof(*memory), (void**)&memory);
+    Status = systable->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, FT_POOL_PAGES, &addr);
     if (EFI_ERROR(Status))
         return nullptr;
-
-    Status = systable->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, FT_POOL_PAGES, &addr);
-    if (EFI_ERROR(Status)) {
-        systable->BootServices->FreePool(memory);
-        return nullptr;
-    }
 
     ft_pool = (uint8_t*)addr;
 
@@ -460,12 +449,12 @@ FT_Memory FT_New_Memory() {
     h.size = (FT_POOL_PAGES << EFI_PAGE_SHIFT) - sizeof(alloc_header);
     h.free = 1;
 
-    memory->user = nullptr;
-    memory->alloc = ft_alloc;
-    memory->realloc = ft_realloc;
-    memory->free = ft_free;
+    ftmem.user = nullptr;
+    ftmem.alloc = ft_alloc;
+    ftmem.realloc = ft_realloc;
+    ftmem.free = ft_free;
 
-    return memory;
+    return &ftmem;
 }
 
 extern "C"
