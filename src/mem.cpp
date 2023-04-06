@@ -849,14 +849,11 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
             case EfiRuntimeServicesCode:
             case EfiMemoryMappedIO:
             case EfiMemoryMappedIOPortSpace:
-                desc2->Type = desc->Type;
-                desc2->PhysicalStart = desc->PhysicalStart;
+                memcpy(desc2, desc, map_desc_size);
                 desc2->VirtualStart = (EFI_VIRTUAL_ADDRESS)(uintptr_t)va2;
-                desc2->NumberOfPages = desc->NumberOfPages;
-                desc2->Attribute = desc->Attribute;
 
                 Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)desc->PhysicalStart,
-                                    desc->NumberOfPages, LoaderFirmwarePermanent);
+                                     desc->NumberOfPages, LoaderFirmwarePermanent);
                 if (EFI_ERROR(Status)) {
                     print_error("add_mapping", Status);
                     return Status;
