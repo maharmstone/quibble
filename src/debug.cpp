@@ -178,23 +178,23 @@ typedef uint64_t (__stdcall *KDNET_READ_PORT_ULONG64) (
 );
 
 typedef void (__stdcall *KDNET_WRITE_PORT_UCHAR) (
-    uint8_t* Port,
+    uint16_t Port,
     uint8_t Value
 );
 
 typedef void (__stdcall *KDNET_WRITE_PORT_USHORT) (
-    uint16_t* Port,
+    uint16_t Port,
     uint16_t Value
 );
 
 typedef void (__stdcall *KDNET_WRITE_PORT_ULONG) (
-    uint32_t* Port,
+    uint16_t Port,
     uint32_t Value
 );
 
 typedef void (__stdcall *KDNET_WRITE_PORT_ULONG64) (
-    uint32_t* Port,
-    uint64_t* Value
+    uint16_t Port,
+    uint64_t Value
 );
 
 typedef void (__stdcall *KDNET_SET_HIBER_RANGE) (
@@ -516,8 +516,8 @@ static void __stdcall stall_cpu(uint32_t microseconds) {
     }
 }
 
-static void __stdcall write_port_ulong(uint32_t* port, uint32_t value) {
-    __outdword(*port, value);
+static void __stdcall write_port_ulong(uint16_t port, uint32_t value) {
+    __outdword(port, value);
 }
 
 static void* __stdcall get_physical_address(void* va) {
