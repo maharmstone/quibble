@@ -27,60 +27,137 @@ typedef uint64_t (__stdcall *KD_GET_HARDWARE_CONTEXT_SIZE) (
     DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor
 );
 
-typedef NTSTATUS (__stdcall *GET_DEVICE_PCI_DATA_BY_OFFSET) (
-    uint32_t bus,
-    uint32_t slot,
-    void* data,
-    uint32_t offset,
-    uint32_t length
+typedef uint32_t (__stdcall *KDNET_GET_PCI_DATA_BY_OFFSET) (
+    uint32_t BusNumber,
+    uint32_t SlotNumber,
+    void* Buffer,
+    uint32_t Offset,
+    uint32_t Length
 );
 
-typedef NTSTATUS (__stdcall *SET_DEVICE_PCI_DATA_BY_OFFSET) (
-    uint32_t bus,
-    uint32_t slot,
-    void* data,
-    uint32_t offset,
-    uint32_t length
+typedef uint32_t (__stdcall *KDNET_SET_PCI_DATA_BY_OFFSET) (
+    uint32_t BusNumber,
+    uint32_t SlotNumber,
+    void* Buffer,
+    uint32_t Offset,
+    uint32_t Length
 );
 
-typedef void (__stdcall *STALL_EXECUTION_PROCESSOR) (
-    int microseconds
+typedef void (__stdcall *KDNET_STALL_EXECUTION_PROCESSOR) (
+    uint32_t Microseconds
 );
 
-typedef uint8_t (__stdcall *READ_REGISTER_UCHAR) (
-    void* addr
+typedef uint8_t (__stdcall *KDNET_READ_REGISTER_UCHAR) (
+    uint8_t* Register
 );
 
-typedef uint16_t (__stdcall *READ_REGISTER_USHORT) (
-    void* addr
+typedef uint16_t (__stdcall *KDNET_READ_REGISTER_USHORT) (
+    uint16_t* Register
 );
 
-typedef uint32_t (__stdcall *READ_REGISTER_ULONG) (
-    void* addr
+typedef uint32_t (__stdcall *KDNET_READ_REGISTER_ULONG) (
+    uint32_t* Register
 );
 
-typedef NTSTATUS (__stdcall *WRITE_REGISTER_UCHAR) (
-    void* addr,
-    uint8_t value
+typedef uint64_t (__stdcall *KDNET_READ_REGISTER_ULONG64) (
+    uint64_t* Register
 );
 
-typedef NTSTATUS (__stdcall *WRITE_REGISTER_USHORT) (
-    void* addr,
-    uint16_t value
+typedef void (__stdcall *KDNET_WRITE_REGISTER_UCHAR) (
+    uint8_t* Register,
+    uint8_t Value
 );
 
-typedef NTSTATUS (__stdcall *WRITE_REGISTER_ULONG) (
-    void* addr,
-    uint32_t value
+typedef void (__stdcall *KDNET_WRITE_REGISTER_USHORT) (
+    uint16_t* Register,
+    uint16_t Value
 );
 
-typedef void* (__stdcall *GET_PHYSICAL_ADDRESS) (
-    void* va
+typedef void (__stdcall *KDNET_WRITE_REGISTER_ULONG) (
+    uint32_t* Register,
+    uint32_t Value
 );
 
-typedef NTSTATUS (__stdcall *WRITE_PORT_ULONG) (
-    uint16_t port,
-    uint32_t value
+typedef void (__stdcall *KDNET_WRITE_REGISTER_ULONG64) (
+    uint64_t* Register,
+    uint64_t Value
+);
+
+typedef void* (__stdcall *KDNET_GET_PHYSICAL_ADDRESS) (
+    void* Va
+);
+
+typedef uint8_t (__stdcall *KDNET_READ_PORT_UCHAR) (
+    uint8_t* Port
+);
+
+typedef uint16_t (__stdcall *KDNET_READ_PORT_USHORT) (
+    uint16_t* Port
+);
+
+typedef uint32_t (__stdcall *KDNET_READ_PORT_ULONG) (
+    uint32_t* Port
+);
+
+typedef uint64_t (__stdcall *KDNET_READ_PORT_ULONG64) (
+    uint64_t* Port
+);
+
+typedef void (__stdcall *KDNET_WRITE_PORT_UCHAR) (
+    uint8_t* Port,
+    uint8_t Value
+);
+
+typedef void (__stdcall *KDNET_WRITE_PORT_USHORT) (
+    uint16_t* Port,
+    uint16_t Value
+);
+
+typedef void (__stdcall *KDNET_WRITE_PORT_ULONG) (
+    uint32_t* Port,
+    uint32_t Value
+);
+
+typedef void (__stdcall *KDNET_WRITE_PORT_ULONG64) (
+    uint32_t* Port,
+    uint64_t* Value
+);
+
+typedef void (__stdcall *KDNET_SET_HIBER_RANGE) (
+    void* MemoryMap,
+    uint32_t Flags,
+    void* Address,
+    uintptr_t Length,
+    uint32_t Tag
+);
+
+typedef void (__stdcall *KDNET_BUGCHECK_EX) (
+    uint32_t BugCheckCode,
+    uintptr_t BugCheckParameter1,
+    uintptr_t BugCheckParameter2,
+    uintptr_t BugCheckParameter3,
+    uintptr_t BugCheckParameter4
+);
+
+typedef void* (__stdcall *KDNET_MAP_PHYSICAL_MEMORY_64) (
+    uint64_t PhysicalAddress,
+    uint32_t NumberPages,
+    bool FlushCurrentTLB
+);
+
+typedef void (__stdcall *KDNET_UNMAP_VIRTUAL_ADDRESS) (
+    void* VirtualAddress,
+    uint32_t NumberPages,
+    bool FlushCurrentTLB
+);
+
+typedef uint64_t (__stdcall *KDNET_READ_CYCLE_COUNTER) (
+    uint64_t* Frequency
+);
+
+typedef void (__stdcall *KDNET_DBGPRINT) (
+    char* pFmt,
+    ...
 );
 
 typedef struct {
@@ -102,66 +179,67 @@ typedef struct {
 
 #pragma pack(push,1)
 
-typedef struct {
-    GET_DEVICE_PCI_DATA_BY_OFFSET GetDevicePciDataByOffset;
-    SET_DEVICE_PCI_DATA_BY_OFFSET SetDevicePciDataByOffset;
-    GET_PHYSICAL_ADDRESS GetPhysicalAddress;
-    STALL_EXECUTION_PROCESSOR KdStallExecutionProcessor;
-    READ_REGISTER_UCHAR READ_REGISTER_UCHAR;
-    READ_REGISTER_USHORT READ_REGISTER_USHORT;
-    READ_REGISTER_ULONG READ_REGISTER_ULONG;
-    void* READ_REGISTER_ULONG64;
-    WRITE_REGISTER_UCHAR WRITE_REGISTER_UCHAR;
-    WRITE_REGISTER_USHORT WRITE_REGISTER_USHORT;
-    WRITE_REGISTER_ULONG WRITE_REGISTER_ULONG;
-    void* WRITE_REGISTER_ULONG64;
-    void* READ_PORT_UCHAR;
-    void* READ_PORT_USHORT;
-    void* READ_PORT_ULONG;
-    void* unknown1; // READ_PORT_ULONG64?
-    void* WRITE_PORT_UCHAR;
-    void* WRITE_PORT_USHORT;
-    WRITE_PORT_ULONG WRITE_PORT_ULONG;
-    void* unknown2; // WRITE_PORT_ULONG64?
-    void* PoSetHiberRange;
-    void* KeBugCheckEx;
-    void* MapPhysicalMemory;
-    void* UnmapVirtualAddress;
-    void* KdReadCycleCounter;
-    void* KdNetPringDbgLog;
+struct kdnet_imports2 {
+    KDNET_GET_PCI_DATA_BY_OFFSET GetDevicePciDataByOffset;
+    KDNET_SET_PCI_DATA_BY_OFFSET SetDevicePciDataByOffset;
+    KDNET_GET_PHYSICAL_ADDRESS GetPhysicalAddress;
+    KDNET_STALL_EXECUTION_PROCESSOR StallExecutionProcessor;
+    KDNET_READ_REGISTER_UCHAR ReadRegisterUChar;
+    KDNET_READ_REGISTER_USHORT ReadRegisterUShort;
+    KDNET_READ_REGISTER_ULONG ReadRegisterULong;
+    KDNET_READ_REGISTER_ULONG64 ReadRegisterULong64;
+    KDNET_WRITE_REGISTER_UCHAR WriteRegisterUChar;
+    KDNET_WRITE_REGISTER_USHORT WriteRegisterUShort;
+    KDNET_WRITE_REGISTER_ULONG WriteRegisterULong;
+    KDNET_WRITE_REGISTER_ULONG64 WriteRegisterULong64;
+    KDNET_READ_PORT_UCHAR ReadPortUChar;
+    KDNET_READ_PORT_USHORT ReadPortUShort;
+    KDNET_READ_PORT_ULONG ReadPortULong;
+    KDNET_READ_PORT_ULONG64 ReadPortULong64;
+    KDNET_WRITE_PORT_UCHAR WritePortUChar;
+    KDNET_WRITE_PORT_USHORT WritePortUShort;
+    KDNET_WRITE_PORT_ULONG WritePortULong;
+    KDNET_WRITE_PORT_ULONG64 WritePortULong64;
+    KDNET_SET_HIBER_RANGE SetHiberRange;
+    KDNET_BUGCHECK_EX BugCheckEx;
+    KDNET_MAP_PHYSICAL_MEMORY_64 MapPhysicalMemory64;
+    KDNET_UNMAP_VIRTUAL_ADDRESS UnmapVirtualAddress;
+    KDNET_READ_CYCLE_COUNTER ReadCycleCounter;
+    KDNET_DBGPRINT KdNetDbgPrintf;
     NTSTATUS* KdNetErrorStatus;
     wchar_t** KdNetErrorString;
-    uint32_t* KdNetHardwareId;
-} kdnet_exports2;
+    uint32_t* KdNetHardwareID;
+};
 
-typedef struct {
-    uint32_t version;
+// documented in Debuggers/ddk/samples/kdnet/inc/kdnetextensibility.h in Win 10 kit
+struct KDNET_EXTENSIBILITY_IMPORTS {
+    uint32_t FunctionCount;
 #ifdef __x86_64__
     uint32_t padding;
 #endif
     union {
-        kdnet_exports2 exports_win81;
+        kdnet_imports2 imports_win81;
 
         struct {
             kd_funcs* funcs;
-            kdnet_exports2 exports;
+            kdnet_imports2 imports;
         } win10;
     };
-} kdnet_exports;
+};
 
 #pragma pack(pop)
 
 typedef NTSTATUS (__stdcall *KD_INITIALIZE_LIBRARY) (
-    kdnet_exports* exports,
-    void* param1,
-    DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor
+    KDNET_EXTENSIBILITY_IMPORTS* ImportTable,
+    char* LoaderOptions,
+    DEBUG_DEVICE_DESCRIPTOR* Device
 );
 
 NTSTATUS net_error_status = STATUS_SUCCESS;
 wchar_t* net_error_string = NULL;
 uint32_t net_hardware_id = 0;
 
-static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports,
+static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXTENSIBILITY_IMPORTS* imports,
                                          kd_funcs* funcs, uint16_t build);
 
 KD_INITIALIZE_LIBRARY KdInitializeLibrary = NULL;
@@ -200,7 +278,7 @@ EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub, uint16_t build) {
 EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     EFI_STATUS Status;
     NTSTATUS nt_Status;
-    kdnet_exports exports;
+    KDNET_EXTENSIBILITY_IMPORTS imports;
     kd_funcs funcs;
     EFI_PHYSICAL_ADDRESS addr;
 
@@ -210,7 +288,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
         return Status;
     }
 
-    nt_Status = call_KdInitializeLibrary(ddd, &exports, &funcs, build);
+    nt_Status = call_KdInitializeLibrary(ddd, &imports, &funcs, build);
     if (!NT_SUCCESS(nt_Status)) {
         char s[255], *p;
 
@@ -241,7 +319,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
     return EFI_SUCCESS;
 }
 
-static NTSTATUS __stdcall get_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
+static uint32_t __stdcall get_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
     uint32_t address = 0x80000000 | ((bus & 0xff) << 16) | ((slot & 0x1f) << 11);
 
     if (offset % sizeof(uint32_t) == 0 && length % sizeof(uint32_t) == 0) {
@@ -279,10 +357,10 @@ static NTSTATUS __stdcall get_device_pci_data_by_offset(uint32_t bus, uint32_t s
         // FIXME
     }
 
-    return STATUS_SUCCESS;
+    return 0;
 }
 
-static NTSTATUS __stdcall set_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
+static uint32_t __stdcall set_device_pci_data_by_offset(uint32_t bus, uint32_t slot, void* data, uint32_t offset, uint32_t length) {
     uint32_t address = 0x80000000 | ((bus & 0xff) << 16) | ((slot & 0x1f) << 11);
 
     if (offset % sizeof(uint32_t) == 0 && length % sizeof(uint32_t) == 0) {
@@ -322,40 +400,34 @@ static NTSTATUS __stdcall set_device_pci_data_by_offset(uint32_t bus, uint32_t s
         // FIXME
     }
 
-    return STATUS_SUCCESS;
+    return 0;
 }
 
-static uint8_t __stdcall read_register_uchar(void* addr) {
-    return *(uint8_t*)addr;
+static uint8_t __stdcall read_register_uchar(uint8_t* addr) {
+    return *addr;
 }
 
-static uint16_t __stdcall read_register_ushort(void* addr) {
-    return *(uint16_t*)addr;
+static uint16_t __stdcall read_register_ushort(uint16_t* addr) {
+    return *addr;
 }
 
-static uint32_t __stdcall read_register_ulong(void* addr) {
-    return *(uint32_t*)addr;
+static uint32_t __stdcall read_register_ulong(uint32_t* addr) {
+    return *addr;
 }
 
-static NTSTATUS __stdcall write_register_uchar(void* addr, uint8_t value) {
-    *(uint8_t*)addr = value;
-
-    return STATUS_SUCCESS;
+static void __stdcall write_register_uchar(uint8_t* addr, uint8_t value) {
+    *addr = value;
 }
 
-static NTSTATUS __stdcall write_register_ushort(void* addr, uint16_t value) {
-    *(uint16_t*)addr = value;
-
-    return STATUS_SUCCESS;
+static void __stdcall write_register_ushort(uint16_t* addr, uint16_t value) {
+    *addr = value;
 }
 
-static NTSTATUS __stdcall write_register_ulong(void* addr, uint32_t value) {
-    *(uint32_t*)addr = value;
-
-    return STATUS_SUCCESS;
+static void __stdcall write_register_ulong(uint32_t* addr, uint32_t value) {
+    *addr = value;
 }
 
-static void __stdcall stall_cpu(int microseconds) {
+static void __stdcall stall_cpu(uint32_t microseconds) {
     uint64_t tsc;
 
     tsc = __rdtsc();
@@ -367,10 +439,8 @@ static void __stdcall stall_cpu(int microseconds) {
     }
 }
 
-static NTSTATUS __stdcall write_port_ulong(uint16_t port, uint32_t value) {
-    __outdword(port, value);
-
-    return STATUS_SUCCESS;
+static void __stdcall write_port_ulong(uint32_t* port, uint32_t value) {
+    __outdword(*port, value);
 }
 
 static void* __stdcall get_physical_address(void* va) {
@@ -433,55 +503,55 @@ static void* __stdcall get_physical_address(void* va) {
 #endif
 }
 
-static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, kdnet_exports* exports,
+static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXTENSIBILITY_IMPORTS* imports,
                                          kd_funcs* funcs, uint16_t build) {
-    kdnet_exports2* exp2;
+    kdnet_imports2* imp2;
     debug_device_descriptor = ddd;
 
-    memset(exports, 0, sizeof(*exports));
+    memset(imports, 0, sizeof(*imports));
 
     if (build >= WIN10_BUILD_1607)
-        exports->version = 0x1e;
+        imports->FunctionCount = 0x1e;
     else if (build >= WIN10_BUILD_1507)
-        exports->version = 0x1d;
+        imports->FunctionCount = 0x1d;
     else
-        exports->version = 0x18;
+        imports->FunctionCount = 0x18;
 
     if (build >= WIN10_BUILD_1507) {
-        exports->win10.funcs = funcs;
-        exp2 = &exports->win10.exports;
+        imports->win10.funcs = funcs;
+        imp2 = &imports->win10.imports;
 
         funcs->count = 13; // number of functions
     } else
-        exp2 = &exports->exports_win81;
+        imp2 = &imports->imports_win81;
 
-    exp2->GetDevicePciDataByOffset = get_device_pci_data_by_offset;
-    exp2->SetDevicePciDataByOffset = set_device_pci_data_by_offset;
-    exp2->KdStallExecutionProcessor = stall_cpu;
-    exp2->READ_REGISTER_UCHAR = read_register_uchar;
-    exp2->READ_REGISTER_USHORT = read_register_ushort;
-    exp2->READ_REGISTER_ULONG = read_register_ulong;
-    exp2->WRITE_REGISTER_UCHAR = write_register_uchar;
-    exp2->WRITE_REGISTER_USHORT = write_register_ushort;
-    exp2->WRITE_REGISTER_ULONG = write_register_ulong;
-    exp2->WRITE_PORT_ULONG = write_port_ulong;
-    exp2->GetPhysicalAddress = get_physical_address;
-    exp2->KdNetErrorStatus = &net_error_status;
-    exp2->KdNetErrorString = &net_error_string;
-    exp2->KdNetHardwareId = &net_hardware_id;
+    imp2->GetDevicePciDataByOffset = get_device_pci_data_by_offset;
+    imp2->SetDevicePciDataByOffset = set_device_pci_data_by_offset;
+    imp2->StallExecutionProcessor = stall_cpu;
+    imp2->ReadRegisterUChar = read_register_uchar;
+    imp2->ReadRegisterUShort = read_register_ushort;
+    imp2->ReadRegisterULong = read_register_ulong;
+    imp2->WriteRegisterUChar = write_register_uchar;
+    imp2->WriteRegisterUShort = write_register_ushort;
+    imp2->WriteRegisterULong = write_register_ulong;
+    imp2->WritePortULong = write_port_ulong;
+    imp2->GetPhysicalAddress = get_physical_address;
+    imp2->KdNetErrorStatus = &net_error_status;
+    imp2->KdNetErrorString = &net_error_string;
+    imp2->KdNetHardwareID = &net_hardware_id;
 
-    return KdInitializeLibrary(exports, NULL, ddd);
+    return KdInitializeLibrary(imports, NULL, ddd);
 }
 
 EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     NTSTATUS Status;
-    kdnet_exports exports;
+    KDNET_EXTENSIBILITY_IMPORTS imports;
     kd_funcs funcs;
     KD_NET_DATA kd_net_data;
 
     debug_device_descriptor = ddd;
 
-    Status = call_KdInitializeLibrary(ddd, &exports, &funcs, build);
+    Status = call_KdInitializeLibrary(ddd, &imports, &funcs, build);
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
 
