@@ -494,9 +494,7 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     }
 
     if constexpr (requires { T::MajorRelease; }) {
-        if (build >= WIN10_BUILD_21H1)
-            extblock.MajorRelease = NTDDI_WIN10_20H1;
-        else if (build >= WIN10_BUILD_2004)
+        if (build >= WIN10_BUILD_2004)
             extblock.MajorRelease = NTDDI_WIN10_20H1;
         else if (build >= WIN10_BUILD_1903) {
             // contrary to what you might expect, both 1903 and 1909 use the same value here
