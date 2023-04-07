@@ -12,15 +12,22 @@ typedef int32_t NTSTATUS;
 #define STATUS_SUCCESS              (NTSTATUS)0
 #define STATUS_INVALID_PARAMETER    (NTSTATUS)0xc000000d
 
-typedef struct {
-    void* scratch;
-    DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
-    uint8_t* mac_address;
-    // FIXME - Windows 8.1 wants some more stuff here(?)
-} KD_NET_DATA;
+// documented in Debuggers/ddk/samples/kdnet/inc/kdnetshareddata.h in Win 10 kit
+struct KDNET_SHARED_DATA {
+    void* Hardware;
+    DEBUG_DEVICE_DESCRIPTOR* Device;
+    uint8_t* TargetMacAddress;
+    uint32_t LinkSpeed;
+    uint32_t LinkDuplex;
+    uint8_t* LinkState;
+    uint32_t SerialBaudRate;
+    uint32_t Flags;
+    uint8_t RestartKdnet;
+    uint8_t Reserved[3];
+};
 
 typedef NTSTATUS (__stdcall *KD_INITIALIZE_CONTROLLER) (
-    KD_NET_DATA* kd_net_data
+    KDNET_SHARED_DATA* kd_net_data
 );
 
 typedef uint64_t (__stdcall *KD_GET_HARDWARE_CONTEXT_SIZE) (
@@ -547,7 +554,7 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     NTSTATUS Status;
     KDNET_EXTENSIBILITY_IMPORTS imports;
     kd_funcs funcs;
-    KD_NET_DATA kd_net_data;
+    KDNET_SHARED_DATA kd_net_data;
 
     debug_device_descriptor = ddd;
 
@@ -555,9 +562,9 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
 
-    kd_net_data.scratch = kdnet_scratch;
-    kd_net_data.debug_device_descriptor = ddd;
-    kd_net_data.mac_address = mac_address;
+    kd_net_data.Hardware = kdnet_scratch;
+    kd_net_data.Device = ddd;
+    kd_net_data.TargetMacAddress = mac_address;
 
     if (build >= WIN10_BUILD_1507)
         Status = funcs.KdInitializeController(&kd_net_data);
