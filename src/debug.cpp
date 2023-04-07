@@ -27,11 +27,78 @@ struct KDNET_SHARED_DATA {
 };
 
 typedef NTSTATUS (__stdcall *KD_INITIALIZE_CONTROLLER) (
-    KDNET_SHARED_DATA* kd_net_data
+    KDNET_SHARED_DATA* KdNet
 );
 
-typedef uint64_t (__stdcall *KD_GET_HARDWARE_CONTEXT_SIZE) (
-    DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor
+typedef void (__stdcall *KD_SHUTDOWN_CONTROLLER) (
+    void* Adapter
+);
+
+typedef void (__stdcall *KD_SET_HIBERNATE_RANGE) (void);
+
+typedef NTSTATUS (__stdcall *KD_DEVICE_CONTROL) (
+    void* Adapter,
+    uint32_t RequestCode,
+    void* InputBuffer,
+    uint32_t InputBufferLength,
+    void* OutputBuffer,
+    uint32_t OutputBufferLength
+);
+
+typedef NTSTATUS (__stdcall *KD_GET_RX_PACKET) (
+    void* Adapter,
+    uint32_t* Handle,
+    void** Packet,
+    uint32_t* Length
+);
+
+typedef void (__stdcall *KD_RELEASE_RX_PACKET) (
+    void* Adapter,
+    uint32_t Handle
+);
+
+typedef NTSTATUS (__stdcall *KD_GET_TX_PACKET) (
+    void* Adapter,
+    uint32_t* Handle
+);
+
+typedef NTSTATUS (__stdcall *KD_SEND_TX_PACKET) (
+    void* Adapter,
+    uint32_t Handle,
+    uint32_t Length
+);
+
+typedef void* (__stdcall *KD_GET_PACKET_ADDRESS) (
+    void* Adapter,
+    uint32_t Handle
+);
+
+typedef uint32_t (__stdcall *KD_GET_PACKET_LENGTH) (
+    void* Adapter,
+    uint32_t Handle
+);
+
+typedef uint32_t (__stdcall *KD_GET_HARDWARE_CONTEXT_SIZE) (
+    DEBUG_DEVICE_DESCRIPTOR* Device
+);
+
+typedef NTSTATUS (__stdcall *KD_READ_SERIAL_BYTE) (
+    void* Adapter,
+    uint8_t* Byte
+);
+
+typedef NTSTATUS (__stdcall *KD_WRITE_SERIAL_BYTE) (
+    void* Adapter,
+    const uint8_t Byte
+);
+
+typedef NTSTATUS (__stdcall *DEBUG_SERIAL_OUTPUT_INIT) (
+    DEBUG_DEVICE_DESCRIPTOR* pDevice,
+    uint64_t* PAddress
+);
+
+typedef void (*DEBUG_SERIAL_OUTPUT_BYTE) (
+    const uint8_t Byte
 );
 
 typedef uint32_t (__stdcall *KDNET_GET_PCI_DATA_BY_OFFSET) (
@@ -167,22 +234,25 @@ typedef void (__stdcall *KDNET_DBGPRINT) (
     ...
 );
 
-typedef struct {
-    uint32_t count;
+// documented in Debuggers/ddk/samples/kdnet/inc/kdnetextensibility.h in Win 10 kit
+struct KDNET_EXTENSIBILITY_EXPORTS {
+    uint32_t FunctionCount;
     KD_INITIALIZE_CONTROLLER KdInitializeController;
-    void* KdShutdownController;
-    void* KdSetHibernateRange;
-    void* KdGetRxPacket;
-    void* KdReleaseRxPacket;
-    void* KdGetTxPacket;
-    void* KdSendTxPacket;
-    void* KdGetPacketAddress;
-    void* KdGetPacketLength;
+    KD_SHUTDOWN_CONTROLLER KdShutdownController;
+    KD_SET_HIBERNATE_RANGE KdSetHibernateRange;
+    KD_GET_RX_PACKET KdGetRxPacket;
+    KD_RELEASE_RX_PACKET KdReleaseRxPacket;
+    KD_GET_TX_PACKET KdGetTxPacket;
+    KD_SEND_TX_PACKET KdSendTxPacket;
+    KD_GET_PACKET_ADDRESS KdGetPacketAddress;
+    KD_GET_PACKET_LENGTH KdGetPacketLength;
     KD_GET_HARDWARE_CONTEXT_SIZE KdGetHardwareContextSize;
-    void* unknown1;
-    void* unknown2;
-    void* unknown3;
-} kd_funcs;
+    KD_DEVICE_CONTROL KdDeviceControl;
+    KD_READ_SERIAL_BYTE KdReadSerialByte;
+    KD_WRITE_SERIAL_BYTE KdWriteSerialByte;
+    DEBUG_SERIAL_OUTPUT_INIT DebugSerialOutputInit;
+    DEBUG_SERIAL_OUTPUT_BYTE DebugSerialOutputByte;
+};
 
 #pragma pack(push,1)
 
@@ -228,7 +298,7 @@ struct KDNET_EXTENSIBILITY_IMPORTS {
         kdnet_imports2 imports_win81;
 
         struct {
-            kd_funcs* funcs;
+            KDNET_EXTENSIBILITY_EXPORTS* exports;
             kdnet_imports2 imports;
         } win10;
     };
@@ -247,7 +317,7 @@ wchar_t* net_error_string = NULL;
 uint32_t net_hardware_id = 0;
 
 static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXTENSIBILITY_IMPORTS* imports,
-                                         kd_funcs* funcs, uint16_t build);
+                                         KDNET_EXTENSIBILITY_EXPORTS* exports, uint16_t build);
 
 KD_INITIALIZE_LIBRARY KdInitializeLibrary = NULL;
 KD_INITIALIZE_CONTROLLER KdInitializeController = NULL;
@@ -286,7 +356,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
     EFI_STATUS Status;
     NTSTATUS nt_Status;
     KDNET_EXTENSIBILITY_IMPORTS imports;
-    kd_funcs funcs;
+    KDNET_EXTENSIBILITY_EXPORTS exports;
     EFI_PHYSICAL_ADDRESS addr;
 
     Status = find_kd_export(kdstub, build);
@@ -295,7 +365,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
         return Status;
     }
 
-    nt_Status = call_KdInitializeLibrary(ddd, &imports, &funcs, build);
+    nt_Status = call_KdInitializeLibrary(ddd, &imports, &exports, build);
     if (!NT_SUCCESS(nt_Status)) {
         char s[255], *p;
 
@@ -309,7 +379,7 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
     }
 
     if (build >= WIN10_BUILD_1507)
-        ddd->TransportData.HwContextSize = funcs.KdGetHardwareContextSize(ddd);
+        ddd->TransportData.HwContextSize = exports.KdGetHardwareContextSize(ddd);
     else
         ddd->TransportData.HwContextSize = ddd->Memory.Length; // set by KdInitializeLibrary
 
@@ -511,7 +581,7 @@ static void* __stdcall get_physical_address(void* va) {
 }
 
 static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXTENSIBILITY_IMPORTS* imports,
-                                         kd_funcs* funcs, uint16_t build) {
+                                         KDNET_EXTENSIBILITY_EXPORTS* exports, uint16_t build) {
     kdnet_imports2* imp2;
     debug_device_descriptor = ddd;
 
@@ -525,10 +595,10 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXT
         imports->FunctionCount = 0x18;
 
     if (build >= WIN10_BUILD_1507) {
-        imports->win10.funcs = funcs;
+        imports->win10.exports = exports;
         imp2 = &imports->win10.imports;
 
-        funcs->count = 13; // number of functions
+        exports->FunctionCount = 13;
     } else
         imp2 = &imports->imports_win81;
 
@@ -553,12 +623,12 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXT
 EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     NTSTATUS Status;
     KDNET_EXTENSIBILITY_IMPORTS imports;
-    kd_funcs funcs;
+    KDNET_EXTENSIBILITY_EXPORTS exports;
     KDNET_SHARED_DATA kd_net_data;
 
     debug_device_descriptor = ddd;
 
-    Status = call_KdInitializeLibrary(ddd, &imports, &funcs, build);
+    Status = call_KdInitializeLibrary(ddd, &imports, &exports, build);
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
 
@@ -567,7 +637,7 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     kd_net_data.TargetMacAddress = mac_address;
 
     if (build >= WIN10_BUILD_1507)
-        Status = funcs.KdInitializeController(&kd_net_data);
+        Status = exports.KdInitializeController(&kd_net_data);
     else
         Status = KdInitializeController(&kd_net_data);
 
