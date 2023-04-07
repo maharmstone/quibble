@@ -587,7 +587,9 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXT
 
     memset(imports, 0, sizeof(*imports));
 
-    if (build >= WIN10_BUILD_1607)
+    if (build >= WIN10_BUILD_22H2)
+        imports->FunctionCount = 0x1f;
+    else if (build >= WIN10_BUILD_1607)
         imports->FunctionCount = 0x1e;
     else if (build >= WIN10_BUILD_1507)
         imports->FunctionCount = 0x1d;

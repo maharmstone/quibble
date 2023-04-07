@@ -3426,6 +3426,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         version = _WIN32_WINNT_WIN7;
     else if (version == _WIN32_WINNT_WIN10 && build == WIN10_BUILD_20H2 && revision >= 928)
         build = WIN10_BUILD_21H1;
+    else if (version == _WIN32_WINNT_WIN10 && build == WIN10_BUILD_2004 && revision >= 2006)
+        build = WIN10_BUILD_22H2;
 
     {
         char s[255], *p;
