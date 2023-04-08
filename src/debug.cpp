@@ -775,6 +775,17 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
 
         print_string(s);
 
+        if (net_error_string) {
+            unsigned int dest_len = sizeof(s);
+
+            if (!EFI_ERROR(utf16_to_utf8(s, sizeof(s), &dest_len, (wchar_t*)net_error_string, wcslen((wchar_t*)net_error_string) * sizeof(char16_t)))) {
+                s[dest_len] = 0;
+
+                print_string(s);
+                print_string("\n");
+            }
+        }
+
         return EFI_INVALID_PARAMETER;
     }
 
