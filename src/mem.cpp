@@ -810,14 +810,8 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void*& v
     desc = efi_memory_map;
 
     for (unsigned int i = 0; i < efi_map_size / map_desc_size; i++) {
-        switch (desc->Type) {
-            case EfiRuntimeServicesData:
-            case EfiRuntimeServicesCode:
-            case EfiMemoryMappedIO:
-            case EfiMemoryMappedIOPortSpace:
-                num_entries++;
-            break;
-        }
+        if (desc->Attribute & EFI_MEMORY_RUNTIME)
+            num_entries++;
 
         desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc + map_desc_size);
     }
@@ -843,25 +837,20 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void*& v
     desc2 = efi_runtime_map;
 
     for (unsigned int i = 0; i < efi_map_size / map_desc_size; i++) {
-        switch (desc->Type) {
-            case EfiRuntimeServicesData:
-            case EfiRuntimeServicesCode:
-            case EfiMemoryMappedIO:
-            case EfiMemoryMappedIOPortSpace:
-                memcpy(desc2, desc, map_desc_size);
-                desc2->VirtualStart = (EFI_VIRTUAL_ADDRESS)(uintptr_t)va;
+        if (desc->Attribute & EFI_MEMORY_RUNTIME) {
+            memcpy(desc2, desc, map_desc_size);
+            desc2->VirtualStart = (EFI_VIRTUAL_ADDRESS)(uintptr_t)va;
 
-                Status = add_mapping(bs, mappings, va, (void*)(uintptr_t)desc->PhysicalStart,
-                                     desc->NumberOfPages, LoaderFirmwarePermanent);
-                if (EFI_ERROR(Status)) {
-                    print_error("add_mapping", Status);
-                    return Status;
-                }
+            Status = add_mapping(bs, mappings, va, (void*)(uintptr_t)desc->PhysicalStart,
+                                    desc->NumberOfPages, LoaderFirmwarePermanent);
+            if (EFI_ERROR(Status)) {
+                print_error("add_mapping", Status);
+                return Status;
+            }
 
-                va = (uint8_t*)va + (desc->NumberOfPages * EFI_PAGE_SIZE);
+            va = (uint8_t*)va + (desc->NumberOfPages * EFI_PAGE_SIZE);
 
-                desc2 = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc2 + map_desc_size);
-            break;
+            desc2 = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc2 + map_desc_size);
         }
 
         desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc + map_desc_size);
