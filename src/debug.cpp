@@ -649,8 +649,17 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     else
         Status = KdInitializeController(&kd_net_data);
 
-    if (!NT_SUCCESS(Status))
+    if (!NT_SUCCESS(Status)) {
+        char s[255], *p;
+
+        p = stpcpy(s, "KdInitializeController returned ");
+        p = hex_to_str(p, (uint32_t)Status);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+
         return EFI_INVALID_PARAMETER;
+    }
 
     if (mac_address[0] != 0 || mac_address[1] != 0 || mac_address[2] != 0 ||
         mac_address[3] != 0 || mac_address[4] != 0 || mac_address[5] != 0) {
