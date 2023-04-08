@@ -40,7 +40,7 @@ int strnicmp(const char* s1, const char* s2, int n);
 #endif
 char* stpcpy(char* dest, const char* src);
 char* stpcpy_utf16(char* dest, const wchar_t* src);
-char* hex_to_str(char* s, uint64_t v);
+char* hex_to_str(char* s, uint64_t v, unsigned int min_length = 1);
 char* dec_to_str(char* s, uint64_t v);
 EFI_STATUS utf8_to_utf16(wchar_t* dest, unsigned int dest_max, unsigned int* dest_len, const char* src, unsigned int src_len);
 EFI_STATUS utf16_to_utf8(char* dest, unsigned int dest_max, unsigned int* dest_len, const wchar_t* src, unsigned int src_len);

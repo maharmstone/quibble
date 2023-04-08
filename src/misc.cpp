@@ -560,12 +560,15 @@ char* stpcpy(char* dest, const char* src) {
     return dest;
 }
 
-char* hex_to_str(char* s, uint64_t v) {
+char* hex_to_str(char* s, uint64_t v, unsigned int min_length) {
     char *end, *p;
+    int padding = min_length;
 
     if (v == 0) {
-        *s = '0';
-        s++;
+        for (unsigned int i = 0; i < min_length; i++) {
+            *s = '0';
+            s++;
+        }
 
         *s = 0;
         return s;
@@ -578,8 +581,12 @@ char* hex_to_str(char* s, uint64_t v) {
 
         while (n != 0) {
             end++;
+            padding--;
             n >>= 4;
         }
+
+        if (padding > 0)
+            end += padding;
     }
 
     *end = 0;
@@ -595,6 +602,11 @@ char* hex_to_str(char* s, uint64_t v) {
             *p = (v & 0xf) + '0';
 
         v >>= 4;
+    }
+
+    for (int i = 0; i < padding; i++) {
+        p = &p[-1];
+        *p = '0';
     }
 
     return end;
