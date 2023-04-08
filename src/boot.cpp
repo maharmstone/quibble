@@ -4287,6 +4287,17 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     set_gdt(gdt);
     set_idt(idt);
 
+#ifdef DEBUG
+    print_string("Calling SetVirtualAddressMap...\n");
+#endif
+
+    Status = systable->RuntimeServices->SetVirtualAddressMap(efi_runtime_map_size, map_desc_size,
+                                                             EFI_MEMORY_DESCRIPTOR_VERSION, efi_runtime_map);
+    if (EFI_ERROR(Status)) {
+        print_error("SetVirtualAddressMap", Status);
+        return Status;
+    }
+
 #if defined(_X86_) || defined(__x86_64__)
     /* Re-enable IDE interrupts - the IDE driver on OVMF disables them when not expecting anything,
      * which confuses Vista. */
