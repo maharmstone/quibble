@@ -2996,6 +2996,33 @@ static void mark_framebuffer_wc() {
     // re-enable write protection
     __writecr0(cr0);
 }
+
+static void mark_framebuffer_wc_va() {
+    int cpu_info[4];
+
+    // check for PAT support, and return if not found
+    __cpuid(cpu_info, 1);
+
+    if (!(cpu_info[3] & 0x10000)) // PAT not supported
+        return;
+
+    auto addr = (uintptr_t)framebuffer;
+    auto addr2 = (addr & 0xfffffffff000) >> 12;
+
+    for (unsigned int i = 0; i < page_count(framebuffer_size); i++) {
+        auto& pte = *(HARDWARE_PTE_PAE*)(SELFMAP | (addr2 << 3));
+
+        // switch to PAT4
+        pte.LargePage = 1;
+        pte.CacheDisable = 0;
+        pte.WriteThrough = 0;
+
+        addr2++;
+    }
+
+    // force refresh
+    __writecr3(__readcr3());
+}
 #endif
 
 static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle) {
@@ -4279,8 +4306,14 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     store = (loader_store*)store_va;
     store2 = store;
 
-    if (framebuffer)
+    if (framebuffer) {
         framebuffer = framebuffer_va;
+
+#ifdef __x86_64__
+        // set framebuffer to be write-combining again
+        mark_framebuffer_wc_va();
+#endif
+    }
 
     print_string("Paging enabled.\n");
 
