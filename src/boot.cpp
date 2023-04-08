@@ -4124,7 +4124,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     va = (uint8_t*)va + (page_count(reg_size) * EFI_PAGE_SIZE);
 
-    Status = map_efi_runtime(bs, &mappings, &va, version);
+    Status = map_efi_runtime(bs, &mappings, va, version);
     if (EFI_ERROR(Status)) {
         print_error("map_efi_runtime", Status);
         return Status;

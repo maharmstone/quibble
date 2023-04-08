@@ -120,7 +120,7 @@ EFI_STATUS add_mapping(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va, vo
 EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
                          LIST_ENTRY& mdl_head, void* va, uintptr_t* loader_pages_spanned);
 EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mappings);
-EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** va, uint16_t version);
+EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void*& va, uint16_t version);
 void merge_mappings(LIST_ENTRY* mappings);
 
 // hw.c

@@ -800,13 +800,12 @@ static EFI_STATUS add_hal_mappings(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings) 
 }
 #endif
 
-EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** va, uint16_t version) {
+EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void*& va, uint16_t version) {
     EFI_STATUS Status;
     unsigned int num_entries = 0;
     EFI_MEMORY_DESCRIPTOR* desc;
     EFI_MEMORY_DESCRIPTOR* desc2;
     EFI_PHYSICAL_ADDRESS addr;
-    void* va2 = *va;
 
     desc = efi_memory_map;
 
@@ -850,16 +849,16 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
             case EfiMemoryMappedIO:
             case EfiMemoryMappedIOPortSpace:
                 memcpy(desc2, desc, map_desc_size);
-                desc2->VirtualStart = (EFI_VIRTUAL_ADDRESS)(uintptr_t)va2;
+                desc2->VirtualStart = (EFI_VIRTUAL_ADDRESS)(uintptr_t)va;
 
-                Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)desc->PhysicalStart,
+                Status = add_mapping(bs, mappings, va, (void*)(uintptr_t)desc->PhysicalStart,
                                      desc->NumberOfPages, LoaderFirmwarePermanent);
                 if (EFI_ERROR(Status)) {
                     print_error("add_mapping", Status);
                     return Status;
                 }
 
-                va2 = (uint8_t*)va2 + (desc->NumberOfPages * EFI_PAGE_SIZE);
+                va = (uint8_t*)va + (desc->NumberOfPages * EFI_PAGE_SIZE);
 
                 desc2 = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc2 + map_desc_size);
             break;
@@ -869,17 +868,15 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** v
     }
 
     if (version >= _WIN32_WINNT_WINBLUE) {
-        Status = add_mapping(bs, mappings, va2, (void*)(uintptr_t)efi_runtime_map,
+        Status = add_mapping(bs, mappings, va, (void*)(uintptr_t)efi_runtime_map,
                              page_count(efi_runtime_map_size), LoaderFirmwarePermanent);
         if (EFI_ERROR(Status)) {
             print_error("add_mapping", Status);
             return Status;
         }
 
-        va2 = (uint8_t*)va2 + (page_count(efi_runtime_map_size) * EFI_PAGE_SIZE);
+        va = (uint8_t*)va + (page_count(efi_runtime_map_size) * EFI_PAGE_SIZE);
     }
-
-    *va = va2;
 
     return EFI_SUCCESS;
 }
