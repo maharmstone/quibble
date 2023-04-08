@@ -4296,12 +4296,8 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
 //     halt();
 
-    if (kdstub_export_loaded) {
-#ifdef DEBUG
-        print_string("Calling kdstub_init\n");
-#endif
+    if (kdstub_export_loaded)
         kdstub_init(&store->debug_device_descriptor, build);
-    }
 
     // FIXME - can we print net_error_string and net_error_status somehow if this fails?
 

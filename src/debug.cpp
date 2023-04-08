@@ -634,9 +634,15 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
 
+    memset(mac_address, 0, sizeof(mac_address));
+
     kd_net_data.Hardware = kdnet_scratch;
     kd_net_data.Device = ddd;
     kd_net_data.TargetMacAddress = mac_address;
+
+#ifdef DEBUG
+    print_string("Calling KdInitializeController...\n");
+#endif
 
     if (build >= WIN10_BUILD_1507)
         Status = exports.KdInitializeController(&kd_net_data);
@@ -645,6 +651,27 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
 
     if (!NT_SUCCESS(Status))
         return EFI_INVALID_PARAMETER;
+
+    if (mac_address[0] != 0 || mac_address[1] != 0 || mac_address[2] != 0 ||
+        mac_address[3] != 0 || mac_address[4] != 0 || mac_address[5] != 0) {
+        char s[255], *p;
+
+        p = stpcpy(s, "MAC address is ");
+        p = hex_to_str(p, mac_address[0], 2);
+        p = stpcpy(p, ":");
+        p = hex_to_str(p, mac_address[1], 2);
+        p = stpcpy(p, ":");
+        p = hex_to_str(p, mac_address[2], 2);
+        p = stpcpy(p, ":");
+        p = hex_to_str(p, mac_address[3], 2);
+        p = stpcpy(p, ":");
+        p = hex_to_str(p, mac_address[4], 2);
+        p = stpcpy(p, ":");
+        p = hex_to_str(p, mac_address[5], 2);
+        p = stpcpy(p, ".\n");
+
+        print_string(s);
+    }
 
     return EFI_SUCCESS;
 }
