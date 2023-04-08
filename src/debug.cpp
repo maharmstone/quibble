@@ -312,17 +312,16 @@ typedef NTSTATUS (__stdcall *KD_INITIALIZE_LIBRARY) (
     DEBUG_DEVICE_DESCRIPTOR* Device
 );
 
-NTSTATUS net_error_status = STATUS_SUCCESS;
-wchar_t* net_error_string = NULL;
-uint32_t net_hardware_id = 0;
+static NTSTATUS net_error_status = STATUS_SUCCESS;
+static wchar_t* net_error_string = nullptr;
+static uint32_t net_hardware_id = 0;
+static KD_INITIALIZE_LIBRARY KdInitializeLibrary = nullptr;
+static KD_INITIALIZE_CONTROLLER KdInitializeController = nullptr;
+void* kdnet_scratch = nullptr;
+static uint8_t mac_address[6];
 
 static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXTENSIBILITY_IMPORTS* imports,
                                          KDNET_EXTENSIBILITY_EXPORTS* exports, uint16_t build);
-
-KD_INITIALIZE_LIBRARY KdInitializeLibrary = NULL;
-KD_INITIALIZE_CONTROLLER KdInitializeController = NULL;
-void* kdnet_scratch = NULL;
-static uint8_t mac_address[6];
 
 EFI_STATUS find_kd_export(EFI_PE_IMAGE* kdstub, uint16_t build) {
     UINT64 addr;
