@@ -4291,11 +4291,29 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     print_string("Calling SetVirtualAddressMap...\n");
 #endif
 
-    Status = systable->RuntimeServices->SetVirtualAddressMap(efi_runtime_map_size, map_desc_size,
-                                                             EFI_MEMORY_DESCRIPTOR_VERSION, efi_runtime_map);
-    if (EFI_ERROR(Status)) {
-        print_error("SetVirtualAddressMap", Status);
-        return Status;
+    if (efi_runtime_map) {
+        auto desc = efi_runtime_map;
+
+        // Remove the spurious entries we added in map_efi_runtime
+
+        while ((uint8_t*)desc < (uint8_t*)efi_runtime_map + efi_runtime_map_size) {
+            if (!(desc->Attribute & EFI_MEMORY_RUNTIME)) {
+                memcpy(desc, (uint8_t*)desc + map_desc_size,
+                       efi_runtime_map_size - ((uint8_t*)desc - (uint8_t*)efi_runtime_map) - map_desc_size);
+                efi_runtime_map_size -= map_desc_size;
+
+                continue;
+            }
+
+            desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)desc + map_desc_size);
+        }
+
+        Status = systable->RuntimeServices->SetVirtualAddressMap(efi_runtime_map_size, map_desc_size,
+                                                                EFI_MEMORY_DESCRIPTOR_VERSION, efi_runtime_map);
+        if (EFI_ERROR(Status)) {
+            print_error("SetVirtualAddressMap", Status);
+            return Status;
+        }
     }
 
 #if defined(_X86_) || defined(__x86_64__)
