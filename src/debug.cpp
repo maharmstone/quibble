@@ -321,7 +321,6 @@ static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXT
 
 KD_INITIALIZE_LIBRARY KdInitializeLibrary = NULL;
 KD_INITIALIZE_CONTROLLER KdInitializeController = NULL;
-static DEBUG_DEVICE_DESCRIPTOR* debug_device_descriptor;
 void* kdnet_scratch = NULL;
 static uint8_t mac_address[6];
 
@@ -583,7 +582,6 @@ static void* __stdcall get_physical_address(void* va) {
 static NTSTATUS call_KdInitializeLibrary(DEBUG_DEVICE_DESCRIPTOR* ddd, KDNET_EXTENSIBILITY_IMPORTS* imports,
                                          KDNET_EXTENSIBILITY_EXPORTS* exports, uint16_t build) {
     kdnet_imports2* imp2;
-    debug_device_descriptor = ddd;
 
     memset(imports, 0, sizeof(*imports));
 
@@ -627,8 +625,6 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     KDNET_EXTENSIBILITY_IMPORTS imports;
     KDNET_EXTENSIBILITY_EXPORTS exports;
     KDNET_SHARED_DATA kd_net_data;
-
-    debug_device_descriptor = ddd;
 
     Status = call_KdInitializeLibrary(ddd, &imports, &exports, build);
     if (!NT_SUCCESS(Status))
