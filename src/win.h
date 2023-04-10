@@ -2887,10 +2887,7 @@ typedef struct {
     HEADLESS_LOADER_BLOCK* HeadlessLoaderBlock;
     SMBIOS3_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
-    uint32_t DrvDBSize;
-#ifdef __x86_64__
-    uint32_t padding3;
-#endif
+    uintptr_t DrvDBSize;
     void* DrvDBPatchImage;
     uint32_t DrvDBPatchSize;
     NETWORK_LOADER_BLOCK* NetworkLoaderBlock;
@@ -3462,8 +3459,7 @@ typedef struct {
     HEADLESS_LOADER_BLOCK* HeadlessLoaderBlock;
     SMBIOS3_TABLE_HEADER* SMBiosEPSHeader;
     void* DrvDBImage;
-    uint32_t DrvDBSize;
-    uint32_t padding3;
+    uintptr_t DrvDBSize;
     void* DrvDBPatchImage;
     uint32_t DrvDBPatchSize;
     uint32_t padding4;

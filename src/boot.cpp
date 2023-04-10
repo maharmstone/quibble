@@ -2249,9 +2249,8 @@ static EFI_STATUS make_images_contiguous(EFI_BOOT_SERVICES* bs, LIST_ENTRY* imag
     return EFI_SUCCESS;
 }
 
-template<typename T>
 static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void** va, LIST_ENTRY* mappings,
-                             T& extblock) {
+                             void*& DrvDBImage, uintptr_t& DrvDBSize) {
     EFI_STATUS Status;
     void* data;
     size_t size;
@@ -2276,8 +2275,8 @@ static EFI_STATUS load_drvdb(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE windir, void
         return Status;
     }
 
-    extblock.DrvDBImage = *va;
-    extblock.DrvDBSize = size;
+    DrvDBImage = *va;
+    DrvDBSize = size;
 
     *va = (uint8_t*)*va + (page_count(size) * EFI_PAGE_SIZE);
 
@@ -4106,7 +4105,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 
     if (version >= _WIN32_WINNT_WINXP) {
         std::visit([&](auto&& e) {
-            Status = load_drvdb(bs, windir, &va, &mappings, *e);
+            Status = load_drvdb(bs, windir, &va, &mappings, e->DrvDBImage, e->DrvDBSize);
         }, extension_block);
 
         if (EFI_ERROR(Status)) {
