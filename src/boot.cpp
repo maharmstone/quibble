@@ -21,6 +21,8 @@
 #include <intrin.h>
 #include <variant>
 #include <optional>
+#include <span>
+#include <string_view>
 #include "quibble.h"
 #include "reg.h"
 #include "peload.h"
@@ -1130,8 +1132,10 @@ EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const wchar_t* 
     EFI_PHYSICAL_ADDRESS addr;
 
     Status = open_file(dir, &file, name);
-    if (EFI_ERROR(Status))
+    if (EFI_ERROR(Status)) {
+        print_error("open_file", Status);
         return Status;
+    }
 
     {
         EFI_FILE_INFO file_info;
@@ -4606,42 +4610,101 @@ static EFI_STATUS create_file_device_path(EFI_BOOT_SERVICES* bs, EFI_DEVICE_PATH
     return EFI_SUCCESS;
 }
 
-EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, FILEPATH_DEVICE_PATH* dp, EFI_FILE_HANDLE* dir) {
+EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, EFI_DEVICE_PATH* dp, EFI_FILE_HANDLE* dir) {
     EFI_STATUS Status;
     unsigned int len;
+    wchar_t* path;
     wchar_t* name;
     EFI_FILE_HANDLE root;
 
-    if (dp->Header.Type != MEDIA_DEVICE_PATH || dp->Header.SubType != MEDIA_FILEPATH_DP)
-        return EFI_INVALID_PARAMETER;
+    len = 0;
 
-    len = *(uint16_t*)dp->Header.Length / sizeof(CHAR16);
+    {
+        auto dp2 = dp;
 
-    if (len == 0)
-        return EFI_INVALID_PARAMETER;
+        while (true) {
+            if (dp2->Type == END_DEVICE_PATH_TYPE)
+                break;
 
-    for (int i = len - 1; i >= 0; i--) {
-        if (dp->PathName[i] == '\\') {
-            len = i;
-            break;
+            if (dp2->Type != MEDIA_DEVICE_PATH || dp2->SubType != MEDIA_FILEPATH_DP)
+                return EFI_INVALID_PARAMETER;
+
+            const auto& fdp = *(FILEPATH_DEVICE_PATH*)dp2;
+            std::u16string_view sv((char16_t*)fdp.PathName, (*(uint16_t*)fdp.Header.Length - offsetof(FILEPATH_DEVICE_PATH, PathName)) / sizeof(char16_t));
+
+            while (!sv.empty() && sv.back() == 0) {
+                sv = std::u16string_view(sv.data(), sv.size() - 1);
+            }
+
+            len += wcslen((const wchar_t*)fdp.PathName) + 1;
+
+            dp2 = (EFI_DEVICE_PATH*)((uint8_t*)dp2 + *(uint16_t*)dp2->Length);
         }
     }
 
-    if (len == 0) {
-        if (dp->PathName[0] == '\\')
-            len = 1;
-        else
-            return EFI_INVALID_PARAMETER;
-    }
-
-    Status = systable->BootServices->AllocatePool(EfiLoaderData, (len + 1) * sizeof(wchar_t), (void**)&name);
+    Status = systable->BootServices->AllocatePool(EfiLoaderData, (len + 1) * sizeof(wchar_t), (void**)&path);
     if (EFI_ERROR(Status)) {
         print_error("AllocatePool", Status);
         return Status;
     }
 
-    memcpy(name, dp->PathName, len * sizeof(wchar_t));
-    name[len] = 0;
+    path[0] = 0;
+    std::span<wchar_t> sp(path, len + 1);
+
+    {
+        auto dp2 = dp;
+
+        while (true) {
+            if (dp2->Type == END_DEVICE_PATH_TYPE)
+                break;
+
+            auto next = (EFI_DEVICE_PATH*)((uint8_t*)dp2 + *(uint16_t*)dp2->Length);
+
+            const auto& fdp = *(FILEPATH_DEVICE_PATH*)dp2;
+            std::u16string_view sv((char16_t*)fdp.PathName, (*(uint16_t*)fdp.Header.Length - offsetof(FILEPATH_DEVICE_PATH, PathName)) / sizeof(char16_t));
+
+            while (!sv.empty() && sv.back() == 0) {
+                sv = std::u16string_view(sv.data(), sv.size() - 1);
+            }
+
+            if (dp2 != dp && !sv.empty() && sv[0] == u'\\') {
+                sv = std::u16string_view(sv.data() + 1, sv.size() - 1);
+            }
+
+            memcpy(sp.data(), sv.data(), sv.size() * sizeof(wchar_t));
+            sp = sp.subspan(sv.size());
+
+            if (next->Type != END_DEVICE_PATH_TYPE && !sv.empty() && sv.back() != u'\\') {
+                sp[0] = u'\\';
+                sp = sp.subspan(1);
+            }
+
+            dp2 = next;
+        }
+    }
+
+    sp[0] = 0;
+
+    std::u16string_view sv((char16_t*)path, sp.data() - path);
+
+    if (auto bs = sv.rfind(u'\\'); bs != std::u16string_view::npos) {
+        if (bs == 0)
+            bs++;
+
+        sv = std::u16string_view(sv.data(), bs);
+    }
+
+    Status = systable->BootServices->AllocatePool(EfiLoaderData, (sv.size() + 1) * sizeof(wchar_t), (void**)&name);
+    if (EFI_ERROR(Status)) {
+        print_error("AllocatePool", Status);
+        systable->BootServices->FreePool(path);
+        return Status;
+    }
+
+    memcpy(name, sv.data(), sv.size() * sizeof(wchar_t));
+    systable->BootServices->FreePool(path);
+
+    name[sv.size()] = 0;
 
     Status = fs->OpenVolume(fs, &root);
     if (EFI_ERROR(Status)) {
@@ -4689,7 +4752,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
         goto end2;
     }
 
-    Status = open_parent_dir(fs, (FILEPATH_DEVICE_PATH*)image->FilePath, &dir);
+    Status = open_parent_dir(fs, image->FilePath, &dir);
     if (EFI_ERROR(Status)) {
         print_error("open_parent_dir", Status);
         goto end;

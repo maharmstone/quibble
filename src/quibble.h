@@ -104,7 +104,7 @@ EFI_STATUS load_image(image* img, const wchar_t* name, EFI_PE_LOADER_PROTOCOL* p
                       command_line* cmdline, uint16_t build);
 EFI_STATUS open_file(EFI_FILE_HANDLE dir, EFI_FILE_HANDLE* h, const wchar_t* name);
 EFI_STATUS read_file(EFI_BOOT_SERVICES* bs, EFI_FILE_HANDLE dir, const wchar_t* name, void** data, size_t* size);
-EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, FILEPATH_DEVICE_PATH* dp, EFI_FILE_HANDLE* dir);
+EFI_STATUS open_parent_dir(EFI_FILE_IO_INTERFACE* fs, EFI_DEVICE_PATH* dp, EFI_FILE_HANDLE* dir);
 
 // mem.c
 #ifdef _X86_

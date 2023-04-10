@@ -395,7 +395,7 @@ static EFI_STATUS load_ini_file(unsigned int* timeout) {
         goto end2;
     }
 
-    Status = open_parent_dir(fs, (FILEPATH_DEVICE_PATH*)image->FilePath, &dir);
+    Status = open_parent_dir(fs, image->FilePath, &dir);
     if (EFI_ERROR(Status)) {
         print_error("open_parent_dir", Status);
         goto end;
