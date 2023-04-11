@@ -229,6 +229,7 @@ To-do list
 * Early-launch anti-malware
 * ASLR
 * Booting 32-bit Windows on 64-bit machine
+* BIOS emulation on machines without CSM
 * Add RAID support for Btrfs
 * Hibernation, etc.
 * Get kdnet working with Windows 8.1
