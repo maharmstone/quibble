@@ -150,8 +150,6 @@ EFI_STATUS allocate_kdnet_hw_context(EFI_PE_IMAGE* kdstub, DEBUG_DEVICE_DESCRIPT
 
 // print.cpp
 extern uint8_t* ft_pool;
-extern void* font_data;
-extern size_t font_size;
 
 static constexpr size_t FT_POOL_PAGES = 16777216 >> EFI_PAGE_SHIFT; // 16 MB
 

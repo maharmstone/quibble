@@ -12,8 +12,6 @@ text_pos console_pos;
 static unsigned int console_width, console_height;
 static FT_Library ft = NULL;
 static FT_Face face = NULL;
-void* font_data = nullptr;
-size_t font_size;
 bool gop_console = false;
 unsigned int font_height = 0;
 uint8_t* ft_pool = nullptr;
@@ -23,6 +21,12 @@ extern void* framebuffer;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 extern bool have_edid;
 extern uint8_t edid[128];
+
+// in font.s
+extern void* font_data_start asm("font_data_start");
+extern size_t font_size asm ("font_size");
+
+void* font_data = &font_data_start;
 
 struct alloc_header {
     uint32_t size : 31;
@@ -185,64 +189,7 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
 }
 
 EFI_STATUS load_font() {
-    EFI_STATUS Status;
-    EFI_BOOT_SERVICES* bs = systable->BootServices;
-    EFI_GUID guid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
-    EFI_GUID guid2 = SIMPLE_FILE_SYSTEM_PROTOCOL;
-    EFI_LOADED_IMAGE_PROTOCOL* image;
-    EFI_FILE_IO_INTERFACE* fs;
-    EFI_FILE_HANDLE dir;
     FT_Error error;
-
-    Status = bs->OpenProtocol(image_handle, &guid, (void**)&image, image_handle, NULL,
-                              EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
-    if (EFI_ERROR(Status)) {
-        print_error("OpenProtocol", Status);
-        return Status;
-    }
-
-    if (!image->DeviceHandle) {
-        bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
-        return Status;
-    }
-
-    Status = bs->OpenProtocol(image->DeviceHandle, &guid2, (void**)&fs, image_handle, NULL,
-                              EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
-    if (EFI_ERROR(Status)) {
-        print_error("OpenProtocol", Status);
-        bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
-        return Status;
-    }
-
-    Status = bs->OpenProtocol(image->DeviceHandle, &guid2, (void**)&fs, image_handle, NULL,
-                              EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
-    if (EFI_ERROR(Status)) {
-        print_error("OpenProtocol", Status);
-        bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
-        return Status;
-    }
-
-    Status = open_parent_dir(fs, image->FilePath, &dir);
-    if (EFI_ERROR(Status)) {
-        print_error("open_parent_dir", Status);
-        bs->CloseProtocol(image->DeviceHandle, &guid2, image_handle, NULL);
-        bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
-        return Status;
-    }
-
-    // FIXME - allow font filename to be specified in freeldr.ini
-    Status = read_file(bs, dir, L"font.ttf", (void**)&font_data, &font_size);
-
-    dir->Close(dir);
-
-    bs->CloseProtocol(image->DeviceHandle, &guid2, image_handle, NULL);
-    bs->CloseProtocol(image_handle, &guid, image_handle, NULL);
-
-    if (EFI_ERROR(Status)) {
-        print_string("Could not load font file.\n");
-        print_error("read_file", Status);
-        return Status;
-    }
 
     error = FT_Init_FreeType(&ft);
     if (error) {

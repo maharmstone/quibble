@@ -21,6 +21,8 @@ else()
     add_compile_options(-fno-stack-check -fno-stack-protector -mno-stack-arg-probe)
 endif()
 
+enable_language(ASM)
+
 set(SRC_FILES src/apiset.cpp
     src/boot.cpp
     src/debug.cpp
@@ -31,7 +33,8 @@ set(SRC_FILES src/apiset.cpp
     src/peload.cpp
     src/reg.cpp
     src/tinymt32.cpp
-    src/print.cpp)
+    src/print.cpp
+    src/font.s)
 
 if(MSVC)
     enable_language(ASM_MASM)
