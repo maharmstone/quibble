@@ -866,6 +866,7 @@ long int strtol(const char* nptr, char** endptr, int base) {
     }
 }
 
+extern "C"
 char* strcat(char* dest, const char *src) {
     char* orig_dest = dest;
 

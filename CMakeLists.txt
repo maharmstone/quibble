@@ -41,7 +41,9 @@ endif()
 add_executable(quibble ${SRC_FILES})
 
 set(CMAKE_DISABLE_FIND_PACKAGE_BZip2 TRUE)
-set(CMAKE_DISABLE_FIND_PACKAGE_HARFBUZZ TRUE)
+set(CMAKE_DISABLE_FIND_PACKAGE_HarfBuzz TRUE)
+set(CMAKE_DISABLE_FIND_PACKAGE_PNG TRUE)
+set(CMAKE_DISABLE_FIND_PACKAGE_ZLIB TRUE)
 add_definitions(-DFT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT)
 add_subdirectory(freetype)
 add_subdirectory(ntfs)
@@ -81,6 +83,9 @@ target_compile_options(quibble PRIVATE "-mno-stack-arg-probe")
 
 target_link_options(quibble PRIVATE "-nostartfiles")
 target_link_options(quibble PRIVATE "-shared")
+
+target_link_options(quibble PRIVATE "-nostdlib")
+target_link_libraries(quibble gcc)
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
     target_link_options(quibble PRIVATE "-Wl,--subsystem,efi_application")

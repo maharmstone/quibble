@@ -4,3 +4,6 @@
 [submodule "btrfs-efi"]
 	path = btrfs
 	url = https://github.com/maharmstone/btrfs-efi
+[submodule "freetype2"]
+	path = freetype
+	url = https://gitlab.freedesktop.org/freetype/freetype

@@ -461,3 +461,58 @@ extern "C"
 void FT_Done_Memory(FT_Memory memory) {
     UNUSED(memory);
 }
+
+/* Dummy versions follow of unused functions linked to by FreeType. This is so
+ * we can bring in the upstream version directly, rather than having to patch
+ * the offending bits out. */
+
+#ifdef __x86_64__
+
+extern "C"
+void __imp_longjmp(jmp_buf, int) {
+    abort();
+}
+
+#elif defined(_X86_)
+
+extern "C"
+void _imp__longjmp(jmp_buf, int) {
+    abort();
+}
+
+#endif
+
+extern "C"
+void qsort(void*, size_t, size_t, int (*)(const void*, const void*)) {
+    abort();
+}
+
+extern "C"
+int _setjmp(jmp_buf, void*) {
+    return 0;
+}
+
+extern "C"
+int _setjmp3(jmp_buf, void*) {
+    return 0;
+}
+
+extern "C"
+char* getenv(const char*) {
+    return nullptr;
+}
+
+extern "C"
+char* strrchr(const char*, int) {
+    abort();
+}
+
+extern "C"
+char* strncpy(char*, const char*, size_t) {
+    abort();
+}
+
+extern "C"
+int __mingw_vsprintf(char*, const char*, va_list) {
+    abort();
+}
