@@ -23,8 +23,8 @@ extern bool have_edid;
 extern uint8_t edid[128];
 
 // in font.s
-extern void* font_data_start asm("font_data_start");
-extern size_t font_size asm ("font_size");
+extern void* font_data_start asm("_font_data_start");
+extern size_t font_size asm ("_font_size");
 
 void* font_data = &font_data_start;
 
