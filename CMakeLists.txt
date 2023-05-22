@@ -52,6 +52,12 @@ set(FT_DISABLE_ZLIB TRUE)
 set(FT_DISABLE_BROTLI TRUE)
 add_definitions(-DFT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT)
 add_subdirectory(freetype)
+
+add_subdirectory(harfbuzz EXCLUDE_FROM_ALL)
+target_compile_definitions(harfbuzz PRIVATE -Dhb_malloc_impl=hb_malloc_impl2 -Dhb_calloc_impl=hb_calloc_impl2 -Dhb_realloc_impl=hb_realloc_impl2 -Dhb_free_impl=hb_free_impl2)
+target_compile_definitions(harfbuzz PRIVATE -DHB_TINY)
+target_compile_options(harfbuzz PRIVATE "-Wa,-mbig-obj")
+
 add_subdirectory(ntfs)
 add_subdirectory(btrfs)
 
@@ -69,7 +75,7 @@ endif()
 
 target_compile_options(quibble PRIVATE
      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-          -Wall -Wextra -Wno-address-of-packed-member -Werror=pointer-arith -fno-exceptions>
+          -Wall -Wextra -Wno-address-of-packed-member -Werror=pointer-arith -fno-exceptions -Wno-dangling-reference>
      $<$<CXX_COMPILER_ID:MSVC>:
           /W4 /Oi->)
 
@@ -107,3 +113,4 @@ target_link_options(quibble PRIVATE "/SUBSYSTEM:EFI_APPLICATION")
 endif()
 
 target_link_libraries(quibble freetype)
+target_link_libraries(quibble harfbuzz)

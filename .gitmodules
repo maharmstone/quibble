@@ -7,3 +7,6 @@
 [submodule "freetype2"]
 	path = freetype
 	url = https://gitlab.freedesktop.org/freetype/freetype
+[submodule "harfbuzz"]
+	path = harfbuzz
+	url = https://github.com/harfbuzz/harfbuzz

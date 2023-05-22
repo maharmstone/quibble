@@ -1,3 +1,5 @@
+#include <memory>
+#include <string_view>
 #include <string.h>
 #include "quibble.h"
 #include "quibbleproto.h"
@@ -5,6 +7,7 @@
 #include "misc.h"
 #include <ft2build.h>
 #include <freetype/freetype.h>
+#include <hb.h>
 
 static EFI_HANDLE info_handle = NULL;
 static EFI_QUIBBLE_INFO_PROTOCOL info_proto;
@@ -12,6 +15,9 @@ text_pos console_pos;
 static unsigned int console_width, console_height;
 static FT_Library ft = NULL;
 static FT_Face face = NULL;
+static hb_blob_t* hb_blob = nullptr;
+static hb_face_t* hb_face = nullptr;
+static hb_font_t* hb_font = nullptr;
 bool gop_console = false;
 unsigned int font_height = 0;
 uint8_t* ft_pool = nullptr;
@@ -21,6 +27,8 @@ extern void* framebuffer;
 extern EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gop_info;
 extern bool have_edid;
 extern uint8_t edid[128];
+
+static const unsigned int font_size_pt = 12;
 
 // in font.s
 extern void* font_data_start asm("_font_data_start");
@@ -34,6 +42,17 @@ struct alloc_header {
 };
 
 static_assert(sizeof(alloc_header) == 4);
+
+class hb_buf_closer {
+public:
+    using pointer = hb_buffer_t*;
+
+    void operator()(hb_buffer_t* buf) {
+        hb_buffer_destroy(buf);
+    }
+};
+
+using hb_buf = std::unique_ptr<hb_buffer_t*, hb_buf_closer>;
 
 EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     EFI_GUID info_guid = EFI_QUIBBLE_INFO_PROTOCOL_GUID;
@@ -59,12 +78,12 @@ static void move_up_console(unsigned int delta) {
 }
 
 void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_colour) {
-    size_t len;
     FT_Error error;
-    uint32_t* base;
-    uint32_t* shadow_base;
     FT_Bitmap* bitmap;
     uint8_t bg_r, bg_g, bg_b, fg_r, fg_g, fg_b;
+    unsigned int glyph_count;
+    std::string_view sv(s, strlen(s));
+    size_t start = 0;
 
     bg_r = bg_colour >> 16;
     bg_g = (bg_colour >> 8) & 0xff;
@@ -73,118 +92,115 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
     fg_g = (fg_colour >> 8) & 0xff;
     fg_b = fg_colour & 0xff;
 
-    len = strlen(s);
+    while (start < sv.size()) {
+        size_t end;
 
-    for (size_t i = 0; i < len; i++) {
-        uint8_t* buf;
-        uint32_t skip_y, width;
-        uint32_t cp;
+        if (auto nl = sv.find('\n', start); nl != std::string_view::npos)
+            end = nl;
+        else
+            end = sv.size();
 
-        if (s[i] == '\n') {
-            p->x = 0;
-            p->y += font_height;
+        hb_buf buf{hb_buffer_create()};
+        hb_buffer_add_utf8(buf.get(), (char*)sv.data(), sv.size(),
+                           start, end - start);
 
-            if (p->y > gop_info.VerticalResolution - font_height) {
-                move_up_console(font_height);
-                p->y -= font_height;
+        hb_buffer_set_direction(buf.get(), HB_DIRECTION_LTR);
+        hb_buffer_set_script(buf.get(), HB_SCRIPT_LATIN);
+        hb_buffer_set_language(buf.get(), hb_language_from_string("en", -1));
+
+        hb_shape(hb_font, buf.get(), nullptr, 0);
+
+        auto glyph_info = hb_buffer_get_glyph_infos(buf.get(), &glyph_count);
+        auto glyph_pos = hb_buffer_get_glyph_positions(buf.get(), &glyph_count);
+
+        for (unsigned int i = 0; i < glyph_count; i++) {
+            uint8_t* buf;
+            uint32_t skip_y;
+
+            error = FT_Load_Glyph(face, glyph_info[i].codepoint,
+                                FT_LOAD_RENDER | FT_RENDER_MODE_MONO);
+            if (error)
+                continue;
+
+            bitmap = &face->glyph->bitmap;
+
+            // if overruns right of screen, do newline
+            if (p->x + face->glyph->bitmap_left + bitmap->width >= gop_info.HorizontalResolution) {
+                p->x = 0;
+                p->y += font_height;
+
+                if (p->y > gop_info.VerticalResolution - font_height) {
+                    move_up_console(font_height);
+                    p->y -= font_height;
+                }
             }
 
-            continue;
-        }
+            // FIXME - make sure won't overflow left of screen
+            auto base = (uint32_t*)framebuffer;
 
-        // get UTF-8 code point
+            if ((int)p->y > face->glyph->bitmap_top)
+                base += gop_info.PixelsPerScanLine * (p->y - face->glyph->bitmap_top);
 
-        if (!((uint8_t)s[i] & 0x80))
-            cp = s[i];
-        else if (((uint8_t)s[i] & 0xe0) == 0xc0) { // 2-byte UTF-8
-            if (((uint8_t)s[i+1] & 0xc0) != 0x80)
-                cp = 0xfffd;
-            else {
-                cp = (((uint8_t)s[i] & 0x1f) << 6) | ((uint8_t)s[i+1] & 0x3f);
-                i++;
-            }
-        } else if (((uint8_t)s[i] & 0xf0) == 0xe0) { // 3-byte UTF-8
-            if (((uint8_t)s[i+1] & 0xc0) != 0x80 || ((uint8_t)s[i+2] & 0xc0) != 0x80)
-                cp = 0xfffd;
-            else {
-                cp = (((uint8_t)s[i] & 0xf) << 12) | (((uint8_t)s[i+1] & 0x3f) << 6) | ((uint8_t)s[i+2] & 0x3f);
-                i += 2;
-            }
-        } else if (((uint8_t)s[i] & 0xf8) == 0xf0) { // 4-byte UTF-8
-            if (((uint8_t)s[i+1] & 0xc0) != 0x80 || ((uint8_t)s[i+2] & 0xc0) != 0x80 || ((uint8_t)s[i+3] & 0xc0) != 0x80)
-                cp = 0xfffd;
-            else {
-                cp = (((uint8_t)s[i] & 0x7) << 18) | (((uint8_t)s[i+1] & 0x3f) << 12) | (((uint8_t)s[i+2] & 0x3f) << 6) | ((uint8_t)s[i+3] & 0x3f);
-                i += 3;
-            }
-        } else
-            cp = 0xfffd;
+            base += p->x + face->glyph->bitmap_left;
+            auto shadow_base = (uint32_t*)(((uint8_t*)base - (uint8_t*)framebuffer) + (uint8_t*)shadow_fb);
 
-        error = FT_Load_Char(face, cp, FT_LOAD_RENDER | FT_RENDER_MODE_MONO);
-        if (error)
-            continue;
+            buf = bitmap->buffer;
 
-        bitmap = &face->glyph->bitmap;
+            auto width = bitmap->width;
+            if (p->x + face->glyph->bitmap_left + width > gop_info.HorizontalResolution)
+                width = gop_info.HorizontalResolution - p->x - face->glyph->bitmap_left;
 
-        // if overruns right of screen, do newline
-        if (p->x + face->glyph->bitmap_left + bitmap->width >= gop_info.HorizontalResolution) {
-            p->x = 0;
-            p->y += font_height;
+            if ((int)p->y < face->glyph->bitmap_top) {
+                skip_y = face->glyph->bitmap_top - p->y;
+                buf += bitmap->width * skip_y;
+            } else
+                skip_y = 0;
 
-            if (p->y > gop_info.VerticalResolution - font_height) {
-                move_up_console(font_height);
-                p->y -= font_height;
-            }
-        }
+            // FIXME - x_offset
+            // FIXME - y_offset
 
-        // FIXME - make sure won't overflow left of screen
-        base = (uint32_t*)framebuffer;
+            for (unsigned int y = skip_y; y < bitmap->rows; y++) {
+                if (p->y - face->glyph->bitmap_top + y >= gop_info.VerticalResolution)
+                    break;
 
-        if ((int)p->y > face->glyph->bitmap_top)
-            base += gop_info.PixelsPerScanLine * (p->y - face->glyph->bitmap_top);
+                for (unsigned int x = 0; x < width; x++) {
+                    if ((*buf == 0xff || bg_colour == 0x000000) && fg_colour == 0xffffff)
+                        base[x] = shadow_base[x] = (*buf << 16) | (*buf << 8) | *buf;
+                    else if (*buf != 0) {
+                        float f = *buf / 255.0f;
+                        uint8_t r = ((1.0f - f) * bg_r) + (f * fg_r);
+                        uint8_t g = ((1.0f - f) * bg_g) + (f * fg_g);
+                        uint8_t b = ((1.0f - f) * bg_b) + (f * fg_b);
 
-        base += p->x + face->glyph->bitmap_left;
-        shadow_base = (uint32_t*)(((uint8_t*)base - (uint8_t*)framebuffer) + (uint8_t*)shadow_fb);
+                        base[x] = shadow_base[x] = (r << 16) | (g << 8) | b;
+                    }
 
-        buf = bitmap->buffer;
-
-        width = bitmap->width;
-        if (p->x + face->glyph->bitmap_left + width > gop_info.HorizontalResolution)
-            width = gop_info.HorizontalResolution - p->x - face->glyph->bitmap_left;
-
-        if ((int)p->y < face->glyph->bitmap_top) {
-            skip_y = face->glyph->bitmap_top - p->y;
-            buf += bitmap->width * skip_y;
-        } else
-            skip_y = 0;
-
-        for (unsigned int y = skip_y; y < bitmap->rows; y++) {
-            if (p->y - face->glyph->bitmap_top + y >= gop_info.VerticalResolution)
-                break;
-
-            for (unsigned int x = 0; x < width; x++) {
-                if ((*buf == 0xff || bg_colour == 0x000000) && fg_colour == 0xffffff)
-                    base[x] = shadow_base[x] = (*buf << 16) | (*buf << 8) | *buf;
-                else if (*buf != 0) {
-                    float f = *buf / 255.0f;
-                    uint8_t r = ((1.0f - f) * bg_r) + (f * fg_r);
-                    uint8_t g = ((1.0f - f) * bg_g) + (f * fg_g);
-                    uint8_t b = ((1.0f - f) * bg_b) + (f * fg_b);
-
-                    base[x] = shadow_base[x] = (r << 16) | (g << 8) | b;
+                    buf++;
                 }
 
-                buf++;
+                buf += bitmap->width - width;
+
+                base += gop_info.PixelsPerScanLine;
+                shadow_base += gop_info.PixelsPerScanLine;
             }
 
-            buf += bitmap->width - width;
-
-            base += gop_info.PixelsPerScanLine;
-            shadow_base += gop_info.PixelsPerScanLine;
+            p->x += glyph_pos[i].x_advance / 64;
+            p->y += glyph_pos[i].y_advance / 64;
         }
 
-        p->x += face->glyph->advance.x / 64;
-        p->y += face->glyph->advance.y / 64;
+        start = end;
+
+        while (start < sv.size() && s[start] == '\n') {
+            p->x = 0;
+            p->y += font_height;
+
+            if (p->y > gop_info.VerticalResolution - font_height) {
+                move_up_console(font_height);
+                p->y -= font_height;
+            }
+
+            start++;
+        }
     }
 }
 
@@ -217,6 +233,25 @@ EFI_STATUS load_font() {
         return EFI_INVALID_PARAMETER;
     }
 
+    hb_blob = hb_blob_create((const char*)font_data, font_size, HB_MEMORY_MODE_READONLY,
+                             nullptr, nullptr);
+    if (!hb_blob) {
+        print_string("hb_blob_create failed.\n");
+        return EFI_INVALID_PARAMETER;
+    }
+
+    hb_face = hb_face_create(hb_blob, 0);
+    if (!hb_face) {
+        print_string("hb_face_create failed.\n");
+        return EFI_INVALID_PARAMETER;
+    }
+
+    hb_font = hb_font_create(hb_face);
+    if (!hb_font) {
+        print_string("hb_font_create failed.\n");
+        return EFI_INVALID_PARAMETER;
+    }
+
     return EFI_SUCCESS;
 }
 
@@ -240,7 +275,7 @@ void init_gop_console() {
         }
     }
 
-    error = FT_Set_Char_Size(face, 12 * 64, 0, dpi, 0);
+    error = FT_Set_Char_Size(face, font_size_pt * 64, 0, dpi, 0);
     if (error) {
         char s[255], *p;
 
@@ -259,6 +294,9 @@ void init_gop_console() {
     console_pos.y = font_height;
 
     gop_console = true;
+
+    hb_font_set_scale(hb_font, (font_size_pt * dpi * 64) / 72,
+                      (font_size_pt * dpi * 64) / 72);
 }
 
 void print_string(const char* s) {
@@ -350,6 +388,9 @@ static void* ft_alloc(FT_Memory, long size) {
 }
 
 static void ft_free(FT_Memory, void* block) {
+    if (!block)
+        return;
+
     auto& ah = *(alloc_header*)((uint8_t*)block - sizeof(alloc_header));
 
     ah.free = 1;
@@ -409,9 +450,9 @@ void FT_Done_Memory(FT_Memory memory) {
     UNUSED(memory);
 }
 
-/* Dummy versions follow of unused functions linked to by FreeType. This is so
- * we can bring in the upstream version directly, rather than having to patch
- * the offending bits out. */
+/* Dummy versions follow of unused functions linked to by FreeType or Harfbuzz.
+ * This is so we can bring in the upstream versions directly, rather than
+ * having to patch the offending bits out. */
 
 #ifdef __x86_64__
 
@@ -428,11 +469,6 @@ void _imp__longjmp(jmp_buf, int) {
 }
 
 #endif
-
-extern "C"
-void qsort(void*, size_t, size_t, int (*)(const void*, const void*)) {
-    abort();
-}
 
 extern "C"
 int _setjmp(jmp_buf, void*) {
@@ -460,6 +496,59 @@ char* strncpy(char*, const char*, size_t) {
 }
 
 extern "C"
+unsigned long strtoul(const char*, char**, int) {
+    abort();
+}
+
+extern "C"
 int __mingw_vsprintf(char*, const char*, va_list) {
     abort();
+}
+
+extern "C"
+int __mingw_vsnprintf(char*, size_t, const char*, va_list) {
+    abort();
+}
+
+extern "C"
+void* hb_malloc_impl2(size_t size) {
+    return ft_alloc(0, size);
+}
+
+extern "C"
+void* hb_calloc_impl2(size_t nmemb, size_t size) {
+    auto ret = ft_alloc(0, nmemb * size);
+
+    if (ret)
+        memset(ret, 0, nmemb * size);
+
+    return ret;
+}
+
+extern "C"
+void* hb_realloc_impl2(void* ptr, size_t new_size) {
+    if (!ptr)
+        return hb_malloc_impl2(new_size);
+
+    auto& ah = *(alloc_header*)((uint8_t*)ptr - sizeof(alloc_header));
+
+    // FIXME - do actual realloc if possible
+
+    if (new_size < ah.size)
+        return ptr;
+
+    auto ret = ft_alloc(0, new_size);
+    if (!ret)
+        return nullptr;
+
+    memcpy(ret, ptr, new_size < ah.size ? new_size : ah.size);
+
+    ft_free(0, ptr);
+
+    return ret;
+}
+
+extern "C"
+void hb_free_impl2(void *ptr) {
+    ft_free(0, ptr);
 }

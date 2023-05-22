@@ -919,3 +919,54 @@ char* strstr(const char* haystack, const char* needle) {
 
     return NULL;
 }
+
+extern "C"
+char* strchr(const char* s, int c) {
+    while (*s) {
+        if (*s == c)
+            return (char*)s;
+
+        s++;
+    }
+
+    return nullptr;
+}
+
+static void swap(uint8_t* ptr1, uint8_t* ptr2, size_t size) {
+    size_t tmp;
+
+    while (size >= sizeof(tmp)) {
+        tmp = *(size_t*)ptr1;
+        *(size_t*)ptr1 = *(size_t*)ptr2;
+        *(size_t*)ptr2 = tmp;
+
+        ptr1 += sizeof(tmp);
+        ptr2 += sizeof(tmp);
+        size -= sizeof(tmp);
+    }
+
+    while (size) {
+        auto c = *ptr1;
+        *ptr1 = *ptr2;
+        *ptr2 = c;
+
+        ptr1++;
+        ptr2++;
+        size--;
+    }
+}
+
+extern "C"
+void qsort(void* base, size_t nmemb, size_t size, int (*compar)(const void*, const void*)) {
+    auto arr = (uint8_t*)base;
+
+    // bubble sort
+
+    for (unsigned int i = 0; i < nmemb - 1; i++) {
+        for (unsigned int j = 0; j < nmemb - i - 1; j++) {
+
+            if (compar(arr + (j * size), arr + ((j + 1) * size)) > 0)
+                swap(arr + (j * size), arr + ((j + 1) * size), size);
+        }
+    }
+}
