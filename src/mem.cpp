@@ -1191,7 +1191,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     }
 
 #ifdef DEBUG
-    print_string("Calling ExitBootServices...\n");
+    print_string("Calling ExitBootServices" ELLIPSIS "\n");
 #endif
 
     Status = bs->ExitBootServices(image_handle, key);
@@ -1201,7 +1201,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     }
 
 #ifdef DEBUG
-    print_string("Enabling paging...\n");
+    print_string("Enabling paging" ELLIPSIS "\n");
 #endif
 
     if (loader_pages_spanned)

@@ -4269,7 +4269,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     merge_mappings(&mappings);
 
 #ifndef DEBUG
-    print_string("Booting Windows...\n");
+    print_string("Booting Windows " ELLIPSIS "\n");
 #endif
 
     std::visit([&](auto&& b) {
@@ -4324,7 +4324,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     set_idt(idt);
 
 #ifdef DEBUG
-    print_string("Calling SetVirtualAddressMap...\n");
+    print_string("Calling SetVirtualAddressMap" ELLIPSIS "\n");
 #endif
 
     if (efi_runtime_map) {
@@ -4369,7 +4369,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     __writemsr(0xc0000080, __readmsr(0xc0000080) | 1);
 
 #ifndef _MSC_VER
-    print_string("Calling KiSystemStartup...\n");
+    print_string("Calling KiSystemStartup" ELLIPSIS "\n");
 
     __asm__ __volatile__ (
         "mov %0, %%rsp\n\t"
@@ -4812,7 +4812,7 @@ static EFI_STATUS load_efi_drivers(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handl
 
             p = stpcpy(s, "Loading driver ");
             p = stpcpy_utf16(p, fn);
-            p = stpcpy(p, "... ");
+            p = stpcpy(p, ELLIPSIS " ");
 
             print_string(s);
         }
@@ -5118,7 +5118,7 @@ static void EFIAPI stack_changed(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle)
 
             p = stpcpy(s, "Image loaded at ");
             p = hex_to_str(p, (uintptr_t)loaded_image->ImageBase);
-            p = stpcpy(p, ", press any key to continue...\n");
+            p = stpcpy(p, ", press any key to continue" ELLIPSIS "\n");
 
             print_string(s);
 

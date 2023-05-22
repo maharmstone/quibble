@@ -28,6 +28,8 @@
 #include <stdbool.h>
 #include "win.h"
 
+#define ELLIPSIS "\xe2\x80\xa6"
+
 // FIXME - only in debug mode
 #ifndef _MSC_VER
 #define halt() { \

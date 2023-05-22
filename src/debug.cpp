@@ -758,7 +758,7 @@ EFI_STATUS kdstub_init(DEBUG_DEVICE_DESCRIPTOR* ddd, uint16_t build) {
     kd_net_data.TargetMacAddress = mac_address;
 
 #ifdef DEBUG
-    print_string("Calling KdInitializeController...\n");
+    print_string("Calling KdInitializeController" ELLIPSIS "\n");
 #endif
 
     if (build >= WIN10_BUILD_1507)
