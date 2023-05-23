@@ -119,6 +119,7 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
         for (unsigned int i = 0; i < glyph_count; i++) {
             uint8_t* buf;
             uint32_t skip_y;
+            int x_off, y_off;
 
             error = FT_Load_Glyph(face, glyph_info[i].codepoint,
                                 FT_LOAD_RENDER | FT_RENDER_MODE_MONO);
@@ -127,8 +128,11 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
 
             bitmap = &face->glyph->bitmap;
 
+            x_off = face->glyph->bitmap_left + (glyph_pos[i].x_offset / 64);
+            y_off = face->glyph->bitmap_top - (glyph_pos[i].y_offset / 64);
+
             // if overruns right of screen, do newline
-            if (p.x + face->glyph->bitmap_left + bitmap->width >= gop_info.HorizontalResolution) {
+            if (p.x + x_off + bitmap->width >= gop_info.HorizontalResolution) {
                 p.x = 0;
                 p.y += font_height;
 
@@ -141,29 +145,26 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
             // FIXME - make sure won't overflow left of screen
             auto base = (uint32_t*)framebuffer;
 
-            if ((int)p.y > face->glyph->bitmap_top)
-                base += gop_info.PixelsPerScanLine * (p.y - face->glyph->bitmap_top);
+            if ((int)p.y > y_off)
+                base += gop_info.PixelsPerScanLine * (p.y - y_off);
 
-            base += p.x + face->glyph->bitmap_left;
+            base += p.x + x_off;
             auto shadow_base = (uint32_t*)(((uint8_t*)base - (uint8_t*)framebuffer) + (uint8_t*)shadow_fb);
 
             buf = bitmap->buffer;
 
             auto width = bitmap->width;
-            if (p.x + face->glyph->bitmap_left + width > gop_info.HorizontalResolution)
-                width = gop_info.HorizontalResolution - p.x - face->glyph->bitmap_left;
+            if (p.x + x_off + width > gop_info.HorizontalResolution)
+                width = gop_info.HorizontalResolution - p.x - x_off;
 
-            if ((int)p.y < face->glyph->bitmap_top) {
-                skip_y = face->glyph->bitmap_top - p.y;
+            if ((int)p.y < y_off) {
+                skip_y = y_off - p.y;
                 buf += bitmap->width * skip_y;
             } else
                 skip_y = 0;
 
-            // FIXME - x_offset
-            // FIXME - y_offset
-
             for (unsigned int y = skip_y; y < bitmap->rows; y++) {
-                if (p.y - face->glyph->bitmap_top + y >= gop_info.VerticalResolution)
+                if (p.y - y_off + y >= gop_info.VerticalResolution)
                     break;
 
                 for (unsigned int x = 0; x < width; x++) {
