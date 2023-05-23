@@ -188,7 +188,7 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
 
         for (unsigned int i = 0; i < glyph_count; i++) {
             uint8_t* buf;
-            uint32_t skip_y;
+            uint32_t skip_x, skip_y;
             int x_off, y_off;
 
             error = FT_Load_Glyph(face, glyph_info[i].codepoint,
@@ -201,13 +201,12 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
             x_off = face->glyph->bitmap_left + (glyph_pos[i].x_offset / 64);
             y_off = face->glyph->bitmap_top - (glyph_pos[i].y_offset / 64);
 
-            // FIXME - make sure won't overflow left of screen
             auto base = (uint32_t*)framebuffer;
 
             if ((int)p.y > y_off)
                 base += gop_info.PixelsPerScanLine * (p.y - y_off);
 
-            base += p.x + x_off;
+            base += (int)p.x + x_off;
             auto shadow_base = (uint32_t*)(((uint8_t*)base - (uint8_t*)framebuffer) + (uint8_t*)shadow_fb);
 
             buf = bitmap->buffer;
@@ -229,11 +228,26 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
             } else
                 skip_y = 0;
 
+            if ((int)p.x + x_off < 0) {
+                if ((int)p.x + x_off + (int)width < 0) {
+                    p.x += glyph_pos[i].x_advance / 64;
+                    p.y += glyph_pos[i].y_advance / 64;
+                    continue;
+                }
+
+                skip_x = -(int)p.x - x_off;
+                base += skip_x;
+                shadow_base += skip_x;
+            } else
+                skip_x = 0;
+
             for (unsigned int y = skip_y; y < bitmap->rows; y++) {
                 if (p.y - y_off + y >= gop_info.VerticalResolution)
                     break;
 
-                for (unsigned int x = 0; x < width; x++) {
+                buf += skip_x;
+
+                for (unsigned int x = skip_x; x < width; x++) {
                     if ((*buf == 0xff || bg_colour == 0x000000) && fg_colour == 0xffffff)
                         base[x] = shadow_base[x] = (*buf << 16) | (*buf << 8) | *buf;
                     else if (*buf != 0) {
