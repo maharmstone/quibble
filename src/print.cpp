@@ -97,6 +97,8 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
 
     while (start < sv.size()) {
         size_t end;
+        unsigned int width;
+        bool add_newline = false;
 
         if (auto nl = sv.find('\n', start); nl != std::string_view::npos)
             end = nl;
@@ -116,6 +118,52 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
         auto glyph_info = hb_buffer_get_glyph_infos(buf.get(), &glyph_count);
         auto glyph_pos = hb_buffer_get_glyph_positions(buf.get(), &glyph_count);
 
+        width = 0;
+        for (unsigned int i = 0; i < glyph_count; i++) {
+            width += glyph_pos[i].x_advance;
+        }
+        width /= 64;
+
+        // add synthetic newline if would overflow
+        if (p.x + width > gop_info.HorizontalResolution) {
+            auto e = end;
+
+            while (true) {
+                auto space = std::string_view(sv.data() + start, e - start).rfind(" ");
+
+                if (space == std::string_view::npos)
+                    break;
+
+                buf.reset(hb_buffer_create());
+
+                hb_buffer_add_utf8(buf.get(), (char*)sv.data(), sv.size(),
+                                   start, space);
+
+                hb_buffer_set_direction(buf.get(), HB_DIRECTION_LTR);
+                hb_buffer_set_script(buf.get(), HB_SCRIPT_LATIN);
+                hb_buffer_set_language(buf.get(), hb_language_from_string("en", -1));
+
+                hb_shape(hb_font, buf.get(), nullptr, 0);
+
+                glyph_info = hb_buffer_get_glyph_infos(buf.get(), &glyph_count);
+                glyph_pos = hb_buffer_get_glyph_positions(buf.get(), &glyph_count);
+
+                width = 0;
+                for (unsigned int i = 0; i < glyph_count; i++) {
+                    width += glyph_pos[i].x_advance;
+                }
+                width /= 64;
+
+                if (p.x + width <= gop_info.HorizontalResolution) {
+                    end = start + space;
+                    add_newline = true;
+                    break;
+                }
+
+                e = start + space - 1;
+            }
+        }
+
         for (unsigned int i = 0; i < glyph_count; i++) {
             uint8_t* buf;
             uint32_t skip_y;
@@ -130,17 +178,6 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
 
             x_off = face->glyph->bitmap_left + (glyph_pos[i].x_offset / 64);
             y_off = face->glyph->bitmap_top - (glyph_pos[i].y_offset / 64);
-
-            // if overruns right of screen, do newline
-            if (p.x + x_off + bitmap->width >= gop_info.HorizontalResolution) {
-                p.x = 0;
-                p.y += font_height;
-
-                if (p.y > gop_info.VerticalResolution - font_height) {
-                    move_up_console(font_height);
-                    p.y -= font_height;
-                }
-            }
 
             // FIXME - make sure won't overflow left of screen
             auto base = (uint32_t*)framebuffer;
@@ -194,7 +231,7 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
 
         start = end;
 
-        while (start < sv.size() && sv[start] == '\n') {
+        while (add_newline || (start < sv.size() && sv[start] == '\n')) {
             p.x = 0;
             p.y += font_height;
 
@@ -203,6 +240,7 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
                 p.y -= font_height;
             }
 
+            add_newline = false;
             start++;
         }
     }
