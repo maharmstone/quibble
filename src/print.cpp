@@ -54,10 +54,14 @@ public:
 
 using hb_buf = std::unique_ptr<hb_buffer_t*, hb_buf_closer>;
 
+static void print_string_c(const char* s) {
+    print_string(s);
+}
+
 EFI_STATUS info_register(EFI_BOOT_SERVICES* bs) {
     EFI_GUID info_guid = EFI_QUIBBLE_INFO_PROTOCOL_GUID;
 
-    info_proto.Print = print_string;
+    info_proto.Print = print_string_c;
 
     return bs->InstallProtocolInterface(&info_handle, &info_guid, EFI_NATIVE_INTERFACE, &info_proto);
 }
@@ -298,7 +302,7 @@ void init_gop_console() {
                       (font_size_pt * dpi * 64) / 72);
 }
 
-void print_string(const char* s) {
+void print_string(std::string_view s) {
     if (face)
         draw_text_ft(s, console_pos, 0x000000, 0xffffff);
     else {
@@ -308,14 +312,13 @@ void print_string(const char* s) {
 
         t = w;
 
-        while (*s) {
-            if (*s == '\n') {
+        for (auto c : s) {
+            if (c == '\n') {
                 *t = '\r';
                 t++;
             }
 
-            *t = *s;
-            s++;
+            *t = c;
             t++;
         }
 
