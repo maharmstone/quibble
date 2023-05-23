@@ -213,8 +213,15 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
             buf = bitmap->buffer;
 
             auto width = bitmap->width;
-            if (p.x + x_off + width > gop_info.HorizontalResolution)
+            if (p.x + x_off + width > gop_info.HorizontalResolution) {
+                if (p.x + x_off > gop_info.HorizontalResolution) {
+                    p.x += glyph_pos[i].x_advance / 64;
+                    p.y += glyph_pos[i].y_advance / 64;
+                    continue;
+                }
+
                 width = gop_info.HorizontalResolution - p.x - x_off;
+            }
 
             if ((int)p.y < y_off) {
                 skip_y = y_off - p.y;
