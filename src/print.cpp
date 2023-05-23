@@ -77,12 +77,11 @@ static void move_up_console(unsigned int delta) {
     memcpy(framebuffer, shadow_fb, framebuffer_size);
 }
 
-void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_colour) {
+void draw_text_ft(std::string_view sv, text_pos* p, uint32_t bg_colour, uint32_t fg_colour) {
     FT_Error error;
     FT_Bitmap* bitmap;
     uint8_t bg_r, bg_g, bg_b, fg_r, fg_g, fg_b;
     unsigned int glyph_count;
-    std::string_view sv(s, strlen(s));
     size_t start = 0;
 
     bg_r = bg_colour >> 16;
@@ -190,7 +189,7 @@ void draw_text_ft(const char* s, text_pos* p, uint32_t bg_colour, uint32_t fg_co
 
         start = end;
 
-        while (start < sv.size() && s[start] == '\n') {
+        while (start < sv.size() && sv[start] == '\n') {
             p->x = 0;
             p->y += font_height;
 
