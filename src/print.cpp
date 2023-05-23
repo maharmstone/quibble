@@ -77,7 +77,7 @@ static void move_up_console(unsigned int delta) {
     memcpy(framebuffer, shadow_fb, framebuffer_size);
 }
 
-void draw_text_ft(std::string_view sv, text_pos* p, uint32_t bg_colour, uint32_t fg_colour) {
+void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t fg_colour) {
     FT_Error error;
     FT_Bitmap* bitmap;
     uint8_t bg_r, bg_g, bg_b, fg_r, fg_g, fg_b;
@@ -124,33 +124,33 @@ void draw_text_ft(std::string_view sv, text_pos* p, uint32_t bg_colour, uint32_t
             bitmap = &face->glyph->bitmap;
 
             // if overruns right of screen, do newline
-            if (p->x + face->glyph->bitmap_left + bitmap->width >= gop_info.HorizontalResolution) {
-                p->x = 0;
-                p->y += font_height;
+            if (p.x + face->glyph->bitmap_left + bitmap->width >= gop_info.HorizontalResolution) {
+                p.x = 0;
+                p.y += font_height;
 
-                if (p->y > gop_info.VerticalResolution - font_height) {
+                if (p.y > gop_info.VerticalResolution - font_height) {
                     move_up_console(font_height);
-                    p->y -= font_height;
+                    p.y -= font_height;
                 }
             }
 
             // FIXME - make sure won't overflow left of screen
             auto base = (uint32_t*)framebuffer;
 
-            if ((int)p->y > face->glyph->bitmap_top)
-                base += gop_info.PixelsPerScanLine * (p->y - face->glyph->bitmap_top);
+            if ((int)p.y > face->glyph->bitmap_top)
+                base += gop_info.PixelsPerScanLine * (p.y - face->glyph->bitmap_top);
 
-            base += p->x + face->glyph->bitmap_left;
+            base += p.x + face->glyph->bitmap_left;
             auto shadow_base = (uint32_t*)(((uint8_t*)base - (uint8_t*)framebuffer) + (uint8_t*)shadow_fb);
 
             buf = bitmap->buffer;
 
             auto width = bitmap->width;
-            if (p->x + face->glyph->bitmap_left + width > gop_info.HorizontalResolution)
-                width = gop_info.HorizontalResolution - p->x - face->glyph->bitmap_left;
+            if (p.x + face->glyph->bitmap_left + width > gop_info.HorizontalResolution)
+                width = gop_info.HorizontalResolution - p.x - face->glyph->bitmap_left;
 
-            if ((int)p->y < face->glyph->bitmap_top) {
-                skip_y = face->glyph->bitmap_top - p->y;
+            if ((int)p.y < face->glyph->bitmap_top) {
+                skip_y = face->glyph->bitmap_top - p.y;
                 buf += bitmap->width * skip_y;
             } else
                 skip_y = 0;
@@ -159,7 +159,7 @@ void draw_text_ft(std::string_view sv, text_pos* p, uint32_t bg_colour, uint32_t
             // FIXME - y_offset
 
             for (unsigned int y = skip_y; y < bitmap->rows; y++) {
-                if (p->y - face->glyph->bitmap_top + y >= gop_info.VerticalResolution)
+                if (p.y - face->glyph->bitmap_top + y >= gop_info.VerticalResolution)
                     break;
 
                 for (unsigned int x = 0; x < width; x++) {
@@ -183,19 +183,19 @@ void draw_text_ft(std::string_view sv, text_pos* p, uint32_t bg_colour, uint32_t
                 shadow_base += gop_info.PixelsPerScanLine;
             }
 
-            p->x += glyph_pos[i].x_advance / 64;
-            p->y += glyph_pos[i].y_advance / 64;
+            p.x += glyph_pos[i].x_advance / 64;
+            p.y += glyph_pos[i].y_advance / 64;
         }
 
         start = end;
 
         while (start < sv.size() && sv[start] == '\n') {
-            p->x = 0;
-            p->y += font_height;
+            p.x = 0;
+            p.y += font_height;
 
-            if (p->y > gop_info.VerticalResolution - font_height) {
+            if (p.y > gop_info.VerticalResolution - font_height) {
                 move_up_console(font_height);
-                p->y -= font_height;
+                p.y -= font_height;
             }
 
             start++;
@@ -300,7 +300,7 @@ void init_gop_console() {
 
 void print_string(const char* s) {
     if (face)
-        draw_text_ft(s, &console_pos, 0x000000, 0xffffff);
+        draw_text_ft(s, console_pos, 0x000000, 0xffffff);
     else {
         wchar_t w[255], *t;
 
