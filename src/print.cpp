@@ -188,8 +188,7 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
         auto bg_x = (int)p.x;
         auto bg_y = (int)p.y;
         for (unsigned int i = 0; i < glyph_count; i++) {
-            error = FT_Load_Glyph(face, glyph_info[i].codepoint,
-                                  FT_LOAD_RENDER | FT_RENDER_MODE_NORMAL);
+            error = FT_Load_Glyph(face, glyph_info[i].codepoint, FT_RENDER_MODE_NORMAL);
             if (error) {
                 bg_x += glyph_pos[i].x_advance / 64;
                 bg_y += glyph_pos[i].y_advance / 64;
@@ -230,12 +229,14 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
         }
 
         for (unsigned int i = 0; i < glyph_count; i++) {
-            uint8_t* buf;
             uint32_t skip_x, skip_y;
             int x_off, y_off;
+            unsigned int flags = FT_LOAD_RENDER | FT_RENDER_MODE_NORMAL;
 
-            error = FT_Load_Glyph(face, glyph_info[i].codepoint,
-                                  FT_LOAD_RENDER | FT_RENDER_MODE_NORMAL);
+            if (FT_HAS_COLOR(face))
+                flags |= FT_LOAD_COLOR;
+
+            error = FT_Load_Glyph(face, glyph_info[i].codepoint, flags);
             if (error) {
                 p.x += glyph_pos[i].x_advance / 64;
                 p.y += glyph_pos[i].y_advance / 64;
@@ -255,8 +256,6 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
             base += (int)p.x + x_off;
             auto shadow_base = (uint32_t*)(((uint8_t*)base - (uint8_t*)framebuffer) + (uint8_t*)shadow_fb);
 
-            buf = bitmap->buffer;
-
             auto width = bitmap->width;
             if (p.x + x_off + width > gop_info.HorizontalResolution) {
                 if (p.x + x_off > gop_info.HorizontalResolution) {
@@ -268,53 +267,83 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
                 width = gop_info.HorizontalResolution - p.x - x_off;
             }
 
-            if ((int)p.y < y_off) {
-                skip_y = y_off - p.y;
-                buf += bitmap->width * skip_y;
-            } else
-                skip_y = 0;
+            auto render = [&]<typename T>(T* buf) {
+                if ((int)p.y < y_off) {
+                    skip_y = y_off - p.y;
+                    buf += bitmap->width * skip_y;
+                } else
+                    skip_y = 0;
 
-            if ((int)p.x + x_off < 0) {
-                if ((int)p.x + x_off + (int)width < 0) {
-                    p.x += glyph_pos[i].x_advance / 64;
-                    p.y += glyph_pos[i].y_advance / 64;
-                    continue;
-                }
+                if ((int)p.x + x_off < 0) {
+                    if ((int)p.x + x_off + (int)width < 0)
+                        return;
 
-                skip_x = -(int)p.x - x_off;
-                base += skip_x;
-                shadow_base += skip_x;
-            } else
-                skip_x = 0;
+                    skip_x = -(int)p.x - x_off;
+                    base += skip_x;
+                    shadow_base += skip_x;
+                } else
+                    skip_x = 0;
 
-            for (unsigned int y = skip_y; y < bitmap->rows; y++) {
-                if (p.y - y_off + y >= gop_info.VerticalResolution)
-                    break;
+                for (unsigned int y = skip_y; y < bitmap->rows; y++) {
+                    if (p.y - y_off + y >= gop_info.VerticalResolution)
+                        break;
 
-                buf += skip_x;
+                    buf += skip_x;
 
-                for (unsigned int x = skip_x; x < width; x++) {
-                    if (*buf == 255)
-                        base[x] = shadow_base[x] = fg_colour;
-                    else if (*buf != 0) {
-                        uint8_t bg_r = (shadow_base[x] & 0xff0000) >> 16;
-                        uint8_t bg_g = (shadow_base[x] & 0xff00) >> 8;
-                        uint8_t bg_b = shadow_base[x] & 0xff;
+                    for (unsigned int x = skip_x; x < width; x++) {
+                        if constexpr (std::is_same_v<T, uint32_t>) {
+                            uint8_t alpha = *buf >> 24;
 
-                        uint16_t r = (bg_r * (255 - *buf)) + (fg_r * *buf);
-                        uint16_t g = (bg_g * (255 - *buf)) + (fg_g * *buf);
-                        uint16_t b = (bg_b * (255 - *buf)) + (fg_b * *buf);
+                            if (alpha == 255)
+                                base[x] = shadow_base[x] = *buf & 0xffffff;
+                            else if (alpha != 0) {
+                                uint8_t bg_r = (shadow_base[x] & 0xff0000) >> 16;
+                                uint8_t bg_g = (shadow_base[x] & 0xff00) >> 8;
+                                uint8_t bg_b = shadow_base[x] & 0xff;
 
-                        base[x] = shadow_base[x] = ((r / 255) << 16) | ((g / 255) << 8) | (b / 255);
+                                uint16_t r = (bg_r * (255 - alpha)) + (((*buf & 0xff0000) >> 16) * alpha);
+                                uint16_t g = (bg_g * (255 - alpha)) + (((*buf & 0xff00) >> 8) * alpha);
+                                uint16_t b = (bg_b * (255 - alpha)) + ((*buf & 0xff) * alpha);
+
+                                base[x] = shadow_base[x] = ((r / 255) << 16) | ((g / 255) << 8) | (b / 255);
+                            }
+                        } else {
+                            if (*buf == 255)
+                                base[x] = shadow_base[x] = fg_colour;
+                            else if (*buf != 0) {
+                                uint8_t bg_r = (shadow_base[x] & 0xff0000) >> 16;
+                                uint8_t bg_g = (shadow_base[x] & 0xff00) >> 8;
+                                uint8_t bg_b = shadow_base[x] & 0xff;
+
+                                uint16_t r = (bg_r * (255 - *buf)) + (fg_r * *buf);
+                                uint16_t g = (bg_g * (255 - *buf)) + (fg_g * *buf);
+                                uint16_t b = (bg_b * (255 - *buf)) + (fg_b * *buf);
+
+                                base[x] = shadow_base[x] = ((r / 255) << 16) | ((g / 255) << 8) | (b / 255);
+                            }
+                        }
+
+                        buf++;
                     }
 
-                    buf++;
+                    buf += bitmap->width - width;
+
+                    base += gop_info.PixelsPerScanLine;
+                    shadow_base += gop_info.PixelsPerScanLine;
                 }
+            };
 
-                buf += bitmap->width - width;
+            switch (bitmap->pixel_mode) {
+                case FT_PIXEL_MODE_GRAY:
+                    render((uint8_t*)bitmap->buffer);
+                    break;
 
-                base += gop_info.PixelsPerScanLine;
-                shadow_base += gop_info.PixelsPerScanLine;
+                case FT_PIXEL_MODE_BGRA:
+                    render((uint32_t*)bitmap->buffer);
+                    break;
+
+                default:
+                    break;
             }
 
             p.x += glyph_pos[i].x_advance / 64;
