@@ -84,13 +84,10 @@ static void move_up_console(unsigned int delta) {
 void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t fg_colour) {
     FT_Error error;
     FT_Bitmap* bitmap;
-    uint8_t bg_r, bg_g, bg_b, fg_r, fg_g, fg_b;
+    uint8_t fg_r, fg_g, fg_b;
     unsigned int glyph_count;
     size_t start = 0;
 
-    bg_r = bg_colour >> 16;
-    bg_g = (bg_colour >> 8) & 0xff;
-    bg_b = bg_colour & 0xff;
     fg_r = fg_colour >> 16;
     fg_g = (fg_colour >> 8) & 0xff;
     fg_b = fg_colour & 0xff;
@@ -186,15 +183,64 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
             }
         }
 
+        // clear background
+
+        auto bg_x = (int)p.x;
+        auto bg_y = (int)p.y;
+        for (unsigned int i = 0; i < glyph_count; i++) {
+            error = FT_Load_Glyph(face, glyph_info[i].codepoint,
+                                  FT_LOAD_RENDER | FT_RENDER_MODE_NORMAL);
+            if (error) {
+                bg_x += glyph_pos[i].x_advance / 64;
+                bg_y += glyph_pos[i].y_advance / 64;
+                continue;
+            }
+
+            int rect_left = bg_x + face->glyph->bitmap_left + (glyph_pos[i].x_offset / 64);
+            int rect_top = bg_y - face->glyph->bitmap_top - (glyph_pos[i].y_offset / 64);
+            int rect_right = rect_left + face->glyph->bitmap.width;
+            int rect_bottom = rect_top + face->glyph->bitmap.rows;
+
+            if (rect_left < 0)
+                rect_left = 0;
+
+            if (rect_top < 0)
+                rect_top = 0;
+
+            if (rect_right > (int)gop_info.HorizontalResolution)
+                rect_right = gop_info.HorizontalResolution;
+
+            if (rect_bottom > (int)gop_info.VerticalResolution)
+                rect_bottom = gop_info.VerticalResolution;
+
+            auto base = (uint32_t*)framebuffer + (rect_top * gop_info.PixelsPerScanLine) + rect_left;
+            auto shadow_base = (uint32_t*)(((uint8_t*)base - (uint8_t*)framebuffer) + (uint8_t*)shadow_fb);
+
+            for (int i = 0; i < rect_bottom - rect_top; i++) {
+                for (int j = 0; j < rect_right - rect_left; j++) {
+                    base[j] = shadow_base[j] = bg_colour;
+                }
+
+                base += gop_info.PixelsPerScanLine;
+                shadow_base += gop_info.PixelsPerScanLine;
+            }
+
+            bg_x += glyph_pos[i].x_advance / 64;
+            bg_y += glyph_pos[i].y_advance / 64;
+        }
+
         for (unsigned int i = 0; i < glyph_count; i++) {
             uint8_t* buf;
             uint32_t skip_x, skip_y;
             int x_off, y_off;
 
             error = FT_Load_Glyph(face, glyph_info[i].codepoint,
-                                FT_LOAD_RENDER | FT_RENDER_MODE_MONO);
-            if (error)
+                                  FT_LOAD_RENDER | FT_RENDER_MODE_NORMAL);
+            if (error) {
+                p.x += glyph_pos[i].x_advance / 64;
+                p.y += glyph_pos[i].y_advance / 64;
                 continue;
+            }
 
             bitmap = &face->glyph->bitmap;
 
@@ -248,15 +294,18 @@ void draw_text_ft(std::string_view sv, text_pos& p, uint32_t bg_colour, uint32_t
                 buf += skip_x;
 
                 for (unsigned int x = skip_x; x < width; x++) {
-                    if ((*buf == 0xff || bg_colour == 0x000000) && fg_colour == 0xffffff)
-                        base[x] = shadow_base[x] = (*buf << 16) | (*buf << 8) | *buf;
+                    if (*buf == 255)
+                        base[x] = shadow_base[x] = fg_colour;
                     else if (*buf != 0) {
-                        float f = *buf / 255.0f;
-                        uint8_t r = ((1.0f - f) * bg_r) + (f * fg_r);
-                        uint8_t g = ((1.0f - f) * bg_g) + (f * fg_g);
-                        uint8_t b = ((1.0f - f) * bg_b) + (f * fg_b);
+                        uint8_t bg_r = (shadow_base[x] & 0xff0000) >> 16;
+                        uint8_t bg_g = (shadow_base[x] & 0xff00) >> 8;
+                        uint8_t bg_b = shadow_base[x] & 0xff;
 
-                        base[x] = shadow_base[x] = (r << 16) | (g << 8) | b;
+                        uint16_t r = (bg_r * (255 - *buf)) + (fg_r * *buf);
+                        uint16_t g = (bg_g * (255 - *buf)) + (fg_g * *buf);
+                        uint16_t b = (bg_b * (255 - *buf)) + (fg_b * *buf);
+
+                        base[x] = shadow_base[x] = ((r / 255) << 16) | ((g / 255) << 8) | (b / 255);
                     }
 
                     buf++;
