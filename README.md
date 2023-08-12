@@ -144,6 +144,10 @@ Because Windows only loads ntfs.sys when it's booting from NTFS. To start it as 
 `sc start ntfs` from an elevated command prompt. To get it to start every time, open regedit and
 change HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ntfs\Start to 1.
 
+* Why can't I access FAT partitions on Windows?
+
+If Windows doesn't load the FAT driver automatically, try running `sc start fastfat`.
+
 * Why don't I see the Windows logo on startup?
 
 The boot graphics code isn't completed yet - you won't see either the Windows logo or the progress
