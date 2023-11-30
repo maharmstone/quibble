@@ -58,9 +58,6 @@ target_compile_definitions(harfbuzz PRIVATE -Dhb_malloc_impl=hb_malloc_impl2 -Dh
 target_compile_definitions(harfbuzz PRIVATE -DHB_TINY)
 target_compile_options(harfbuzz PRIVATE "-Wa,-mbig-obj")
 
-add_subdirectory(ntfs)
-add_subdirectory(btrfs)
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(freetype/include)
 
@@ -72,6 +69,9 @@ if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" OR ${CMAKE_SYSTEM_PROCESSOR} STRE
 elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "X86")
     include_directories(gnu-efi/ia32)
 endif()
+
+add_subdirectory(ntfs)
+add_subdirectory(btrfs)
 
 target_compile_options(quibble PRIVATE
      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
