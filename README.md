@@ -88,7 +88,7 @@ Compiling
 
 On Linux:
 
-* Install a cross-compiler, x86_64-w64-mingw32-gcc, and cmake.
+* Install a cross-compiler (x86_64-w64-mingw32-gcc), cmake, and gnu-efi.
 * Run the following:
   * `git clone https://github.com/maharmstone/quibble --recurse-submodules`
   * `cd quibble`
