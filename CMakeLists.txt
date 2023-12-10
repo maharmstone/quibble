@@ -66,11 +66,11 @@ include_directories(freetype/include)
 
 set_target_properties(quibble PROPERTIES SUFFIX ".efi")
 
-include_directories(gnu-efi)
+include_directories(/usr/include/efi)
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-    include_directories(gnu-efi/x86_64)
+    include_directories(/usr/include/efi/x86_64)
 elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "X86")
-    include_directories(gnu-efi/ia32)
+    include_directories(/usr/include/efi/ia32)
 endif()
 
 target_compile_options(quibble PRIVATE
