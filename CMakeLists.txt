@@ -63,6 +63,7 @@ add_subdirectory(btrfs)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(freetype/include)
+target_include_directories(quibble PUBLIC src)
 
 set_target_properties(quibble PROPERTIES SUFFIX ".efi")
 
