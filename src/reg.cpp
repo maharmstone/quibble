@@ -674,7 +674,6 @@ static EFI_STATUS steal_data(EFI_REGISTRY_HIVE* This, void** Data, UINT32* Size)
 
 static void clear_volatile(hive* h, HKEY key) {
     int32_t size;
-    CM_KEY_NODE* nk;
     uint16_t sig;
 
     size = -*(int32_t*)((uint8_t*)h->data + key);
@@ -685,7 +684,7 @@ static void clear_volatile(hive* h, HKEY key) {
     if ((uint32_t)size < sizeof(int32_t) + offsetof(CM_KEY_NODE, Name[0]))
         return;
 
-    nk = (CM_KEY_NODE*)((uint8_t*)h->data + key + sizeof(int32_t));
+    auto nk = (CM_KEY_NODE*)((uint8_t*)h->data + key + sizeof(int32_t));
 
     if (nk->Signature != CM_KEY_NODE_SIGNATURE)
         return;
@@ -701,13 +700,13 @@ static void clear_volatile(hive* h, HKEY key) {
     sig = *(uint16_t*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
 
     if (sig == CM_KEY_HASH_LEAF || sig == CM_KEY_FAST_LEAF) {
-        CM_KEY_FAST_INDEX* lh = (CM_KEY_FAST_INDEX*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
+        auto lh = (CM_KEY_FAST_INDEX*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
 
         for (unsigned int i = 0; i < lh->Count; i++) {
             clear_volatile(h, 0x1000 + lh->List[i].Cell);
         }
     } else if (sig == CM_KEY_INDEX_ROOT) {
-        CM_KEY_INDEX* ri = (CM_KEY_INDEX*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
+        auto ri = (CM_KEY_INDEX*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
 
         for (unsigned int i = 0; i < ri->Count; i++) {
             clear_volatile(h, 0x1000 + ri->List[i]);
