@@ -147,9 +147,6 @@ static EFI_STATUS EFIAPI find_root(EFI_REGISTRY_HIVE* This, HKEY* Key) {
 static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Index, wchar_t* Name, UINT32 NameLength) {
     hive* h = _CR(This, hive, pub);
     int32_t size;
-    CM_KEY_NODE* nk;
-    CM_KEY_FAST_INDEX* lh;
-    CM_KEY_NODE* nk2;
     bool overflow = false;
 
     // FIXME - make sure no buffer overruns (here and elsewhere)
@@ -164,7 +161,7 @@ static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Ind
     if ((uint32_t)size < sizeof(int32_t) + offsetof(CM_KEY_NODE, Name[0]))
         return EFI_INVALID_PARAMETER;
 
-    nk = (CM_KEY_NODE*)((uint8_t*)h->data + Key + sizeof(int32_t));
+    auto nk = (CM_KEY_NODE*)((uint8_t*)h->data + Key + sizeof(int32_t));
 
     if (nk->Signature != CM_KEY_NODE_SIGNATURE)
         return EFI_INVALID_PARAMETER;
@@ -187,7 +184,7 @@ static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Ind
     if ((uint32_t)size < sizeof(int32_t) + offsetof(CM_KEY_FAST_INDEX, List[0]))
         return EFI_INVALID_PARAMETER;
 
-    lh = (CM_KEY_FAST_INDEX*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
+    auto lh = (CM_KEY_FAST_INDEX*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
 
     if (lh->Signature != CM_KEY_HASH_LEAF && lh->Signature != CM_KEY_FAST_LEAF)
         return EFI_INVALID_PARAMETER;
@@ -208,7 +205,7 @@ static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Ind
     if ((uint32_t)size < sizeof(int32_t) + offsetof(CM_KEY_NODE, Name[0]))
         return EFI_INVALID_PARAMETER;
 
-    nk2 = (CM_KEY_NODE*)((uint8_t*)h->data + 0x1000 + lh->List[Index].Cell + sizeof(int32_t));
+    auto nk2 = (CM_KEY_NODE*)((uint8_t*)h->data + 0x1000 + lh->List[Index].Cell + sizeof(int32_t));
 
     if (nk2->Signature != CM_KEY_NODE_SIGNATURE)
         return EFI_INVALID_PARAMETER;
