@@ -186,7 +186,27 @@ static EFI_STATUS EFIAPI enum_keys(EFI_REGISTRY_HIVE* This, HKEY Key, UINT32 Ind
 
     auto lh = (CM_KEY_FAST_INDEX*)((uint8_t*)h->data + 0x1000 + nk->SubKeyList + sizeof(int32_t));
 
-    if (lh->Signature != CM_KEY_HASH_LEAF && lh->Signature != CM_KEY_FAST_LEAF)
+    if (lh->Signature == CM_KEY_INDEX_ROOT) {
+        auto ri = (CM_KEY_INDEX*)lh;
+
+        for (size_t i = 0; i < ri->Count; i++) {
+            auto lh2 = (CM_KEY_FAST_INDEX*)((uint8_t*)h->data + 0x1000 + ri->List[i] + sizeof(int32_t));
+
+            if (lh2->Signature == CM_KEY_INDEX_ROOT) {
+                // Do not recurse: CVE-2021-3622
+                print_string("Reading nested CM_KEY_INDEX is not yet implemented\n");
+                return EFI_INVALID_PARAMETER;
+            } else if (lh2->Signature != CM_KEY_HASH_LEAF && lh2->Signature != CM_KEY_FAST_LEAF)
+                return EFI_INVALID_PARAMETER;
+
+            if (lh2->Count > Index) {
+                lh = lh2;
+                break;
+            }
+
+            Index -= lh2->Count;
+        }
+    } else if (lh->Signature != CM_KEY_HASH_LEAF && lh->Signature != CM_KEY_FAST_LEAF)
         return EFI_INVALID_PARAMETER;
 
     if ((uint32_t)size < sizeof(int32_t) + offsetof(CM_KEY_FAST_INDEX, List[0]) + (lh->Count * sizeof(CM_INDEX)))
