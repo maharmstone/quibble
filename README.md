@@ -109,48 +109,48 @@ FAQs
 
 * Why don't I get pretty graphics?
 
-Disable CSM in your BIOS. Bear in mind that this will also stop Windows 7 and earlier
+  Disable CSM in your BIOS. Bear in mind that this will also stop Windows 7 and earlier
 from booting.
 
 * Which versions of Windows does this work on?
 
-With the Btrfs driver or NTFS drivers, this should work on XP, Vista, Windows 7, Windows 8,
+  With the Btrfs driver or NTFS drivers, this should work on XP, Vista, Windows 7, Windows 8,
 Windows 8.1, and Windows 10 versions 1507 to 22H2.
 
 * Which filesystems does this support?
 
-The included Btrfs driver, and maybe also the FAT driver that's part of the UEFI specifications.
+  The included Btrfs driver, and maybe also the FAT driver that's part of the UEFI specifications.
 Windows XP, Vista, and 7 will work fine from a FAT volume, anything after that won't.
 
 * How can I extend this?
 
-Drop your EFI driver in the drivers folder, and it'll load it on startup.
+  Drop your EFI driver in the drivers folder, and it'll load it on startup.
 
 * Why do I get a BAD_SYSTEM_CONFIG_INFO BSOD?
 
-This means that the Registry is unclean, and our rudimentary recovery wasn't good enough. If you attach
+  This means that the Registry is unclean, and our rudimentary recovery wasn't good enough. If you attach
 C:\Windows\System32\config\SYSTEM to another machine via Regedit temporarily, it'll fix it.
 Make sure you shut Windows down properly to avoid having to do this.
 
 * Can I boot Btrfs from an arbitrary subvolume, like I can on Linux?
 
-Yes - add /SUBVOL=xxx to your Options in freeldr.ini. You can find the number to use on the
+  Yes - add /SUBVOL=xxx to your Options in freeldr.ini. You can find the number to use on the
 Properties page of your subvolume. On Linux you can use `btrfs subvol list`, but bear in mind
 that you will need to translate the number to hexadecimal.
 
 * Why can't I access any NTFS volumes in Windows when booting from Btrfs?
 
-Because Windows only loads ntfs.sys when it's booting from NTFS. To start it as a one-off, run
+  Because Windows only loads ntfs.sys when it's booting from NTFS. To start it as a one-off, run
 `sc start ntfs` from an elevated command prompt. To get it to start every time, open regedit and
 change HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ntfs\Start to 1.
 
 * Why can't I access FAT partitions on Windows?
 
-If Windows doesn't load the FAT driver automatically, try running `sc start fastfat`.
+  If Windows doesn't load the FAT driver automatically, try running `sc start fastfat`.
 
 * Why don't I see the Windows logo on startup?
 
-The boot graphics code isn't completed yet - you won't see either the Windows logo or the progress
+  The boot graphics code isn't completed yet - you won't see either the Windows logo or the progress
 indicator, just a few seconds of blackness.
 
 Licences and Thanks
