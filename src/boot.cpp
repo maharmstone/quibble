@@ -717,6 +717,11 @@ static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
             extblock.KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(extblock.KdDebugDevice, mappings);
     }
 
+    if constexpr (requires { T::HypercallCodeVa; }) {
+        if (extblock.HypercallCodeVa)
+            extblock.HypercallCodeVa = find_virtual_address(extblock.HypercallCodeVa, mappings);
+    }
+
     fix_list_mapping(&extblock.FirmwareDescriptorListHead, mappings);
 
     if constexpr (requires { T::BootApplicationPersistentData; })
@@ -3028,6 +3033,65 @@ static void mark_framebuffer_wc_va() {
 }
 #endif
 
+#define HV_X64_MSR_GUEST_OS_ID 0x40000000
+#define HV_X64_MSR_HYPERCALL 0x40000001
+
+/* If we're running under a Hyper-V-compatible hypervisor, enable its hypercall page
+ * the same way winload does, and tell the kernel about it via the HypercallCodeVa
+ * field of the loader block extension. If we don't, the kernel sets the page up
+ * itself from the HAL heap, whose page tables are created non-executable, and
+ * then faults the first time it makes a hypercall. */
+static EFI_STATUS setup_hypercall_page(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** va, uint16_t build,
+                                       void** page) {
+    EFI_STATUS Status;
+    int cpu_info[4];
+    uint64_t guest_os_id, hypercall_msr;
+    void* p;
+
+    *page = nullptr;
+
+    __cpuid(cpu_info, 1);
+
+    if (!(cpu_info[2] & 0x80000000)) // hypervisor present bit
+        return EFI_SUCCESS;
+
+    __cpuid(cpu_info, 0x40000000);
+
+    // not checking the vendor string, as e.g. VMware gives its own while offering the Hyper-V interface
+    if ((unsigned int)cpu_info[0] < 0x40000001)
+        return EFI_SUCCESS;
+
+    __cpuid(cpu_info, 0x40000001);
+
+    if (cpu_info[0] != 0x31237648) // "Hv#1"
+        return EFI_SUCCESS;
+
+    p = allocate_page(bs);
+    if (!p) {
+        print_string("out of memory\n");
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // vendor 1 (Microsoft), OS 4 (NT), version 10.0
+    guest_os_id = (1ull << 48) | (4ull << 40) | (10ull << 32) | build;
+    __writemsr(HV_X64_MSR_GUEST_OS_ID, guest_os_id);
+
+    hypercall_msr = __readmsr(HV_X64_MSR_HYPERCALL);
+    hypercall_msr = (hypercall_msr & 0xffe) | ((uintptr_t)p & ~0xfffull) | 1;
+    __writemsr(HV_X64_MSR_HYPERCALL, hypercall_msr);
+
+    Status = add_mapping(bs, mappings, *va, p, 1, LoaderMemoryData);
+    if (EFI_ERROR(Status)) {
+        print_error("add_mapping", Status);
+        return Status;
+    }
+
+    *va = (uint8_t*)*va + EFI_PAGE_SIZE;
+    *page = p;
+
+    return EFI_SUCCESS;
+}
+
 static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle) {
     EFI_GUID guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     EFI_HANDLE* handles = NULL;
@@ -3952,6 +4016,31 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         goto end;
+    }
+
+    {
+        bool has_hypercall_va = false;
+        void* hypercall_page;
+
+        std::visit([&](auto&& e) {
+            if constexpr (requires { e->HypercallCodeVa; })
+                has_hypercall_va = true;
+        }, extension_block);
+
+        if (has_hypercall_va) {
+            Status = setup_hypercall_page(bs, &mappings, &va, build, &hypercall_page);
+            if (EFI_ERROR(Status)) {
+                print_error("setup_hypercall_page", Status);
+                goto end;
+            }
+
+            if (hypercall_page) {
+                std::visit([&](auto&& e) {
+                    if constexpr (requires { e->HypercallCodeVa; })
+                        e->HypercallCodeVa = hypercall_page; // physical for now, fixed up with the other pointers
+                }, extension_block);
+            }
+        }
     }
 
 #ifdef _X86_
