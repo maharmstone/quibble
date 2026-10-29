@@ -10,3 +10,6 @@
 [submodule "harfbuzz"]
 	path = harfbuzz
 	url = https://github.com/harfbuzz/harfbuzz
+[submodule "zfs"]
+	path = zfs
+	url = https://github.com/openzfsonwindows/zfs-efi

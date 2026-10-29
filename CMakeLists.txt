@@ -60,6 +60,7 @@ target_compile_options(harfbuzz PRIVATE "-Wa,-mbig-obj")
 
 add_subdirectory(ntfs)
 add_subdirectory(btrfs)
+add_subdirectory(zfs)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(freetype/include)
