@@ -4700,8 +4700,21 @@ typedef struct {
     uint32_t unk11;
     uint32_t unk12;
     uint32_t unk13;
-    uint32_t unk14; // bool ShouldCallDllInitialize?
+    uint32_t unk14; // BLDR_FLAGS_* (Win10: core/core-ext dependent DLL)
+    // Windows 11 24H2 grew the winload-side entry. The kernel reads the
+    // driver-dependent-DLL init phase from +0x11c and a flag bit from +0x118,
+    // so these must live inside the structure rather than in the name strings
+    // that directly follow it.
+    uint8_t reserved2[0x30];
+    uint32_t unk16; // +0x118, bit0 used for early-launch notification
+    uint32_t DllInitializePhase; // +0x11c: bit0 = init before core drivers,
+                                 //        bit1 = init before core extensions,
+                                 //        0    = init before boot drivers
 } KLDR_DATA_TABLE_ENTRY;
+
+static_assert(sizeof(KLDR_DATA_TABLE_ENTRY) == 0x120, "KLDR_DATA_TABLE_ENTRY size");
+static_assert(offsetof(KLDR_DATA_TABLE_ENTRY, DllInitializePhase) == 0x11c,
+              "KLDR_DATA_TABLE_ENTRY DllInitializePhase");
 
 typedef struct {
     LIST_ENTRY Link;
