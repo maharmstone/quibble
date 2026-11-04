@@ -24,6 +24,7 @@
 #include <span>
 #include <string_view>
 #include "quibble.h"
+#include "funcoverride.h"
 #include "reg.h"
 #include "peload.h"
 #include "misc.h"
@@ -51,6 +52,9 @@ typedef struct {
         LOADER_PARAMETER_BLOCK_WIN8 loader_block_win8;
         LOADER_PARAMETER_BLOCK_WIN81 loader_block_win81;
         LOADER_PARAMETER_BLOCK_WIN10 loader_block_win10;
+#ifdef __x86_64__
+        LOADER_PARAMETER_BLOCK_WIN11 loader_block_win11;
+#endif
     };
 
     union {
@@ -68,6 +72,11 @@ typedef struct {
         LOADER_PARAMETER_EXTENSION_WIN10_1903 extension_win10_1903;
         LOADER_PARAMETER_EXTENSION_WIN10_2004 extension_win10_2004;
         LOADER_PARAMETER_EXTENSION_WIN10_21H1 extension_win10_21H1;
+#ifdef __x86_64__
+        LOADER_PARAMETER_EXTENSION_WIN11 extension_win11;
+        LOADER_PARAMETER_EXTENSION_WIN11_22H2 extension_win11_22h2;
+        LOADER_PARAMETER_EXTENSION_WIN11_24H2 extension_win11_24h2;
+#endif
     };
 
     char strings[1024];
@@ -75,6 +84,24 @@ typedef struct {
     ARC_DISK_INFORMATION arc_disk_information;
     LOADER_PERFORMANCE_DATA loader_performance_data;
     DEBUG_DEVICE_DESCRIPTOR debug_device_descriptor;
+
+    // entry of the AttachedHives list, 24H2 onwards. Layout seen in winload's own: Link, flags at +0x18,
+    // hive data at +0x20 and its size at +0x28.
+    struct {
+        LIST_ENTRY link;
+        uint64_t unknown10;
+        uint64_t flags;
+        void* data;
+        uint64_t size;
+        uint8_t reserved1[0x38];
+        void* log1; // CmpInitializeSystemHive copies these into the hive, so they can't be NULL
+        uint64_t log1_size;
+        void* log2;
+        uint64_t log2_size;
+        uint8_t reserved2[0x20];
+    } system_hive;
+    uint8_t system_hive_log1[0x6b38];
+    uint8_t system_hive_log2[0x6b38];
 
     union {
         uint8_t bgc;
@@ -239,9 +266,12 @@ using loader_block_variant = std::variant<LOADER_PARAMETER_BLOCK_WS03*,
                                           LOADER_PARAMETER_BLOCK_WIN7*,
                                           LOADER_PARAMETER_BLOCK_WIN8*,
                                           LOADER_PARAMETER_BLOCK_WIN81*,
+#ifdef __x86_64__
+                                          LOADER_PARAMETER_BLOCK_WIN11*,
+#endif
                                           LOADER_PARAMETER_BLOCK_WIN10*>;
 
-static std::optional<loader_block_variant> find_loader_block(loader_store* store, uint16_t version) {
+static std::optional<loader_block_variant> find_loader_block(loader_store* store, uint16_t version, uint16_t build) {
     if (version <= _WIN32_WINNT_WS03)
         return &store->loader_block_ws03;
     else if (version == _WIN32_WINNT_VISTA)
@@ -252,8 +282,13 @@ static std::optional<loader_block_variant> find_loader_block(loader_store* store
         return &store->loader_block_win8;
     else if (version == _WIN32_WINNT_WINBLUE)
         return &store->loader_block_win81;
-    else if (version == _WIN32_WINNT_WIN10)
+    else if (version == _WIN32_WINNT_WIN10) {
+#ifdef __x86_64__
+        if (build >= WIN11_BUILD_21H2)
+            return &store->loader_block_win11;
+#endif
         return &store->loader_block_win10;
+    }
 
     print_string("Unsupported Windows version.\n");
     return std::nullopt;
@@ -324,7 +359,9 @@ static EFI_STATUS initialize_loader_block(EFI_BOOT_SERVICES* bs, loader_store* s
         loader_block.KernelStackSize = KERNEL_STACK_SIZE * EFI_PAGE_SIZE;
 
     if constexpr (requires { T::OsLoaderSecurityVersion; }) {
-        if (build >= WIN10_BUILD_1511)
+        if (build >= WIN11_BUILD_24H2) // LOADER_ROLLBACK_DETECTED (0x196) if lower than 2
+            loader_block.OsLoaderSecurityVersion = 2;
+        else if (build >= WIN10_BUILD_1511)
             loader_block.OsLoaderSecurityVersion = 1;
     }
 
@@ -404,7 +441,14 @@ using extension_block_variant = std::variant<LOADER_PARAMETER_EXTENSION_WS03*,
                                              LOADER_PARAMETER_EXTENSION_WIN10_1809*,
                                              LOADER_PARAMETER_EXTENSION_WIN10_1903*,
                                              LOADER_PARAMETER_EXTENSION_WIN10_2004*,
+#ifdef __x86_64__
+                                             LOADER_PARAMETER_EXTENSION_WIN10_21H1*,
+                                             LOADER_PARAMETER_EXTENSION_WIN11*,
+                                             LOADER_PARAMETER_EXTENSION_WIN11_22H2*,
+                                             LOADER_PARAMETER_EXTENSION_WIN11_24H2*>;
+#else
                                              LOADER_PARAMETER_EXTENSION_WIN10_21H1*>;
+#endif
 
 static std::optional<extension_block_variant> find_extension_block(loader_store* store, uint16_t version,
                                                                    uint16_t build, uint16_t revision) {
@@ -423,6 +467,15 @@ static std::optional<extension_block_variant> find_extension_block(loader_store*
     else if (version == _WIN32_WINNT_WINBLUE)
         return &store->extension_win81;
     else if (version == _WIN32_WINNT_WIN10) {
+#ifdef __x86_64__
+        if (build >= WIN11_BUILD_24H2)
+            return &store->extension_win11_24h2;
+        else if (build >= WIN11_BUILD_22H2)
+            return &store->extension_win11_22h2;
+        else if (build >= WIN11_BUILD_21H2)
+            return &store->extension_win11;
+#endif
+
         if (build >= WIN10_BUILD_21H1 || (build == WIN10_BUILD_2004 && revision >= 572))
             return &store->extension_win10_21H1;
         else if (build >= WIN10_BUILD_2004)
@@ -488,6 +541,14 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     if constexpr (requires { T::ProcessorCounterFrequency; })
         extblock.ProcessorCounterFrequency = cpu_frequency;
 
+    // KiInitializeBootStructures stores this as it is: KeKernelLargeStackSize, and KeMaximumKernelStackExpansionSize
+    // as this minus 0x800. Left at zero the latter wraps to 4GB, and MmCreateKernelStack bugchecks on the first
+    // stack expansion. winload sets 0x12000 on 24H2.
+    if constexpr (requires { T::KernelLargeStackSize; }) {
+        if (build >= WIN11_BUILD_24H2)
+            extblock.KernelLargeStackSize = 0x12000;
+    }
+
     if (kdnet_loaded) {
         memcpy(&store->debug_device_descriptor, &debug_device_descriptor, sizeof(debug_device_descriptor));
 
@@ -496,7 +557,17 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
     }
 
     if constexpr (requires { T::MajorRelease; }) {
-        if (build >= WIN10_BUILD_2004)
+        if (build >= WIN11_BUILD_24H2)
+            extblock.MajorRelease = NTDDI_WIN11_GE;
+        else if (build >= WIN11_BUILD_23H2)
+            extblock.MajorRelease = NTDDI_WIN10_CU;
+        else if (build >= WIN11_BUILD_22H2)
+            extblock.MajorRelease = NTDDI_WIN10_NI;
+        else if (build >= WIN11_BUILD_21H2)
+            extblock.MajorRelease = NTDDI_WIN10_CO;
+        else if (build >= WIN10_BUILD_21H1)
+            extblock.MajorRelease = NTDDI_WIN10_FE;
+        else if (build >= WIN10_BUILD_2004)
             extblock.MajorRelease = NTDDI_WIN10_20H1;
         else if (build >= WIN10_BUILD_1903) {
             // contrary to what you might expect, both 1903 and 1909 use the same value here
@@ -513,6 +584,12 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
             extblock.MajorRelease = NTDDI_WIN10_RS1;
     }
 
+    if constexpr (requires { T::RetpolineReserveSize; }) {
+        // Called KernelScpReserveSize in later versions. The kernel will not set up its KSCP section if this is
+        // smaller than the section, in which case it bugchecks later, in MmProbeAndLockPages.
+        extblock.RetpolineReserveSize = kernel_scp_reserve_size;
+    }
+
     InitializeListHead(&extblock.FirmwareDescriptorListHead);
     extblock.AcpiTable = (void*)1; // FIXME - this is what freeldr does - it doesn't seem right...
 
@@ -524,8 +601,32 @@ static EFI_STATUS initialize_extension_block(loader_store* store, T& extblock, u
         InitializeListHead(&extblock.AttachedHives);
     }
 
+    // CmpInitializePreloadedHives bugchecks 0x67 (STATUS_NOT_FOUND) in 24H2 unless the list holds a SYSTEM hive entry
+    // (flags & 0x209 == 1). It still takes the actual hive from the loader block's RegistryBase.
+    if constexpr (requires { T::KernelLargeStackSize; }) {
+        if (build >= WIN11_BUILD_24H2) {
+            store->system_hive.flags = 1;
+            store->system_hive.log1_size = sizeof(store->system_hive_log1);
+            store->system_hive.log2_size = sizeof(store->system_hive_log2);
+            InsertTailList(&extblock.AttachedHives, &store->system_hive.link);
+        }
+    }
+
     if constexpr (requires { T::HalExtensionModuleList; }) {
         InitializeListHead(&extblock.HalExtensionModuleList);
+    }
+
+    if constexpr (requires { T::PrmUpdateModuleList; }) {
+        InitializeListHead(&extblock.PrmUpdateModuleList);
+    }
+
+    if constexpr (requires { T::PrmFirmwareModuleList; }) {
+        InitializeListHead(&extblock.PrmFirmwareModuleList);
+    }
+
+    // MiCreateBootDriverHotPatchLinkage walks this, and faults on a NULL Flink
+    if constexpr (requires { T::HotPatchList; }) {
+        InitializeListHead(&extblock.HotPatchList);
     }
 
     if constexpr (requires { T::SystemTime; })
@@ -717,6 +818,11 @@ static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
             extblock.KdDebugDevice = (DEBUG_DEVICE_DESCRIPTOR*)find_virtual_address(extblock.KdDebugDevice, mappings);
     }
 
+    if constexpr (requires { T::HypercallCodeVa; }) {
+        if (extblock.HypercallCodeVa)
+            extblock.HypercallCodeVa = find_virtual_address(extblock.HypercallCodeVa, mappings);
+    }
+
     fix_list_mapping(&extblock.FirmwareDescriptorListHead, mappings);
 
     if constexpr (requires { T::BootApplicationPersistentData; })
@@ -732,6 +838,15 @@ static void fix_extension_block_mapping(T& extblock, LIST_ENTRY* mappings) {
 
     if constexpr (requires { T::HalExtensionModuleList; })
         fix_list_mapping(&extblock.HalExtensionModuleList, mappings);
+
+    if constexpr (requires { T::PrmUpdateModuleList; })
+        fix_list_mapping(&extblock.PrmUpdateModuleList, mappings);
+
+    if constexpr (requires { T::PrmFirmwareModuleList; })
+        fix_list_mapping(&extblock.PrmFirmwareModuleList, mappings);
+
+    if constexpr (requires { T::HotPatchList; })
+        fix_list_mapping(&extblock.HotPatchList, mappings);
 
     if constexpr (requires { T::ApiSetSchemaExtensions; })
         fix_list_mapping(&extblock.ApiSetSchemaExtensions, mappings);
@@ -2865,7 +2980,8 @@ static EFI_STATUS allocate_pcr(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void
 #ifdef _X86_
     static constexpr size_t pages = (sizeof(KPCR) + EFI_PAGE_SIZE - 1) / EFI_PAGE_SIZE;
 #else
-    static constexpr size_t pages = PCR_PAGES;
+    // The kernel initializes the PCR and PRCB in place; Windows 11 24H2 needs 0xd080 bytes, 2004 needed 0xb080
+    const size_t pages = build >= WIN11_BUILD_21H2 ? PCR_PAGES_WIN11 : PCR_PAGES;
 #endif
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiLoaderData, pages, &addr);
@@ -3027,6 +3143,65 @@ static void mark_framebuffer_wc_va() {
     __writecr3(__readcr3());
 }
 #endif
+
+#define HV_X64_MSR_GUEST_OS_ID 0x40000000
+#define HV_X64_MSR_HYPERCALL 0x40000001
+
+/* If we're running under a Hyper-V-compatible hypervisor, enable its hypercall page
+ * the same way winload does, and tell the kernel about it via the HypercallCodeVa
+ * field of the loader block extension. If we don't, the kernel sets the page up
+ * itself from the HAL heap, whose page tables are created non-executable, and
+ * then faults the first time it makes a hypercall. */
+static EFI_STATUS setup_hypercall_page(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void** va, uint16_t build,
+                                       void** page) {
+    EFI_STATUS Status;
+    int cpu_info[4];
+    uint64_t guest_os_id, hypercall_msr;
+    void* p;
+
+    *page = nullptr;
+
+    __cpuid(cpu_info, 1);
+
+    if (!(cpu_info[2] & 0x80000000)) // hypervisor present bit
+        return EFI_SUCCESS;
+
+    __cpuid(cpu_info, 0x40000000);
+
+    // not checking the vendor string, as e.g. VMware gives its own while offering the Hyper-V interface
+    if ((unsigned int)cpu_info[0] < 0x40000001)
+        return EFI_SUCCESS;
+
+    __cpuid(cpu_info, 0x40000001);
+
+    if (cpu_info[0] != 0x31237648) // "Hv#1"
+        return EFI_SUCCESS;
+
+    p = allocate_page(bs);
+    if (!p) {
+        print_string("out of memory\n");
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // vendor 1 (Microsoft), OS 4 (NT), version 10.0
+    guest_os_id = (1ull << 48) | (4ull << 40) | (10ull << 32) | build;
+    __writemsr(HV_X64_MSR_GUEST_OS_ID, guest_os_id);
+
+    hypercall_msr = __readmsr(HV_X64_MSR_HYPERCALL);
+    hypercall_msr = (hypercall_msr & 0xffe) | ((uintptr_t)p & ~0xfffull) | 1;
+    __writemsr(HV_X64_MSR_HYPERCALL, hypercall_msr);
+
+    Status = add_mapping(bs, mappings, *va, p, 1, LoaderMemoryData);
+    if (EFI_ERROR(Status)) {
+        print_error("add_mapping", Status);
+        return Status;
+    }
+
+    *va = (uint8_t*)*va + EFI_PAGE_SIZE;
+    *page = p;
+
+    return EFI_SUCCESS;
+}
 
 static EFI_STATUS set_graphics_mode(EFI_BOOT_SERVICES* bs, EFI_HANDLE image_handle) {
     EFI_GUID guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
@@ -3588,6 +3763,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
                 size = ((size / EFI_PAGE_SIZE) + 1) * EFI_PAGE_SIZE;
 
             va = (uint8_t*)va + size;
+
+            // Windows 11 bugchecks in MiInitializeDriverPtes (MEMORY_MANAGEMENT, 0x1019) unless every image
+            // starts on a 64KB boundary. Also leave a gap after each image, so that nothing that overruns
+            // it hits the header of the next one.
+            if (build >= WIN11_BUILD_21H2)
+                va = (void*)(((uintptr_t)va + EFI_PAGE_SIZE + 0xffff) & ~(uintptr_t)0xffff);
         }
 
         {
@@ -3806,7 +3987,7 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         memset(store, 0, sizeof(loader_store));
     }
 
-    loader_block_opt = find_loader_block(store, version);
+    loader_block_opt = find_loader_block(store, version, build);
 
     if (!loader_block_opt.has_value()) {
         Status = EFI_INVALID_PARAMETER;
@@ -3952,6 +4133,31 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     if (EFI_ERROR(Status)) {
         print_error("add_mapping", Status);
         goto end;
+    }
+
+    {
+        bool has_hypercall_va = false;
+        void* hypercall_page;
+
+        std::visit([&](auto&& e) {
+            if constexpr (requires { e->HypercallCodeVa; })
+                has_hypercall_va = true;
+        }, extension_block);
+
+        if (has_hypercall_va) {
+            Status = setup_hypercall_page(bs, &mappings, &va, build, &hypercall_page);
+            if (EFI_ERROR(Status)) {
+                print_error("setup_hypercall_page", Status);
+                goto end;
+            }
+
+            if (hypercall_page) {
+                std::visit([&](auto&& e) {
+                    if constexpr (requires { e->HypercallCodeVa; })
+                        e->HypercallCodeVa = hypercall_page; // physical for now, fixed up with the other pointers
+                }, extension_block);
+            }
+        }
     }
 
 #ifdef _X86_
@@ -4152,6 +4358,9 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
         b->RegistryLength = reg_size;
     }, loader_block);
 
+    store->system_hive.data = va;
+    store->system_hive.size = reg_size;
+
     va = (uint8_t*)va + (page_count(reg_size) * EFI_PAGE_SIZE);
 
     Status = map_efi_runtime(bs, &mappings, va, version);
@@ -4273,6 +4482,11 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
 #endif
 
     std::visit([&](auto&& b) {
+        if (build >= WIN11_BUILD_24H2) {
+            store->system_hive.log1 = find_virtual_address(store->system_hive_log1, &mappings);
+            store->system_hive.log2 = find_virtual_address(store->system_hive_log2, &mappings);
+        }
+
         fix_loader_block_mapping(store, store_va, *b, &mappings, version, build);
     }, loader_block);
 
@@ -4293,7 +4507,12 @@ static EFI_STATUS boot(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, EFI_FILE_
     set_idt(idt_pa);
 
     std::visit([&](auto&& b) {
-        Status = enable_paging(image_handle, bs, &mappings, b->MemoryDescriptorListHead,
+        void* mdl_tree = nullptr;
+
+        if constexpr (requires { b->MemoryDescriptorTree; })
+            mdl_tree = &b->MemoryDescriptorTree;
+
+        Status = enable_paging(image_handle, bs, &mappings, b->MemoryDescriptorListHead, mdl_tree,
                                va, loader_pages_spanned);
     }, loader_block);
 

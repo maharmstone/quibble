@@ -521,6 +521,7 @@ EFI_STATUS process_memory_map(EFI_BOOT_SERVICES* bs, void** va, LIST_ENTRY* mapp
     return EFI_SUCCESS;
 }
 
+template<typename D>
 static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LIST_ENTRY& mdl, void* pa, void* va) {
     LIST_ENTRY* le;
     void* data;
@@ -532,7 +533,7 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LIST_ENTRY&
     le = mappings->Flink;
     while (le != mappings) {
         mapping* m = _CR(le, mapping, list_entry);
-        MEMORY_ALLOCATION_DESCRIPTOR* mad = (MEMORY_ALLOCATION_DESCRIPTOR*)data;
+        D* mad = (D*)data;
 
         mad->MemoryType = m->type;
         mad->BasePage = (uintptr_t)m->pa / EFI_PAGE_SIZE;
@@ -540,7 +541,7 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LIST_ENTRY&
 
         InsertTailList(&mdl, &mad->ListEntry);
 
-        data = (uint8_t*)data + sizeof(MEMORY_ALLOCATION_DESCRIPTOR);
+        data = (uint8_t*)data + sizeof(D);
 
         le = le->Flink;
     }
@@ -549,8 +550,8 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LIST_ENTRY&
 
     le = mdl.Flink;
     while (le != &mdl) {
-        MEMORY_ALLOCATION_DESCRIPTOR* mad = _CR(le, MEMORY_ALLOCATION_DESCRIPTOR, ListEntry);
-        MEMORY_ALLOCATION_DESCRIPTOR* mad2 = _CR(le->Flink, MEMORY_ALLOCATION_DESCRIPTOR, ListEntry);
+        D* mad = _CR(le, D, ListEntry);
+        D* mad2 = _CR(le->Flink, D, ListEntry);
 
         if (le->Flink == &mdl)
             break;
@@ -591,7 +592,7 @@ static EFI_STATUS setup_memory_descriptor_list(LIST_ENTRY* mappings, LIST_ENTRY&
 }
 
 static EFI_STATUS allocate_mdl(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void* va,
-                               void** pa, size_t* mdl_pages) {
+                               void** pa, size_t* mdl_pages, bool win11_descriptors) {
     EFI_STATUS Status;
     unsigned int num_entries = 0;
     LIST_ENTRY* le;
@@ -611,7 +612,12 @@ static EFI_STATUS allocate_mdl(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void
     num_entries++;
 
     // allocate pages for list
-    pages = page_count(num_entries * sizeof(MEMORY_ALLOCATION_DESCRIPTOR));
+#ifdef __x86_64__
+    if (win11_descriptors)
+        pages = page_count(num_entries * sizeof(MEMORY_ALLOCATION_DESCRIPTOR_WIN11));
+    else
+#endif
+        pages = page_count(num_entries * sizeof(MEMORY_ALLOCATION_DESCRIPTOR));
 
     Status = bs->AllocatePages(AllocateAnyPages, EfiBootServicesData, pages, &addr);
     if (EFI_ERROR(Status)) {
@@ -879,7 +885,7 @@ EFI_STATUS map_efi_runtime(EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings, void*& v
 }
 
 EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_ENTRY* mappings,
-                         LIST_ENTRY& mdl_head, void* va, uintptr_t* loader_pages_spanned) {
+                         LIST_ENTRY& mdl_head, void* mdl_tree, void* va, uintptr_t* loader_pages_spanned) {
     EFI_STATUS Status;
     UINTN size, key, descsize;
     UINT32 version;
@@ -1149,7 +1155,7 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
     }
 #endif
 
-    Status = allocate_mdl(bs, mappings, va, &mdl_pa, &mdl_pages);
+    Status = allocate_mdl(bs, mappings, va, &mdl_pa, &mdl_pages, mdl_tree != nullptr);
     if (EFI_ERROR(Status)) {
         print_error("allocate_mdl", Status);
         return Status;
@@ -1161,7 +1167,15 @@ EFI_STATUS enable_paging(EFI_HANDLE image_handle, EFI_BOOT_SERVICES* bs, LIST_EN
         return Status;
     }
 
-    Status = setup_memory_descriptor_list(mappings, mdl_head, mdl_pa, va);
+#ifdef __x86_64__
+    if (mdl_tree) {
+        // Windows 11 22H2 and later: the descriptors are bigger, but they are still passed as a list.
+        // The tree (mdl_tree) is made by the kernel, so is left empty.
+        Status = setup_memory_descriptor_list<MEMORY_ALLOCATION_DESCRIPTOR_WIN11>(mappings, mdl_head, mdl_pa, va);
+    } else
+#endif
+        Status = setup_memory_descriptor_list<MEMORY_ALLOCATION_DESCRIPTOR>(mappings, mdl_head, mdl_pa, va);
+
     if (EFI_ERROR(Status)) {
         print_error("setup_memory_descriptor_list", Status);
         return Status;

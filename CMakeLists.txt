@@ -26,6 +26,7 @@ enable_language(ASM)
 set(SRC_FILES src/apiset.cpp
     src/boot.cpp
     src/debug.cpp
+    src/funcoverride.cpp
     src/hw.cpp
     src/mem.cpp
     src/menu.cpp

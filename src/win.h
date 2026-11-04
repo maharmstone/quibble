@@ -70,6 +70,7 @@
 #define APIC_BASE               0xfffffffffffe0000
 #define KI_USER_SHARED_DATA     0xfffff78000000000
 #define PCR_PAGES               0xc // 0xb080 bytes as of 2004
+#define PCR_PAGES_WIN11         0xe // 0xd080 bytes as of 24H2
 #endif
 
 #define _WIN32_WINNT_NT4                    0x0400
@@ -96,6 +97,10 @@
 #define WIN10_BUILD_21H1            19043
 #define WIN10_BUILD_21H2            19044
 #define WIN10_BUILD_22H2            19045
+#define WIN11_BUILD_21H2            22000
+#define WIN11_BUILD_22H2            22621
+#define WIN11_BUILD_23H2            22631
+#define WIN11_BUILD_24H2            26100
 
 #define NTDDI_WIN7                          0x06010000
 #define NTDDI_WIN8                          0x06020000
@@ -109,6 +114,11 @@
 #define NTDDI_WIN10_RS5                     0x0a000006 // 1809
 #define NTDDI_WIN10_19H1                    0x0a000007 // 1903
 #define NTDDI_WIN10_20H1                    0x0a000008 // 2004
+#define NTDDI_WIN10_FE                      0x0a00000a // 21H1
+#define NTDDI_WIN10_CO                      0x0a00000b // Windows 11 21H2
+#define NTDDI_WIN10_NI                      0x0a00000c // Windows 11 22H2
+#define NTDDI_WIN10_CU                      0x0a00000d // Windows 11 23H2
+#define NTDDI_WIN11_GE                      0x0a000010 // Windows 11 24H2
 
 #define STATUS_NOT_IMPLEMENTED 0xC0000002
 
@@ -3615,7 +3625,7 @@ typedef struct {
     int64_t HalSoftRebootDatabase;
     uint32_t KasanEnabled : 1;
     uint32_t Unused2 : 31;
-    uint32_t padding15;
+    uint32_t KernelLargeStackSize; // padding before 24H2
     uint64_t PerformanceDataFrequency;
 } LOADER_PARAMETER_EXTENSION_WIN11_22H2;
 #pragma pack(pop)
@@ -3722,7 +3732,22 @@ static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, CimfsInformation.T
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, CimfsInformation.CimFiles) == 0xef8, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 CimfsInformation.CimFiles");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, CimfsInformation.CimFilesCount) == 0xf00, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 CimfsInformation.CimFilesCount");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, HalSoftRebootDatabase) == 0xf08, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 HalSoftRebootDatabase");
+static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, KernelLargeStackSize) == 0xf14, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 KernelLargeStackSize");
 static_assert(offsetof(LOADER_PARAMETER_EXTENSION_WIN11_22H2, PerformanceDataFrequency) == 0xf18, "LOADER_PARAMETER_EXTENSION_WIN11_22H2 PerformanceDataFrequency");
+
+// Windows 11 24H2 / 25H2 (builds 26100 and up). The first 0xf20 bytes are the same as 22H2, checked against
+// the offsets of _LOADER_PARAMETER_EXTENSION in the 25H2 kernel. What follows is new, and not filled in by us:
+// DriverProxyReserveSize, FunctionOverrideCapabilityMask, FunctionOverrideOptinCapabilities, PrmFwHandlerTable,
+// PrmFwHandlerCount, InitialSystemPowerState, MicrocodeRecord, MicrocodeRecordSize, OslRamdiskInfo,
+// CompositefsInformation, FeatureConfigurationInformation2, PageTableLogCount, PageTableLog[10],
+// EntropyAccumulatorConfig, BootAppSvnInfo.
+#pragma pack(push,1)
+struct LOADER_PARAMETER_EXTENSION_WIN11_24H2 : LOADER_PARAMETER_EXTENSION_WIN11_22H2 {
+    uint8_t padding_24H2[0x1130 - sizeof(LOADER_PARAMETER_EXTENSION_WIN11_22H2)];
+};
+#pragma pack(pop)
+
+static_assert(sizeof(LOADER_PARAMETER_EXTENSION_WIN11_24H2) == 0x1130, "LOADER_PARAMETER_EXTENSION_WIN11_24H2 has incorrect size.");
 #endif
 
 typedef struct {
@@ -4344,6 +4369,32 @@ typedef struct {
     };
 } RTL_RB_TREE;
 
+// From Windows 11 22H2 the kernel keeps the memory descriptors in MemoryDescriptorTree, a red-black tree
+// built in the same bytes as each descriptor's ListEntry. The loader still passes them on
+// MemoryDescriptorListHead: the HAL walks that list during early initialization (its heap is carved out of
+// free descriptors), and the kernel makes the tree from it later.
+struct RTL_BALANCED_NODE {
+    struct RTL_BALANCED_NODE* Left;
+    struct RTL_BALANCED_NODE* Right;
+    uintptr_t ParentValue;
+};
+
+typedef struct {
+    union {
+        LIST_ENTRY ListEntry;
+        RTL_BALANCED_NODE Node;
+    };
+    uint32_t MemoryType;
+    uint32_t padding;
+    uint64_t BasePage;
+    uint64_t PageCount;
+} MEMORY_ALLOCATION_DESCRIPTOR_WIN11;
+
+static_assert(sizeof(MEMORY_ALLOCATION_DESCRIPTOR_WIN11) == 0x30, "MEMORY_ALLOCATION_DESCRIPTOR_WIN11 has incorrect size.");
+static_assert(offsetof(MEMORY_ALLOCATION_DESCRIPTOR_WIN11, MemoryType) == 0x18, "MEMORY_ALLOCATION_DESCRIPTOR_WIN11 MemoryType");
+static_assert(offsetof(MEMORY_ALLOCATION_DESCRIPTOR_WIN11, BasePage) == 0x20, "MEMORY_ALLOCATION_DESCRIPTOR_WIN11 BasePage");
+static_assert(offsetof(MEMORY_ALLOCATION_DESCRIPTOR_WIN11, PageCount) == 0x28, "MEMORY_ALLOCATION_DESCRIPTOR_WIN11 PageCount");
+
 #pragma pack(push,1)
 
 typedef struct {
@@ -4649,8 +4700,21 @@ typedef struct {
     uint32_t unk11;
     uint32_t unk12;
     uint32_t unk13;
-    uint32_t unk14; // bool ShouldCallDllInitialize?
+    uint32_t unk14; // BLDR_FLAGS_* (Win10: core/core-ext dependent DLL)
+    // Windows 11 24H2 grew the winload-side entry. The kernel reads the
+    // driver-dependent-DLL init phase from +0x11c and a flag bit from +0x118,
+    // so these must live inside the structure rather than in the name strings
+    // that directly follow it.
+    uint8_t reserved2[0x30];
+    uint32_t unk16; // +0x118, bit0 used for early-launch notification
+    uint32_t DllInitializePhase; // +0x11c: bit0 = init before core drivers,
+                                 //        bit1 = init before core extensions,
+                                 //        0    = init before boot drivers
 } KLDR_DATA_TABLE_ENTRY;
+
+static_assert(sizeof(KLDR_DATA_TABLE_ENTRY) == 0x120, "KLDR_DATA_TABLE_ENTRY size");
+static_assert(offsetof(KLDR_DATA_TABLE_ENTRY, DllInitializePhase) == 0x11c,
+              "KLDR_DATA_TABLE_ENTRY DllInitializePhase");
 
 typedef struct {
     LIST_ENTRY Link;

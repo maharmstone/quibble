@@ -23,6 +23,7 @@
 #include "quibble.h"
 #include "tinymt32.h"
 #include "print.h"
+#include "funcoverride.h"
 
 typedef struct {
     EFI_PE_IMAGE pub;
@@ -1194,6 +1195,8 @@ static EFI_STATUS EFIAPI Load(EFI_FILE_HANDLE File, void* VirtualAddress, EFI_PE
     do_relocations(img, nt_header);
 
     randomize_security_cookie(img, nt_header);
+
+    apply_function_overrides((uint8_t*)img->pub.Data, img->size);
 
     bs->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)data, pages);
 
